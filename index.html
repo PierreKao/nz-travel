@@ -234,6 +234,23 @@
             day.actualDate = d.toISOString().split('T')[0];
         });
 
+        // Test helper: read ?simTime=2025-06-25T14:30 from URL or use testTime(dayNumber, timeStr) in console
+        const urlParams = new URLSearchParams(window.location.search);
+        let simTimeParam = urlParams.get('simTime');
+        window.simulatedTime = simTimeParam ? new Date(simTimeParam) : null;
+
+        window.testTime = function(dayNumber, timeStr) {
+            const d = new Date(startDate);
+            d.setDate(d.getDate() + (dayNumber - 1));
+            if (timeStr) {
+                const [h, m] = timeStr.split(':');
+                d.setHours(h, m, 0);
+            }
+            window.simulatedTime = d;
+            updateUI();
+            console.log("Simulating time:", d);
+        }
+
         function getWeatherIcon(desc) {
             const d = desc.toLowerCase();
             if (d.includes("sun") || d.includes("clear")) return '<i class="fas fa-sun text-yellow-500 drop-shadow-[0_0_8px_rgba(234,179,8,0.5)]"></i>';
@@ -391,10 +408,14 @@
             chkBtn.onclick = () => { activeDayIndex = -2; updateUI(); };
             nav.appendChild(chkBtn);
 
+            const now = window.simulatedTime || new Date();
+            const todayStr = now.toISOString().split('T')[0];
+
             itinerary.forEach((day, i) => {
+                const isToday = day.actualDate === todayStr;
                 const btn = document.createElement('button');
                 btn.className = `day-btn md:w-full text-left px-4 py-2 rounded-xl text-sm font-bold border mb-1 ${i === activeDayIndex ? 'active-tab' : 'bg-white'}`;
-                btn.innerHTML = `D${i+1} ${day.city[currentLang]}`; // Show Day + City with localized city name
+                btn.innerHTML = `<span class="${isToday ? 'text-red-500 animate-pulse' : ''}">D${i+1}</span> ${day.city[currentLang]}`; // Highlight D1, D2 etc if today
                 btn.onclick = () => { activeDayIndex = i; updateUI(); };
                 nav.appendChild(btn);
             });
@@ -428,9 +449,13 @@
                         <i class="fas fa-route text-blue-600"></i> ${ui.overviewBtn}
                     </h2>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        ${itinerary.map((day, i) => `
+                        ${itinerary.map((day, i) => {
+                            const now = window.simulatedTime || new Date();
+                            const todayStr = now.toISOString().split('T')[0];
+                            const isToday = day.actualDate === todayStr;
+                            return `
                             <div onclick="activeDayIndex=${i}; updateUI();" class="flex items-center p-4 rounded-2xl bg-white/50 border border-slate-100 hover:bg-white cursor-pointer transition-all">
-                                <div class="w-10 h-10 bg-blue-100 text-blue-600 rounded-lg flex flex-col items-center justify-center mr-4 shrink-0">
+                                <div class="w-10 h-10 ${isToday ? 'bg-red-500 text-white animate-pulse' : 'bg-blue-100 text-blue-600'} rounded-lg flex flex-col items-center justify-center mr-4 shrink-0 transition-colors">
                                     <span class="text-sm font-bold">D${i+1}</span>
                                 </div>
                                 <div class="flex-1">
@@ -438,7 +463,8 @@
                                     <p class="text-[10px] text-slate-400 uppercase font-bold">${day.city[currentLang]}</p>
                                 </div>
                             </div>
-                        `).join('')}
+                            `;
+                        }).join('')}
                     </div>
                 </div>
             `;
@@ -485,8 +511,8 @@
             const lang = day[currentLang];
             const hotel = decryptedHotels ? decryptedHotels[activeDayIndex] : ui.locked;
 
-            // Check current time and date
-            const now = new Date();
+            // Check current time and date using simulated time if available
+            const now = window.simulatedTime || new Date();
             const todayStr = now.toISOString().split('T')[0];
             const isToday = day.actualDate === todayStr;
             const currentHour = now.getHours();
@@ -518,8 +544,7 @@
                     <div class="lg:col-span-7 space-y-6">
                         <div class="glass-card rounded-[2.5rem] p-8 shadow-2xl relative border-t border-white/60">
                             <div class="mb-8">
-                                <span class="bg-blue-600 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase mb-2 inline-block">Day ${activeDayIndex + 1}</span>
-                                ${isToday ? `<span class="bg-red-500 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase mb-2 ml-1 inline-block animate-pulse"><i class="fas fa-clock mr-1"></i> 今天 TODAY</span>` : ''}
+                                <span class="${isToday ? 'bg-red-500 animate-pulse' : 'bg-blue-600'} text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase mb-2 inline-block transition-colors">Day ${activeDayIndex + 1}</span>
                                 ${day.drive ? `<span class="bg-amber-500 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase mb-2 ml-1 inline-block"><i class="fas fa-car mr-1"></i> ${ui.driveTimeLabel}: ${day.drive}</span>` : ''}
                                 <h2 class="text-4xl font-extrabold text-slate-800">${lang.title}</h2>
                                 <p class="text-slate-400 font-bold mt-1 text-sm"><i class="fas fa-location-dot"></i> ${day.city[currentLang]}</p>
