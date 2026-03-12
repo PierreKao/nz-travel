@@ -91,7 +91,8 @@
 </head>
 <body class="text-slate-900 overflow-x-hidden">
 
-    <div class="bg-overlay"></div>
+    <div class="bg-overlay" id="bg-day"></div>
+    <div id="bg-aurora" class="fixed inset-0 w-full h-full -z-10 opacity-0 transition-opacity duration-[1500ms] pointer-events-none" style="background: linear-gradient(rgba(10, 15, 30, 0.7), rgba(20, 10, 40, 0.85)), url('https://images.unsplash.com/photo-1548684285-b049615214ad?q=80&w=2070&auto=format&fit=crop'); background-size: cover; background-position: center;"></div>
     <div class="snow-container" id="snowfalls"></div>
 
     <!-- Header -->
@@ -117,6 +118,10 @@
             </button>
             <button id="unlock-btn" onclick="askPassword()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 sm:px-4 sm:py-1.5 rounded-full text-[11px] sm:text-[12px] font-bold transition-all shadow-sm">
                 <i class="fas fa-key sm:mr-1"></i> <span id="ui-unlock-text" class="hidden sm:inline">解鎖住宿</span>
+            </button>
+            <button onclick="toggleAurora()" class="bg-slate-800 hover:bg-slate-900 text-purple-300 px-3 py-1 sm:px-3 sm:py-1.5 rounded-full text-[11px] sm:text-[12px] font-bold transition-all shadow-sm flex items-center justify-center relative overflow-hidden group">
+                <div class="absolute inset-0 bg-gradient-to-r from-purple-500/30 to-emerald-500/30 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <i class="fas fa-moon relative z-10"></i>
             </button>
             <button onclick="toggleLang()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-2 py-1 sm:px-3 sm:py-1.5 rounded-full text-[11px] sm:text-[12px] font-bold transition-all shadow-sm">
                 EN/中
@@ -175,6 +180,12 @@
         let decryptedHotels = null; 
         let currentLang = 'zh';
         let activeDayIndex = -1; // 預設顯示大綱
+        let isAurora = false;
+
+        function toggleAurora() {
+            isAurora = !isAurora;
+            document.getElementById('bg-aurora').style.opacity = isAurora ? '1' : '0';
+        }
 
         const translations = {
             zh: {
@@ -551,9 +562,12 @@
                             const now = window.simulatedTime || new Date();
                             const todayStr = now.toISOString().split('T')[0];
                             const isToday = day.actualDate === todayStr;
+                            const isPast = new Date(day.actualDate) < new Date(todayStr);
+
                             return `
-                            <div onclick="activeDayIndex=${i}; updateUI();" class="flex items-center p-4 rounded-2xl bg-white/50 border border-slate-100 hover:bg-white cursor-pointer transition-all">
-                                <div class="w-10 h-10 ${isToday ? 'bg-red-500 text-white animate-pulse' : 'bg-blue-100 text-blue-600'} rounded-lg flex flex-col items-center justify-center mr-4 shrink-0 transition-colors">
+                            <div onclick="activeDayIndex=${i}; updateUI();" class="relative flex items-center p-4 rounded-2xl bg-white/50 border border-slate-100 hover:bg-white cursor-pointer transition-all overflow-hidden group">
+                                ${isPast ? '<div class="absolute inset-0 bg-slate-50/50 z-10 rounded-2xl flex items-center justify-center backdrop-blur-[0.5px] pointer-events-none transition-all duration-300 group-hover:bg-transparent group-hover:backdrop-blur-none"><div class="border-2 border-emerald-500/80 text-emerald-500/80 font-black text-[10px] uppercase tracking-widest px-2 py-0.5 rounded transform -rotate-12 shadow-sm transition-opacity duration-300 group-hover:opacity-0">Completed</div></div>' : ''}
+                                <div class="w-10 h-10 ${isToday ? 'bg-red-500 text-white animate-pulse' : (isPast ? 'bg-slate-200 text-slate-400' : 'bg-blue-100 text-blue-600')} rounded-lg flex flex-col items-center justify-center mr-4 shrink-0 transition-colors z-0">
                                     <span class="text-sm font-bold">D${i+1}</span>
                                 </div>
                                 <div class="flex-1">
@@ -570,11 +584,40 @@
 
         function renderChecklist(container, ui) {
             let saved = JSON.parse(localStorage.getItem('nz_travel_checklist') || '{}');
+            
+            let totalItems = 0;
+            let checkedItems = 0;
+            checklist.forEach(cat => {
+                totalItems += cat.items.length;
+                cat.items.forEach((_, idx) => {
+                    if(saved[`${cat.id}_${idx}`]) checkedItems++;
+                });
+            });
+            const progress = totalItems === 0 ? 0 : Math.round((checkedItems / totalItems) * 100);
+            const dashoffset = Math.round(100 - progress);
+
             container.innerHTML = `
                 <div class="glass-card rounded-[2rem] p-8 shadow-2xl animate-in fade-in relative overflow-hidden">
-                    <h2 class="text-3xl font-bold mb-8 flex items-center gap-3 relative z-10 text-amber-700">
-                        <i class="fas fa-clipboard-list"></i> ${ui.checklistBtn}
-                    </h2>
+                    <div class="flex items-center justify-between mb-8 relative z-10">
+                        <h2 class="text-3xl font-bold flex items-center gap-3 text-amber-700">
+                            <i class="fas fa-clipboard-list"></i> ${ui.checklistBtn}
+                        </h2>
+                        
+                        <div class="flex items-center gap-3 bg-white/60 px-4 py-2 rounded-2xl shadow-sm border border-slate-100">
+                            <div class="text-right">
+                                <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">${currentLang === 'zh' ? '打包進度' : 'Progress'}</p>
+                                <p class="text-lg font-black text-amber-600 leading-none mt-0.5">${progress}%</p>
+                            </div>
+                            <div class="relative w-10 h-10">
+                                <svg class="w-10 h-10 transform -rotate-90">
+                                    <circle cx="20" cy="20" r="16" stroke="currentColor" stroke-width="4" fill="transparent" class="text-slate-200" />
+                                    <!-- length=2*pi*r ≈ 100 -->
+                                    <circle cx="20" cy="20" r="16" stroke="currentColor" stroke-width="4" fill="transparent" stroke-dasharray="100.5" stroke-dashoffset="${dashoffset}" class="text-amber-500 transition-all duration-1000 ease-out" />
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
                         ${checklist.map((category) => {
                             const isAllChecked = category.items.every((_, idx) => saved[`${category.id}_${idx}`]);
