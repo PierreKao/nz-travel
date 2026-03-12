@@ -34,18 +34,27 @@
             top: 0; left: 0; width: 100%; height: 100%;
             background-color: #020617; /* 極深藍色星空底色 */
             background-image: 
-                radial-gradient(circle at 15% 50%, rgba(16, 185, 129, 0.15), transparent 50%),
-                radial-gradient(circle at 85% 30%, rgba(139, 92, 246, 0.15), transparent 50%),
-                linear-gradient(135deg, rgba(2, 6, 23, 1) 0%, rgba(15, 23, 42, 0.9) 100%);
-            background-size: 200% 200%;
-            animation: aurora-flow 15s ease infinite alternate;
+                /* Stars */
+                radial-gradient(1px 1px at 20px 30px, #ffffff, rgba(0,0,0,0)),
+                radial-gradient(1.5px 1.5px at 40px 70px, rgba(255,255,255,0.8), rgba(0,0,0,0)),
+                radial-gradient(1px 1px at 50px 160px, rgba(255,255,255,0.9), rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 90px 40px, #ffffff, rgba(0,0,0,0)),
+                radial-gradient(1.5px 1.5px at 130px 80px, rgba(255,255,255,0.7), rgba(0,0,0,0)),
+                radial-gradient(1px 1px at 160px 120px, #ffffff, rgba(0,0,0,0)),
+                /* Vibrant Aurora Waves */
+                radial-gradient(ellipse at 20% 10%, rgba(52, 211, 153, 0.7) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 90%, rgba(167, 139, 250, 0.6) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 50%, rgba(56, 189, 248, 0.4) 0%, transparent 60%),
+                linear-gradient(180deg, rgba(2, 6, 23, 0.6) 0%, rgba(15, 23, 42, 0.9) 100%);
+            background-size: 200px 200px, 250px 250px, 300px 300px, 150px 150px, 210px 210px, 280px 280px, 200% 200%, 200% 200%, 200% 200%, 100% 100%;
+            animation: aurora-flow 8s ease-in-out infinite alternate;
             z-index: -2;
         }
 
         @keyframes aurora-flow {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
+            0% { background-position: 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0% 10%, 100% 90%, 50% 50%, 0 0; }
+            50% { background-position: 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 50% 30%, 50% 70%, 100% 80%, 0 0; }
+            100% { background-position: 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 100% 10%, 0% 90%, 20% 20%, 0 0; }
         }
 
         /* 飄雪特效容器 */
