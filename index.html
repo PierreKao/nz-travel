@@ -28,16 +28,24 @@
             z-index: -3;
         }
 
-        /* 極光背景層 (預設隱藏) */
+        /* 極光背景層 (純 CSS 模擬) */
         .aurora-bg {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background-color: #0f172a;
-            /* Using a highly robust generic aurora image string */
-            background-image: url('https://images.pexels.com/photos/1938348/pexels-photo-1938348.jpeg?auto=compress&cs=tinysrgb&w=1920'), linear-gradient(#0f172a, #0f172a);
-            background-size: cover;
-            background-position: center;
+            background-color: #020617; /* 極深藍色星空底色 */
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(16, 185, 129, 0.15), transparent 50%),
+                radial-gradient(circle at 85% 30%, rgba(139, 92, 246, 0.15), transparent 50%),
+                linear-gradient(135deg, rgba(2, 6, 23, 1) 0%, rgba(15, 23, 42, 0.9) 100%);
+            background-size: 200% 200%;
+            animation: aurora-flow 15s ease infinite alternate;
             z-index: -2;
+        }
+
+        @keyframes aurora-flow {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
 
         /* 飄雪特效容器 */
