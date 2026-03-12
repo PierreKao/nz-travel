@@ -515,6 +515,7 @@
                 
                 if (decryptedString) {
                     decryptedHotels = JSON.parse(decryptedString);
+                    if ("vibrate" in navigator) navigator.vibrate([30, 50, 30]); // Haptic: Success double-tap
                     updateUI();
                     closeModal();
                 } else {
@@ -532,6 +533,7 @@
             const input = document.getElementById('modal-password-input');
             input.value = '';
             input.focus();
+            if ("vibrate" in navigator) navigator.vibrate([50, 100, 50]); // Haptic: Error shake
             
             // Shake animation loop simulation via transform since keyframe isn't explicitly defined
             const content = document.getElementById('modal-content');
@@ -551,6 +553,8 @@
             saved[id] = isChecked;
             localStorage.setItem('nz_travel_checklist', JSON.stringify(saved));
             
+            if ("vibrate" in navigator) navigator.vibrate(5); // Haptic: Light tick
+
             // Toggle strikethrough class on label without full DOM reload
             const lbl = document.getElementById('chk_' + id).nextElementSibling;
             if(isChecked) {
@@ -657,12 +661,48 @@
         }
 
         function renderOverview(container, ui) {
+            const now = window.simulatedTime || new Date();
+            const todayStr = now.toISOString().split('T')[0];
+            
+            // Calculate current ongoing trip day for the Spatial Map
+            let currentDayIdx = itinerary.findIndex(d => d.actualDate === todayStr);
+            if (currentDayIdx === -1) {
+                if (new Date(todayStr) < new Date(itinerary[0].actualDate)) currentDayIdx = 0;
+                else currentDayIdx = itinerary.length - 1;
+            }
+            const progressPercent = (currentDayIdx / (itinerary.length - 1)) * 100;
+
             container.innerHTML = `
                 <div class="glass-card rounded-[2rem] p-8 shadow-2xl animate-in fade-in relative overflow-hidden">
-                    <h2 class="text-3xl font-bold mb-8 flex items-center gap-3 relative z-10">
+                    <h2 class="text-3xl font-bold mb-6 flex items-center gap-3 relative z-10">
                         <i class="fas fa-route text-blue-600"></i> ${ui.overviewBtn}
                     </h2>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    
+                    <!-- Spatial Memory Map -->
+                    <div class="mb-10 relative w-full pt-6 pb-2">
+                        <div class="absolute top-1/2 left-2 right-2 h-1.5 bg-slate-200/50 rounded-full -translate-y-1/2 z-0"></div>
+                        <div class="absolute top-1/2 left-2 h-1.5 bg-gradient-to-r from-blue-400 to-indigo-500 rounded-full -translate-y-1/2 z-0 transition-all duration-1000 ease-out shadow-[0_0_10px_rgba(99,102,241,0.5)]" style="width: calc(${progressPercent}% - 4px)"></div>
+                        
+                        <div class="flex justify-between relative z-10 px-1">
+                            ${itinerary.map((day, i) => {
+                                const isPast = i < currentDayIdx;
+                                const isCurrent = i === currentDayIdx;
+                                const isMajor = i === 0 || i === Math.floor(itinerary.length/2) || i === itinerary.length - 1; // Highlight start, middle, end
+                                
+                                return `
+                                <div class="flex flex-col items-center group cursor-pointer" onclick="activeDayIndex=${i}; updateUI();">
+                                    <div class="w-4 h-4 rounded-full border-2 transition-all duration-300 ${isCurrent ? 'bg-white border-blue-500 scale-150 shadow-[0_0_15px_rgba(59,130,246,0.6)]' : (isPast ? 'bg-blue-500 border-blue-500' : 'bg-white border-slate-300 group-hover:border-blue-300')} relative flex items-center justify-center">
+                                        ${isCurrent ? '<i class="fas fa-car-side text-[8px] text-blue-600 absolute -top-5 animate-bounce"></i>' : ''}
+                                    </div>
+                                    <span class="text-[9px] font-bold mt-2 tracking-tighter sm:tracking-normal transition-colors ${isCurrent ? 'text-blue-600' : (isPast ? 'text-slate-600' : 'text-slate-400')} ${!isMajor && !isCurrent ? 'hidden sm:block opacity-0 group-hover:opacity-100' : ''}">
+                                        D${i+1}
+                                    </span>
+                                </div>`;
+                            }).join('')}
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 relative z-10">
                         ${itinerary.map((day, i) => {
                             const now = window.simulatedTime || new Date();
                             const todayStr = now.toISOString().split('T')[0];
