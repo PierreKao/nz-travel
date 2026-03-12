@@ -92,7 +92,7 @@
 <body class="text-slate-900 overflow-x-hidden">
 
     <div class="bg-overlay" id="bg-day"></div>
-    <div id="bg-aurora" class="fixed inset-0 w-full h-full z-[-1] opacity-0 transition-opacity duration-[1500ms] pointer-events-none" style="background: linear-gradient(rgba(10, 15, 30, 0.7), rgba(20, 10, 40, 0.85)), url('https://images.unsplash.com/photo-1548684285-b049615214ad?q=80&w=2070&auto=format&fit=crop'); background-size: cover; background-position: center;"></div>
+    <div id="bg-aurora" class="fixed inset-0 w-full h-full transition-opacity duration-1000 pointer-events-none opacity-0" style="z-index:-1; background: linear-gradient(rgba(10, 15, 30, 0.7), rgba(20, 10, 40, 0.85)), url('https://images.unsplash.com/photo-1548684285-b049615214ad?q=80&w=2070&auto=format&fit=crop'); background-size: cover; background-position: center;"></div>
     <div class="snow-container" id="snowfalls"></div>
 
     <!-- Header -->
@@ -478,7 +478,39 @@
             let saved = JSON.parse(localStorage.getItem('nz_travel_checklist') || '{}');
             saved[id] = isChecked;
             localStorage.setItem('nz_travel_checklist', JSON.stringify(saved));
-            if(activeDayIndex === -2) updateUI();
+            
+            // Toggle strikethrough class on label without full DOM reload
+            const lbl = document.getElementById('chk_' + id).nextElementSibling;
+            if(isChecked) {
+                lbl.classList.add('text-slate-400', 'line-through');
+                lbl.classList.remove('text-slate-700');
+            } else {
+                lbl.classList.remove('text-slate-400', 'line-through');
+                lbl.classList.add('text-slate-700');
+            }
+            
+            if(activeDayIndex === -2) updateChecklistProgressRing();
+        }
+
+        function updateChecklistProgressRing() {
+            let saved = JSON.parse(localStorage.getItem('nz_travel_checklist') || '{}');
+            let totalItems = 0;
+            let checkedItems = 0;
+            checklist.forEach(cat => {
+                totalItems += cat.items.length;
+                cat.items.forEach((_, idx) => {
+                    if(saved[`${cat.id}_${idx}`]) checkedItems++;
+                });
+            });
+            const progress = totalItems === 0 ? 0 : Math.round((checkedItems / totalItems) * 100);
+            const dashoffset = Math.round(100 - progress);
+
+            const pctText = document.getElementById('progress-pct-text');
+            const svgRing = document.getElementById('progress-svg-ring');
+            if(pctText && svgRing) {
+                pctText.innerText = progress + '%';
+                svgRing.style.strokeDashoffset = dashoffset;
+            }
         }
 
         function toggleChecklistGroup(groupId) {
@@ -607,13 +639,13 @@
                         <div class="flex items-center gap-3 bg-white/60 px-4 py-2 rounded-2xl shadow-sm border border-slate-100">
                             <div class="text-right">
                                 <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">${currentLang === 'zh' ? '打包進度' : 'Progress'}</p>
-                                <p class="text-lg font-black text-amber-600 leading-none mt-0.5">${progress}%</p>
+                                <p id="progress-pct-text" class="text-lg font-black text-amber-600 leading-none mt-0.5">${progress}%</p>
                             </div>
                             <div class="relative w-10 h-10">
                                 <svg class="w-10 h-10 transform -rotate-90">
                                     <circle cx="20" cy="20" r="16" stroke="currentColor" stroke-width="4" fill="transparent" class="text-slate-200" />
                                     <!-- length=2*pi*r ≈ 100 -->
-                                    <circle cx="20" cy="20" r="16" stroke="currentColor" stroke-width="4" fill="transparent" stroke-dasharray="100.5" stroke-dashoffset="${dashoffset}" class="text-amber-500 transition-all duration-1000 ease-out" />
+                                    <circle id="progress-svg-ring" cx="20" cy="20" r="16" stroke="currentColor" stroke-width="4" fill="transparent" stroke-dasharray="100.5" style="stroke-dashoffset: ${dashoffset}px;" class="text-amber-500 transition-all duration-1000 ease-out" />
                                 </svg>
                             </div>
                         </div>
