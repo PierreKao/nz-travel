@@ -71,6 +71,12 @@
             width: 2px; background: #e2e8f0; 
         }
 
+        /* 漸層遮罩 Hint for Horizontal Scrolling */
+        .scroll-mask {
+            mask-image: linear-gradient(to right, transparent, black 15px, black calc(100% - 15px), transparent);
+            -webkit-mask-image: linear-gradient(to right, transparent, black 15px, black calc(100% - 15px), transparent);
+        }
+
         @media (max-width: 768px) {
             .mobile-nav { 
                 position: fixed; bottom: 0; left: 0; right: 0; 
@@ -120,7 +126,7 @@
 
     <div class="max-w-7xl mx-auto flex flex-col md:flex-row min-h-screen">
         <!-- Sidebar Navigation -->
-        <nav id="nav-container" class="md:w-64 p-4 md:p-6 md:sticky md:top-[70px] md:h-[calc(100vh-70px)] md:overflow-y-auto mobile-nav"></nav>
+        <nav id="nav-container" class="md:w-64 p-4 md:p-6 md:sticky md:top-[70px] md:h-[calc(100vh-70px)] md:overflow-y-auto mobile-nav scroll-mask"></nav>
         
         <!-- Main Content -->
         <main class="flex-1 p-3 sm:p-4 md:p-8 lg:p-12">
@@ -137,6 +143,33 @@
     </div>
 
     <script>
+        // Password Modal Logic and HTML Injection Setup
+        const modalHTML = `
+        <div id="password-modal" class="fixed inset-0 z-[100] hidden flex-col items-center justify-center p-4 sm:p-0">
+            <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity opacity-0" id="modal-backdrop" onclick="closeModal()"></div>
+            <div class="bg-white/90 backdrop-blur-md rounded-[2rem] p-8 sm:p-10 shadow-2xl w-full max-w-sm relative z-10 scale-95 opacity-0 transition-all duration-300" id="modal-content">
+                <button onclick="closeModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100 transition-colors">
+                    <i class="fas fa-times"></i>
+                </button>
+                <div class="text-center mb-6">
+                    <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-4 shadow-sm">
+                        <i class="fas fa-lock"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-800" id="modal-title">解鎖住宿資訊</h3>
+                    <p class="text-sm text-slate-500 mt-2" id="modal-desc">請輸入安全密碼以檢視詳細住宿資訊。</p>
+                </div>
+                <div class="space-y-4">
+                    <input type="password" id="modal-password-input" class="w-full bg-white border border-slate-200 px-4 py-3 rounded-xl text-center text-lg tracking-widest focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all shadow-inner" placeholder="••••••" onkeydown="if(event.key === 'Enter') submitPassword()">
+                    <p id="modal-error" class="text-red-500 text-xs font-bold text-center h-4 opacity-0 transition-opacity">密碼錯誤，請重試</p>
+                    <button onclick="submitPassword()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-xl shadow-md hover:shadow-lg transition-all transform active:scale-95">
+                        確認解鎖
+                    </button>
+                </div>
+            </div>
+        </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+
         const ENCRYPTED_HOTELS = "U2FsdGVkX1/5B7ukylTrcGjm0fKXPxOORKLwexAFiM7PQj0iJ4VSrYodK89sZYwKjzEZUjUQBOuWThstnVLG3OTtftpfc9JocyZssCpUontSb8YDsusQTyLLl3H4GyuxcwojvMxO6XVDTuDuiXUBHIqfNhhMC0eqK4Vw/eF09Spv7Nr7MgSd6z+wTMeo6aY9qe3X4ed0DpcU0Z/3EuV6caUFiQHgFGdB9pfPpr3P+K5BK06WnMRDowp7kEmMa/Fro0+CinlZEv6/lbRty8rRY5UlTJLIvHMerea6ASxqlc53xjeOrpHUHUQ1mmOpA7zy8SNb37O8vF3oDwOReu1hhkOAOQRY8pypdnxyIs+W1o+3Bcd4VTbTeAfM8HYyLff+gKvSOADGGiUAivL3BxFa1herFwTIW+wnFXpgKgSGwfTByLYju+Zmx4T3uNgTBM1bnFOwQoz+UaI/xbUNilO7/nuPeXoeIsE4rkKGActJ6gmOGUwgjZA9J7YiE2BD2aCfUZpuVVT/NripRq0nh9j/R7AmEvgA3yULLQQT3P7y1A75Bq3+f79EnVuYBsujubifHMFDinWRUUJkJRCKzQgqtg7sL8TXfLX1U1Y4NcGmCpms1TlEvg3APrpSlYLfAaOq3IdiZwHkmstNTtGw20jc51Jenjg1/hYEg+QXx5zGviw="; 
 
         let decryptedHotels = null; 
@@ -351,13 +384,78 @@
         }
 
         function askPassword() {
-            const pass = prompt("Password:");
-            if (!pass) return;
+            if (decryptedHotels) return;
+            const ui = translations[currentLang];
+            document.getElementById('modal-title').innerText = currentLang === 'zh' ? '解鎖住宿資訊' : 'Unlock Accommodation';
+            document.getElementById('modal-desc').innerText = currentLang === 'zh' ? '請輸入安全密碼以檢視詳細住宿與定位資訊。' : 'Please enter the security password to view detailed accommodation info.';
+            document.getElementById('modal-password-input').placeholder = '••••••';
+            document.getElementById('modal-error').style.opacity = '0';
+            document.getElementById('modal-password-input').value = '';
+            
+            const modal = document.getElementById('password-modal');
+            const backdrop = document.getElementById('modal-backdrop');
+            const content = document.getElementById('modal-content');
+            
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            
+            // Trigger animation
+            requestAnimationFrame(() => {
+                backdrop.classList.remove('opacity-0');
+                content.classList.remove('scale-95', 'opacity-0');
+            });
+            
+            setTimeout(() => document.getElementById('modal-password-input').focus(), 100);
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('password-modal');
+            const backdrop = document.getElementById('modal-backdrop');
+            const content = document.getElementById('modal-content');
+            
+            backdrop.classList.add('opacity-0');
+            content.classList.add('scale-95', 'opacity-0');
+            
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }, 300);
+        }
+
+        function submitPassword() {
+            const pwd = document.getElementById('modal-password-input').value;
+            if(!pwd) return;
+            
             try {
-                const bytes = CryptoJS.AES.decrypt(ENCRYPTED_HOTELS, pass);
-                decryptedHotels = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
-                updateUI();
-            } catch (e) { alert("Error!"); }
+                const bytes = CryptoJS.AES.decrypt(ENCRYPTED_HOTELS, pwd);
+                const decryptedString = bytes.toString(CryptoJS.enc.Utf8);
+                
+                if (decryptedString) {
+                    decryptedHotels = JSON.parse(decryptedString);
+                    updateUI();
+                    closeModal();
+                } else {
+                    showModalError();
+                }
+            } catch (e) {
+                showModalError();
+            }
+        }
+        
+        function showModalError() {
+            const err = document.getElementById('modal-error');
+            err.innerText = currentLang === 'zh' ? '密碼錯誤，請重試' : 'Incorrect password, try again';
+            err.style.opacity = '1';
+            const input = document.getElementById('modal-password-input');
+            input.value = '';
+            input.focus();
+            
+            // Shake animation loop simulation via transform since keyframe isn't explicitly defined
+            const content = document.getElementById('modal-content');
+            content.style.transform = 'translate(-10px, 0)';
+            setTimeout(() => content.style.transform = 'translate(10px, 0)', 100);
+            setTimeout(() => content.style.transform = 'translate(-10px, 0)', 200);
+            setTimeout(() => content.style.transform = 'translate(0, 0)', 300);
         }
 
         function toggleLang() {
@@ -434,10 +532,10 @@
 
             // Notices
             document.getElementById('notice-board').innerHTML = ui.notices.map(n => `
-                <div class="bg-white/90 p-4 rounded-xl shadow-sm border border-slate-100">
+                <div class="bg-white/90 p-4 rounded-xl shadow-sm border border-slate-100 flex flex-col justify-center">
                     <i class="fas ${n.icon} text-blue-500 mb-2"></i>
                     <h5 class="font-bold text-sm">${n.title}</h5>
-                    <p class="text-[11px] text-slate-500">${n.content}</p>
+                    <p class="text-[11px] text-slate-500 mt-1 leading-tight">${n.content}</p>
                 </div>
             `).join('');
         }
@@ -547,7 +645,7 @@
                                 <span class="${isToday ? 'bg-red-500 animate-pulse' : 'bg-blue-600'} text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase mb-2 inline-block transition-colors">Day ${activeDayIndex + 1}</span>
                                 ${day.drive ? `<span class="bg-amber-500 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase mb-2 ml-1 inline-block"><i class="fas fa-car mr-1"></i> ${ui.driveTimeLabel}: ${day.drive}</span>` : ''}
                                 <h2 class="text-4xl font-extrabold text-slate-800">${lang.title}</h2>
-                                <p class="text-slate-400 font-bold mt-1 text-sm"><i class="fas fa-location-dot"></i> ${day.city[currentLang]}</p>
+                                <p class="text-slate-500 font-bold mt-1 text-sm flex items-center gap-1.5"><i class="fas fa-location-dot"></i> ${day.city[currentLang]}</p>
                             </div>
                             <div class="timeline-line space-y-8 pl-1">
                                 ${lang.timeline.map((t, index) => {
@@ -579,16 +677,22 @@
                             <div class="flex-1 glass-card p-5 rounded-3xl flex items-center gap-4">
                                 <div class="w-10 h-10 bg-indigo-600 text-white rounded-xl flex items-center justify-center"><i class="fas fa-bed"></i></div>
                                 <div>
-                                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">${ui.hotelLabel}</p>
-                                    <p class="font-bold text-sm ${decryptedHotels ? 'text-indigo-800' : 'text-slate-300 italic'}">${hotel}</p>
+                                    <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">${ui.hotelLabel}</p>
+                                    <p class="font-bold text-sm ${decryptedHotels ? 'text-indigo-800' : 'text-slate-400 italic'}">${hotel}</p>
                                 </div>
                             </div>
                             <a href="https://www.google.com/maps/search/?api=1&query=${day.mapUrl}" target="_blank" class="bg-slate-900 text-white p-5 rounded-3xl flex items-center justify-center gap-2 font-bold text-sm"><i class="fas fa-location-arrow text-blue-400"></i> MAP</a>
                         </div>
                     </div>
                     <div class="lg:col-span-5 h-[400px] lg:h-auto">
-                        <div class="glass-card rounded-[2.5rem] p-2 h-full shadow-2xl">
-                            <iframe frameborder="0" class="w-full h-full rounded-[2rem]" src="https://maps.google.com/maps?q=${day.mapUrl}&t=&z=13&ie=UTF8&iwloc=&output=embed"></iframe>
+                        <div class="glass-card rounded-[2.5rem] p-2 h-full shadow-2xl relative overflow-hidden group">
+                            <!-- Skeleton loader -->
+                            <div class="absolute inset-2 rounded-[2rem] bg-slate-200 animate-pulse-slow flex flex-col items-center justify-center z-0">
+                                <i class="fas fa-map-marked-alt text-4xl text-slate-300 mb-2"></i>
+                                <span class="text-xs font-bold text-slate-400 uppercase tracking-widest animate-pulse">Loading Map...</span>
+                            </div>
+                            <!-- Map iframe -->
+                            <iframe frameborder="0" class="relative w-full h-full rounded-[2rem] z-10 opacity-0 transition-opacity duration-1000" onload="this.style.opacity=1" src="https://maps.google.com/maps?q=${day.mapUrl}&t=&z=13&ie=UTF8&iwloc=&output=embed"></iframe>
                         </div>
                     </div>
                 </div>
