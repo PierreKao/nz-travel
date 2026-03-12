@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NZ South Island Trip 2025</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;700&family=Inter:wght@400;700&display=swap');
+        
+        body { 
+            font-family: 'Inter', 'Noto Sans TC', sans-serif; 
+            background: #0f172a; /* 預設深色背景 */
+            min-height: 100vh;
+        }
+
+        /* 靜態背景層，防止滾動跳動 */
+        .bg-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            /* 使用紐西蘭庫克山/蒂卡波湖一帶的經典雪景背景 */
+            background: linear-gradient(rgba(15, 23, 42, 0.65), rgba(15, 23, 42, 0.8)), 
+                        url('https://images.unsplash.com/photo-1589802829985-817e51171b92?q=80&w=2070&auto=format&fit=crop'); 
+            background-size: cover;
+            background-position: center;
+            z-index: -2;
+        }
+
+        /* 飄雪特效容器 */
+        .snow-container {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .snowflake {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            opacity: 0.6;
+            animation: snowfall linear infinite;
+        }
+
+        @keyframes snowfall {
+            0% { transform: translateY(-10px) translateX(0) scale(1); opacity: 0; }
+            10% { opacity: 0.8; }
+            90% { opacity: 0.5; }
+            100% { transform: translateY(100vh) translateX(20px) scale(0.5); opacity: 0; }
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .active-tab { 
+            background-color: #2563eb !important; 
+            color: #ffffff !important; 
+            border-color: #3b82f6 !important;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+        }
+
+        .timeline-line { position: relative; }
+        .timeline-line::before { 
+            content: ''; position: absolute; left: 8px; top: 10px; bottom: 10px; 
+            width: 2px; background: #e2e8f0; 
+        }
+
+        @media (max-width: 768px) {
+            .mobile-nav { 
+                position: fixed; bottom: 0; left: 0; right: 0; 
+                background: rgba(255,255,255,0.95); 
+                z-index: 100; display: flex; overflow-x: auto; 
+                padding: 8px; gap: 6px; border-top: 1px solid #e2e8f0;
+            }
+            main { padding-bottom: 70px; }
+            .day-btn { padding: 6px 10px !important; font-size: 0.8rem !important; }
+        }
+    </style>
+</head>
+<body class="text-slate-900 overflow-x-hidden">
+
+    <div class="bg-overlay"></div>
+    <div class="snow-container" id="snowfalls"></div>
+
+    <!-- Header -->
+    <header class="bg-white/90 backdrop-blur-md border-b sticky top-0 z-50 px-3 py-2 sm:px-6 sm:py-3 flex justify-between items-center shadow-sm">
+        <div onclick="activeDayIndex = -1; updateUI();" class="cursor-pointer shrink-0">
+            <h1 class="text-sm sm:text-lg font-bold text-slate-800 flex items-center gap-1 sm:gap-2">
+                <i class="fas fa-snowflakes text-blue-500"></i>
+                <span id="ui-header-title">紐西蘭南島 · 冬季自駕</span>
+            </h1>
+            <p class="text-[10px] text-blue-600 font-bold uppercase tracking-widest">Winter Adventure</p>
+        </div>
+        
+        <div class="flex items-center gap-3">
+            <div id="weather-box" class="hidden sm:flex items-center gap-3 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 px-3 py-1.5 rounded-xl shadow-sm transition-all duration-300 hover:shadow-md hover:-translate-y-0.5">
+                <div id="weather-icon-container" class="text-2xl drop-shadow-sm animate-pulse"></div>
+                <div class="text-right">
+                    <div id="weather-city" class="text-[10px] font-bold text-slate-500 leading-none tracking-wide">City</div>
+                    <div id="weather-temp" class="text-sm text-blue-700 font-extrabold leading-none mt-1 drop-shadow-sm">--°C</div>
+                </div>
+            </div>
+            <button onclick="printItinerary()" class="hidden sm:flex bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-full text-[12px] font-bold transition-all shadow-sm items-center gap-1 group">
+                <i class="fas fa-print group-hover:scale-110 transition-transform"></i> <span id="ui-print-btn" class="hidden sm:inline">列印</span>
+            </button>
+            <button id="unlock-btn" onclick="askPassword()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 sm:px-4 sm:py-1.5 rounded-full text-[11px] sm:text-[12px] font-bold transition-all shadow-sm">
+                <i class="fas fa-key sm:mr-1"></i> <span id="ui-unlock-text" class="hidden sm:inline">解鎖住宿</span>
+            </button>
+            <button onclick="toggleLang()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-2 py-1 sm:px-3 sm:py-1.5 rounded-full text-[11px] sm:text-[12px] font-bold transition-all shadow-sm">
+                EN/中
+            </button>
+        </div>
+    </header>
+
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row min-h-screen">
+        <!-- Sidebar Navigation -->
+        <nav id="nav-container" class="md:w-64 p-4 md:p-6 md:sticky md:top-[70px] md:h-[calc(100vh-70px)] md:overflow-y-auto mobile-nav"></nav>
+        
+        <!-- Main Content -->
+        <main class="flex-1 p-3 sm:p-4 md:p-8 lg:p-12">
+            <div id="content-display" class="animate-in fade-in zoom-in-95 duration-500"></div>
+
+            <div class="mt-12 glass-card rounded-[2.5rem] p-8 shadow-xl">
+                <h3 class="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
+                    <i class="fas fa-circle-exclamation text-amber-500"></i>
+                    <span id="ui-notice-title">重要須知 / Reminders</span>
+                </h3>
+                <div id="notice-board" class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4"></div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const ENCRYPTED_HOTELS = "U2FsdGVkX1/5B7ukylTrcGjm0fKXPxOORKLwexAFiM7PQj0iJ4VSrYodK89sZYwKjzEZUjUQBOuWThstnVLG3OTtftpfc9JocyZssCpUontSb8YDsusQTyLLl3H4GyuxcwojvMxO6XVDTuDuiXUBHIqfNhhMC0eqK4Vw/eF09Spv7Nr7MgSd6z+wTMeo6aY9qe3X4ed0DpcU0Z/3EuV6caUFiQHgFGdB9pfPpr3P+K5BK06WnMRDowp7kEmMa/Fro0+CinlZEv6/lbRty8rRY5UlTJLIvHMerea6ASxqlc53xjeOrpHUHUQ1mmOpA7zy8SNb37O8vF3oDwOReu1hhkOAOQRY8pypdnxyIs+W1o+3Bcd4VTbTeAfM8HYyLff+gKvSOADGGiUAivL3BxFa1herFwTIW+wnFXpgKgSGwfTByLYju+Zmx4T3uNgTBM1bnFOwQoz+UaI/xbUNilO7/nuPeXoeIsE4rkKGActJ6gmOGUwgjZA9J7YiE2BD2aCfUZpuVVT/NripRq0nh9j/R7AmEvgA3yULLQQT3P7y1A75Bq3+f79EnVuYBsujubifHMFDinWRUUJkJRCKzQgqtg7sL8TXfLX1U1Y4NcGmCpms1TlEvg3APrpSlYLfAaOq3IdiZwHkmstNTtGw20jc51Jenjg1/hYEg+QXx5zGviw="; 
+
+        let decryptedHotels = null; 
+        let currentLang = 'zh';
+        let activeDayIndex = -1; // 預設顯示大綱
+
+        const translations = {
+            zh: {
+                header: "紐西蘭南島 · 冬季自駕",
+                overviewBtn: "行程總覽",
+                checklistBtn: "行前準備",
+                timelineLabel: "今日安排",
+                hotelLabel: "住宿/資訊",
+                driveTimeLabel: "預估車程",
+                unlockBtn: "解鎖資訊",
+                unlockDone: "已解鎖",
+                locked: "🔒 點擊上方解鎖",
+                printBtn: "列印",
+                notices: [
+                    { icon: "fa-passport", title: "NZeTA", content: "簽證核准件" },
+                    { icon: "fa-car", title: "冬季自駕", content: "慎防黑冰、備妥雪鏈" },
+                    { id: "exchangeRate", icon: "fa-coins", title: "即時匯率", content: "取得中..." },
+                    { icon: "fa-temperature-low", title: "氣溫", content: "-2°C ~ 10°C (南島)" },
+                    { icon: "fa-plug", title: "插座", content: "八字型 Type I" },
+                    { icon: "fa-phone", title: "緊急", content: "報警急救撥打 111" }
+                ]
+            },
+            en: {
+                header: "NZ South Island Guide",
+                overviewBtn: "Overview",
+                checklistBtn: "Checklist",
+                timelineLabel: "Schedule",
+                hotelLabel: "Accommodation",
+                driveTimeLabel: "Est. Drive",
+                unlockBtn: "Unlock",
+                unlockDone: "Unlocked",
+                locked: "🔒 Click Unlock",
+                printBtn: "Print",
+                notices: [
+                    { icon: "fa-passport", title: "Visa", content: "NZeTA Status" },
+                    { icon: "fa-car", title: "Winter Drive", content: "Watch for black ice" },
+                    { id: "exchangeRate", icon: "fa-coins", title: "Live Rate", content: "Fetching..." },
+                    { icon: "fa-temperature-low", title: "Temp", content: "-2°C ~ 10°C (South)" },
+                    { icon: "fa-plug", title: "Power", content: "Type I Plug" },
+                    { icon: "fa-phone", title: "SOS", content: "Dial 111" }
+                ]
+            }
+        };
+
+        const checklist = [
+            { id: "docs", icon: "fa-passport", zh: "證件與文件", en: "Documents", items: [
+                { zh: "護照正本 (效期 > 6個月)", en: "Valid Passport (>6 months)" },
+                { zh: "NZeTA 電子簽證核准證明", en: "NZeTA Approval" },
+                { zh: "國際駕照 + 台灣駕照正本", en: "Intl + Domestic Driver's License" },
+                { zh: "英文版租車預約單", en: "Car Rental Confirmation" },
+                { zh: "旅行平安險/不便險英文證明", en: "Travel/Health Insurance Details" }
+            ]},
+            { id: "cloth", icon: "fa-mitten", zh: "冬季衣物", en: "Winter Clothing", items: [
+                { zh: "防風防水保暖外套 (Gore-Tex)", en: "Waterproof/Windproof Jacket" },
+                { zh: "保暖發熱衣褲/羊毛衣", en: "Thermal Base Layers" },
+                { zh: "防風防水手套/毛帽圍巾", en: "Winter Gloves, Beanie, Scarf" },
+                { zh: "防水防滑健走鞋 (雪地適用)", en: "Waterproof Hiking Boots" },
+                { zh: "羊毛襪數雙", en: "Merino Wool Socks" }
+            ]},
+            { id: "equip", icon: "fa-camera", zh: "電子裝備與雜物", en: "Equipments", items: [
+                { zh: "八字型轉接頭 (Type I)", en: "Type I Power Adapters" },
+                { zh: "行動電源 + 車充 (12V USB)", en: "Powerbank & Car USB Charger" },
+                { zh: "手機座/導航支架 (租車用)", en: "Car Phone Mount" },
+                { zh: "相機、腳架與星空拍攝裝備", en: "Camera gears & Tripod" },
+                { zh: "常備藥品 (感冒/腸胃/暈車)", en: "Basic Medications" }
+            ]}
+        ];
+
+        const itinerary = [
+            { date: "Day 01", city: { zh: "台北/奧克蘭", en: "TPE/AKL" }, mapUrl: "Auckland+Airport", zh: { title: "✈️ 啟程：台北 → 奧克蘭", timeline: [["18:35", "桃園機場出發 (NZ 78)", "11 hr 飛航"], ["晚上", "機上休息"]] }, en: { title: "✈️ Departure: TPE to AKL", timeline: [["18:35", "Depart TPE (NZ 78)", "11 hr flight"], ["Night", "Rest on board"]] } },
+            { date: "Day 02", city: { zh: "皇后鎮", en: "Queenstown" }, mapUrl: "Queenstown,New+Zealand", zh: { title: "🏔️ 抵達：皇后鎮", timeline: [["09:15", "抵達奧克蘭機場", "2 hr 轉機"], ["12:25", "國內線飛往皇后鎮", "2 hr 飛航"], ["14:20", "抵達、取車、超市採買"]] }, en: { title: "🏔️ Arrival: Queenstown", timeline: [["09:15", "Arrive AKL", "2 hr layover"], ["12:25", "Flight to ZQN", "2 hr flight"], ["14:20", "Pick up car & Groceries"]] } },
+            { date: "Day 03", city: { zh: "皇后鎮", en: "Queenstown" }, mapUrl: "Skyline+Queenstown", zh: { title: "🚠 皇后鎮：Skyline", timeline: [["早上", "市中心湖畔散步", "15 min 步行"], ["中午", "Skyline Gondola 纜車", "2 hr 停留"], ["下午", "Luge 溜溜車挑戰", "15 min 步行"], ["晚上", "皇后鎮美食漢堡"]] }, en: { title: "🚠 Queenstown: Skyline", timeline: [["Morning", "Lakefront Stroll", "15 min walk"], ["Noon", "Gondola ride", "2 hr stay"], ["Afternoon", "Luge runs", "15 min walk"], ["Evening", "Town Dinner"]] } },
+            { date: "Day 04", city: { zh: "格萊諾基", en: "Glenorchy" }, mapUrl: "Glenorchy+New+Zealand", zh: { title: "⛴️ 蒸汽船與格萊諾基", timeline: [["早上", "前往 Glenorchy 魔戒小鎮", "45 min 車程"], ["中午", "小鎮景點拍照", "45 min 車程"], ["下午", "回市區搭乘 TSS 蒸汽船"]] }, en: { title: "⛴️ Glenorchy or Cruise", timeline: [["AM", "Drive to Glenorchy", "45 min drive"], ["PM", "Visit filming sites", "45 min drive"], ["Evening", "TSS Earnslaw Cruise"]] } },
+            { date: "Day 05", city: { zh: "瓦納卡", en: "Wanaka" }, mapUrl: "That+Wanaka+Tree", drive: "1.5 hr", zh: { title: "📷 箭鎮與瓦納卡", timeline: [["09:00", "前往 Arrowtown 箭鎮", "1 hr 車程"], ["中午", "箭鎮午餐", "1 hr 車程"], ["14:00", "抵達 Wanaka", "10 min 車程"], ["傍晚", "尋找孤獨的樹"]] }, en: { title: "📷 Arrowtown & Wanaka", timeline: [["09:00", "Drive to Arrowtown", "1 hr drive"], ["12:00", "Lunch at Arrowtown", "1 hr drive"], ["14:00", "Wanaka Arrival", "10 min drive"], ["Sunset", "The Wanaka Tree"]] } },
+            { date: "Day 06", city: { zh: "瓦納卡", en: "Wanaka" }, mapUrl: "Puzzling+World", zh: { title: "🪾 瓦納卡：悠閒全日", timeline: [["上午", "Puzzling World 奇幻世界", "10 min 車程"], ["下午", "瓦納卡湖邊漫步", "10 min 車程"], ["晚上", "瓦納卡特色餐廳"]] }, en: { title: "🪾 Wanaka: Relax Day", timeline: [["AM", "Puzzling World", "10 min drive"], ["PM", "Wanaka Lakefront", "10 min drive"], ["Night", "Wanaka Dinner"]] } },
+            { date: "Day 07", city: { zh: "奧瑪魯", en: "Oamaru" }, mapUrl: "Oamaru+Blue+Penguin+Colony", drive: "3.5 hr", zh: { title: "🐧 奧瑪魯：企鵝歸巢", timeline: [["09:00", "離開瓦納卡", "1.5 hr 車程"], ["中午", "沿途景點休息", "2 hr 車程"], ["16:00", "奧瑪魯老城區", "10 min 車程"], ["傍晚", "藍企鵝歸巢觀賞"]] }, en: { title: "🐧 Oamaru: Penguins", timeline: [["09:00", "Leave Wanaka", "1.5 hr drive"], ["12:00", "Stop by Lindis Pass", "2 hr drive"], ["16:00", "Oamaru Old Town", "10 min drive"], ["Sunset", "Blue Penguin Colony"]] } },
+            { date: "Day 08", city: { zh: "特威澤爾", en: "Twizel" }, mapUrl: "High+Country+Salmon", drive: "2 hr", zh: { title: "🐟 特威澤爾：鮭魚餐", timeline: [["早上", "奧瑪魯海景散步", "1.5 hr 車程"], ["11:00", "前往 Twizel", "15 min 車程"], ["中午", "鮭魚農場新鮮午餐", "10 min 車程"], ["下午", "Twizel 市區補給"]] }, en: { title: "🐟 Twizel: Salmon Farm", timeline: [["AM", "Oamaru Coastline", "1.5 hr drive"], ["11:00", "Drive to Twizel", "15 min drive"], ["13:00", "Salmon Farm Sashimi", "10 min drive"], ["PM", "Twizel Supply Run"]] } },
+            { date: "Day 09", city: { zh: "庫克山", en: "Mount Cook" }, mapUrl: "Hooker+Valley+Track", drive: "1 hr", zh: { title: "⛰️ 庫克山：冰川健行", timeline: [["09:00", "前往庫克山", "1 hr 車程"], ["10:30", "Hooker Valley 健行", "15 min 車程"], ["下午", "塔斯曼冰河景觀", "1 hr 車程"], ["傍晚", "回 Twizel 休息"]] }, en: { title: "⛰️ Mt. Cook: Glacier Trek", timeline: [["09:00", "To Mt. Cook", "1 hr drive"], ["10:30", "Hooker Valley Track", "15 min drive"], ["PM", "Tasman Glacier Point"], ["1 hr drive", "Back to Twizel"]] } },
+            { date: "Day 10", city: { zh: "蒂卡波", en: "Tekapo" }, mapUrl: "Church+of+the+Good+Shepherd,Lake+Tekapo", drive: "1.5 hr", zh: { title: "⭐ 蒂卡波：觀星之夜", timeline: [["10:00", "前往 Tekapo", "1 hr 車程"], ["中午", "湖畔教堂午餐", "5 min 步行"], ["下午", "牧羊人教堂拍照", "5 min 車程"], ["18:20", "星空窗觀星"]] }, en: { title: "⭐ Tekapo: Stargazing", timeline: [["10:00", "To Tekapo", "1 hr drive"], ["12:00", "Lakeview Lunch", "5 min walk"], ["PM", "Church of Good Shepherd", "5 min drive"], ["18:20", "Stargazing Window"]] } },
+            { date: "Day 11", city: { zh: "蒂卡波", en: "Tekapo" }, mapUrl: "Lake+Tekapo", zh: { title: "🔭 蒂卡波：深度全日", timeline: [["早上", "Mt. John 天文台咖啡", "15 min 車程"], ["下午", "湖邊漫步休憩", "10 min 車程"], ["晚上", "星空窗觀星"]] }, en: { title: "🔭 Tekapo: Full Day", timeline: [["AM", "Mt. John Cafe", "15 min drive"], ["PM", "Tekapo Lakefront", "10 min drive"], ["Night", "Star Session"]] } },
+            { date: "Day 12", city: { zh: "基督城", en: "Christchurch" }, mapUrl: "Christchurch+Airport", drive: "3 hr", zh: { title: "🚗 歸途：CHC → AKL", timeline: [["08:30", "準時離開 Tekapo", "3 hr 車程"], ["12:00", "抵達基督城機場", "1.5 hr 飛航"], ["18:10", "飛往奧克蘭"]] }, en: { title: "🚗 Return: CHC to AKL", timeline: [["08:30", "Must leave Tekapo", "3 hr drive"], ["12:00", "Arrive CHC Airport", "1.5 hr flight"], ["18:10", "Flight to AKL"]] } },
+            { date: "Day 13", city: { zh: "台北", en: "Taipei" }, mapUrl: "Taipei+101", zh: { title: "✈️ 回家：奧克蘭 → 台北", timeline: [["07:30", "前往機場", "11 hr 飛航"], ["09:40", "起飛回台", "搭車"], ["17:05", "抵達台北"]] }, en: { title: "✈️ Home: AKL to TPE", timeline: [["07:30", "To AKL Airport", "11 hr flight"], ["09:40", "Depart AKL", "drive"], ["17:05", "Arrive Taipei"]] } }
+        ];
+
+        // Dynamically assign actualDate starting from today to demonstrate time-aware UI without hardcoding real dates
+        const startDate = new Date();
+        itinerary.forEach((day, i) => {
+            const d = new Date(startDate);
+            d.setDate(startDate.getDate() + i);
+            day.actualDate = d.toISOString().split('T')[0];
+        });
+
+        function getWeatherIcon(desc) {
+            const d = desc.toLowerCase();
+            if (d.includes("sun") || d.includes("clear")) return '<i class="fas fa-sun text-yellow-500 drop-shadow-[0_0_8px_rgba(234,179,8,0.5)]"></i>';
+            if (d.includes("snow") || d.includes("ice")) return '<i class="fas fa-snowflake text-blue-300 drop-shadow-[0_0_6px_rgba(147,197,253,0.5)]"></i>';
+            if (d.includes("rain") || d.includes("shower")) return '<i class="fas fa-cloud-showers-heavy text-blue-500 drop-shadow-[0_0_6px_rgba(59,130,246,0.5)]"></i>';
+            if (d.includes("cloud")) return '<i class="fas fa-cloud text-slate-400 drop-shadow-[0_0_6px_rgba(148,163,184,0.5)]"></i>';
+            return '<i class="fas fa-cloud-sun text-orange-400 drop-shadow-[0_0_8px_rgba(251,146,60,0.5)]"></i>';
+        }
+
+        function printItinerary() {
+            const ui = translations[currentLang];
+            let printWindow = window.open('', '_blank');
+            let printHtml = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>${ui.header}</title>
+                <style>
+                    body { font-family: 'Inter', 'Noto Sans TC', sans-serif; color: #1e293b; margin: 0; padding: 30px; line-height: 1.6; }
+                    h1 { text-align: center; color: #0f172a; margin-bottom: 30px; border-bottom: 2px solid #e2e8f0; padding-bottom: 15px; font-size: 28px; }
+                    .day-block { margin-bottom: 25px; page-break-inside: avoid; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+                    .day-header { font-size: 1.1rem; font-weight: bold; margin-bottom: 15px; color: #1e40af; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+                    .city-badge { font-size: 0.8rem; background: #eff6ff; color: #2563eb; padding: 2px 8px; border-radius: 12px; text-transform: uppercase; }
+                    .timeline-item { display: flex; margin-bottom: 10px; font-size: 0.95rem; }
+                    .timeline-time { width: 90px; font-weight: bold; color: #64748b; font-size: 0.85rem; padding-top: 2px; text-transform: uppercase; }
+                    .timeline-desc { flex: 1; color: #0f172a; font-weight: 500; }
+                    .hotel-info { margin-top: 15px; background: #f8fafc; padding: 12px 15px; border-radius: 8px; font-size: 0.85rem; font-weight: bold; border-left: 4px solid #3b82f6; display: flex; gap: 8px; align-items: center; color: #334155; }
+                </style>
+            </head>
+            <body>
+                <h1>${ui.header}</h1>
+            `;
+            
+            itinerary.forEach((day, index) => {
+                const lang = day[currentLang];
+                const hotel = decryptedHotels ? decryptedHotels[index] : ui.locked;
+                printHtml += `
+                    <div class="day-block">
+                        <div class="day-header">
+                            <span>Day ${index + 1} | ${lang.title}</span>
+                            <span class="city-badge">${day.city[currentLang]}</span>
+                        </div>
+                        ${lang.timeline.map(t => `
+                            <div class="timeline-item">
+                                <div class="timeline-time">${t[0]}</div>
+                                <div class="timeline-desc">${t[1]}</div>
+                            </div>
+                        `).join('')}
+                        <div class="hotel-info">🛏️ ${ui.hotelLabel}: ${hotel}</div>
+                    </div>
+                `;
+            });
+            
+            printHtml += `</body></html>`;
+            printWindow.document.write(printHtml);
+            printWindow.document.close();
+            printWindow.focus();
+            setTimeout(() => { printWindow.print(); printWindow.close(); }, 500);
+        }
+
+        async function fetchExchangeRate() {
+            try {
+                // Fetch latest exchange rate from a free public API
+                const res = await fetch('https://api.exchangerate-api.com/v4/latest/NZD');
+                const data = await res.json();
+                const twdRate = data.rates['TWD'].toFixed(2);
+                
+                // Update internal translation data
+                translations['zh'].notices.find(n => n.id === 'exchangeRate').content = `1 NZD ≈ ${twdRate} TWD`;
+                translations['en'].notices.find(n => n.id === 'exchangeRate').content = `1 NZD ≈ ${twdRate} TWD`;
+                
+                // Re-render UI to display fetched rate if we are in overview
+                if (activeDayIndex === -1 && document.getElementById('notice-board')) {
+                    updateUI(); 
+                }
+            } catch (e) {
+                console.warn('Failed to fetch exchange rate', e);
+                const fallback = "1 NZD ≈ 19.5 TWD";
+                translations['zh'].notices.find(n => n.id === 'exchangeRate').content = fallback;
+                translations['en'].notices.find(n => n.id === 'exchangeRate').content = fallback;
+                if (activeDayIndex === -1 && document.getElementById('notice-board')) updateUI();
+            }
+        }
+
+        async function fetchWeather(city) {
+            const box = document.getElementById('weather-box');
+            if (activeDayIndex === -1 || !city) { box.classList.add('hidden'); return; }
+            box.classList.remove('hidden');
+            document.getElementById('weather-city').innerText = city;
+            document.getElementById('weather-temp').innerText = "...";
+            try {
+                const res = await fetch(`https://wttr.in/${city.replace(" ","+")}?format=%t|%C`);
+                const text = await res.text();
+                const [temp, desc] = text.split('|');
+                document.getElementById('weather-temp').innerText = temp;
+                document.getElementById('weather-icon-container').innerHTML = getWeatherIcon(desc);
+            } catch (e) { document.getElementById('weather-temp').innerText = "--"; }
+        }
+
+        function askPassword() {
+            const pass = prompt("Password:");
+            if (!pass) return;
+            try {
+                const bytes = CryptoJS.AES.decrypt(ENCRYPTED_HOTELS, pass);
+                decryptedHotels = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
+                updateUI();
+            } catch (e) { alert("Error!"); }
+        }
+
+        function toggleLang() {
+            currentLang = currentLang === 'zh' ? 'en' : 'zh';
+            updateUI();
+        }
+
+        function saveChecklist(id, isChecked) {
+            let saved = JSON.parse(localStorage.getItem('nz_travel_checklist') || '{}');
+            saved[id] = isChecked;
+            localStorage.setItem('nz_travel_checklist', JSON.stringify(saved));
+        }
+
+        function toggleChecklistGroup(groupId) {
+            let saved = JSON.parse(localStorage.getItem('nz_travel_checklist') || '{}');
+            const cat = checklist.find(c => c.id === groupId);
+            const allChecked = cat.items.every((_, idx) => saved[`${groupId}_${idx}`]);
+            
+            cat.items.forEach((_, idx) => {
+                saved[`${groupId}_${idx}`] = !allChecked;
+            });
+            localStorage.setItem('nz_travel_checklist', JSON.stringify(saved));
+            if(activeDayIndex === -2) updateUI();
+        }
+
+        function updateUI() {
+            const ui = translations[currentLang];
+            document.getElementById('ui-header-title').innerText = ui.header;
+            document.getElementById('ui-unlock-text').innerText = decryptedHotels ? ui.unlockDone : ui.unlockBtn;
+            if (document.getElementById('ui-print-btn')) {
+                document.getElementById('ui-print-btn').innerText = ui.printBtn;
+            }
+            
+            const nav = document.getElementById('nav-container');
+            nav.innerHTML = '';
+            
+            // Overview Button
+            const ovBtn = document.createElement('button');
+            ovBtn.className = `day-btn md:w-full text-left px-5 py-3 rounded-xl font-bold border mb-3 flex items-center gap-2 ${activeDayIndex === -1 ? 'active-tab' : 'bg-white'}`;
+            ovBtn.innerHTML = `<i class="fas fa-map"></i> ${ui.overviewBtn}`;
+            ovBtn.onclick = () => { activeDayIndex = -1; updateUI(); };
+            nav.appendChild(ovBtn);
+
+            // Checklist Button
+            const chkBtn = document.createElement('button');
+            chkBtn.className = `day-btn md:w-full text-left px-5 py-3 rounded-xl font-bold border mb-3 flex items-center gap-2 ${activeDayIndex === -2 ? 'active-tab' : 'bg-white'}`;
+            chkBtn.innerHTML = `<i class="fas fa-clipboard-list text-amber-600"></i> ${ui.checklistBtn}`;
+            chkBtn.onclick = () => { activeDayIndex = -2; updateUI(); };
+            nav.appendChild(chkBtn);
+
+            itinerary.forEach((day, i) => {
+                const btn = document.createElement('button');
+                btn.className = `day-btn md:w-full text-left px-4 py-2 rounded-xl text-sm font-bold border mb-1 ${i === activeDayIndex ? 'active-tab' : 'bg-white'}`;
+                btn.innerHTML = `D${i+1} ${day.city[currentLang]}`; // Show Day + City with localized city name
+                btn.onclick = () => { activeDayIndex = i; updateUI(); };
+                nav.appendChild(btn);
+            });
+
+            const content = document.getElementById('content-display');
+            if (activeDayIndex === -1) {
+                renderOverview(content, ui);
+                fetchWeather("");
+            } else if (activeDayIndex === -2) {
+                renderChecklist(content, ui);
+                fetchWeather("");
+            } else {
+                renderDay(content, ui);
+                fetchWeather(itinerary[activeDayIndex].city['en']);
+            }
+
+            // Notices
+            document.getElementById('notice-board').innerHTML = ui.notices.map(n => `
+                <div class="bg-white/90 p-4 rounded-xl shadow-sm border border-slate-100">
+                    <i class="fas ${n.icon} text-blue-500 mb-2"></i>
+                    <h5 class="font-bold text-sm">${n.title}</h5>
+                    <p class="text-[11px] text-slate-500">${n.content}</p>
+                </div>
+            `).join('');
+        }
+
+        function renderOverview(container, ui) {
+            container.innerHTML = `
+                <div class="glass-card rounded-[2rem] p-8 shadow-2xl animate-in fade-in relative overflow-hidden">
+                    <h2 class="text-3xl font-bold mb-8 flex items-center gap-3 relative z-10">
+                        <i class="fas fa-route text-blue-600"></i> ${ui.overviewBtn}
+                    </h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        ${itinerary.map((day, i) => `
+                            <div onclick="activeDayIndex=${i}; updateUI();" class="flex items-center p-4 rounded-2xl bg-white/50 border border-slate-100 hover:bg-white cursor-pointer transition-all">
+                                <div class="w-10 h-10 bg-blue-100 text-blue-600 rounded-lg flex flex-col items-center justify-center mr-4 shrink-0">
+                                    <span class="text-sm font-bold">D${i+1}</span>
+                                </div>
+                                <div class="flex-1">
+                                    <h4 class="font-bold text-slate-800 text-sm">${day[currentLang].title}</h4>
+                                    <p class="text-[10px] text-slate-400 uppercase font-bold">${day.city[currentLang]}</p>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderChecklist(container, ui) {
+            let saved = JSON.parse(localStorage.getItem('nz_travel_checklist') || '{}');
+            container.innerHTML = `
+                <div class="glass-card rounded-[2rem] p-8 shadow-2xl animate-in fade-in relative overflow-hidden">
+                    <h2 class="text-3xl font-bold mb-8 flex items-center gap-3 relative z-10 text-amber-700">
+                        <i class="fas fa-clipboard-list"></i> ${ui.checklistBtn}
+                    </h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
+                        ${checklist.map((category) => {
+                            const isAllChecked = category.items.every((_, idx) => saved[`${category.id}_${idx}`]);
+                            return `
+                            <div class="bg-white/70 p-5 rounded-2xl border ${isAllChecked ? 'border-amber-200 bg-amber-50/50' : 'border-slate-100'} shadow-sm transition-colors">
+                                <h3 class="font-bold text-slate-800 border-b border-slate-200 pb-2 mb-4 flex items-center justify-between">
+                                    <div class="flex items-center gap-2"><i class="fas ${category.icon} text-amber-500"></i> ${category[currentLang]}</div>
+                                    <button onclick="toggleChecklistGroup('${category.id}')" class="text-[10px] text-slate-400 hover:text-amber-600 bg-slate-100 hover:bg-amber-100 px-2 py-1 rounded transition-colors uppercase tracking-wider">${currentLang === 'zh' ? (isAllChecked ? '全不選' : '全選') : (isAllChecked ? 'Uncheck All' : 'Select All')}</button>
+                                </h3>
+                                <div class="space-y-3">
+                                    ${category.items.map((item, itemIndex) => {
+                                        const itemId = `${category.id}_${itemIndex}`;
+                                        const isChecked = saved[itemId] ? 'checked' : '';
+                                        return `
+                                        <label class="flex items-start gap-3 cursor-pointer group">
+                                            <input type="checkbox" id="chk_${itemId}" onchange="saveChecklist('${itemId}', this.checked)" ${isChecked} class="mt-1 w-4 h-4 rounded border-slate-300 text-amber-600 focus:ring-amber-500 cursor-pointer transition-all">
+                                            <span class="text-sm font-medium ${isChecked ? 'text-slate-400 line-through' : 'text-slate-700'} group-hover:text-slate-900 leading-snug transition-colors">${item[currentLang]}</span>
+                                        </label>
+                                        `;
+                                    }).join('')}
+                                </div>
+                            </div>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderDay(container, ui) {
+            const day = itinerary[activeDayIndex];
+            const lang = day[currentLang];
+            const hotel = decryptedHotels ? decryptedHotels[activeDayIndex] : ui.locked;
+
+            // Check current time and date
+            const now = new Date();
+            const todayStr = now.toISOString().split('T')[0];
+            const isToday = day.actualDate === todayStr;
+            const currentHour = now.getHours();
+            const currentMinutes = now.getMinutes();
+            const currentTimeVal = currentHour * 60 + currentMinutes;
+
+            // Simple parser to map time string (e.g. "09:00", "早上") to an approximate minute value for the day
+            function parseTime(timeStr) {
+                if(timeStr.includes(':')) {
+                    const parts = timeStr.split(':');
+                    return parseInt(parts[0]) * 60 + parseInt(parts[1]);
+                }
+                const hrMap = { '早上': 540, '上午': 600, 'AM': 540, '中午': 720, 'Noon': 720, '下午': 840, 'PM': 840, '傍晚': 1020, 'Sunset': 1020, '晚上': 1140, 'Night': 1140 };
+                return hrMap[timeStr] || 0;
+            }
+
+            let activeItemIndex = -1;
+            if (isToday) {
+                // Find the latest scheduled event that has already started
+                for(let i = 0; i < lang.timeline.length; i++) {
+                    if (parseTime(lang.timeline[i][0]) <= currentTimeVal) {
+                        activeItemIndex = i;
+                    }
+                }
+            }
+
+            container.innerHTML = `
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 animate-in fade-in">
+                    <div class="lg:col-span-7 space-y-6">
+                        <div class="glass-card rounded-[2.5rem] p-8 shadow-2xl relative border-t border-white/60">
+                            <div class="mb-8">
+                                <span class="bg-blue-600 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase mb-2 inline-block">Day ${activeDayIndex + 1}</span>
+                                ${isToday ? `<span class="bg-red-500 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase mb-2 ml-1 inline-block animate-pulse"><i class="fas fa-clock mr-1"></i> 今天 TODAY</span>` : ''}
+                                ${day.drive ? `<span class="bg-amber-500 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase mb-2 ml-1 inline-block"><i class="fas fa-car mr-1"></i> ${ui.driveTimeLabel}: ${day.drive}</span>` : ''}
+                                <h2 class="text-4xl font-extrabold text-slate-800">${lang.title}</h2>
+                                <p class="text-slate-400 font-bold mt-1 text-sm"><i class="fas fa-location-dot"></i> ${day.city[currentLang]}</p>
+                            </div>
+                            <div class="timeline-line space-y-8 pl-1">
+                                ${lang.timeline.map((t, index) => {
+                                    const isActive = index === activeItemIndex;
+                                    return `
+                                    <div class="flex gap-6 relative group ${isActive ? 'scale-105 origin-left transition-transform' : ''}">
+                                        <div class="w-4 h-4 rounded-full ${isActive ? 'bg-red-500 border-4 border-red-200 animate-pulse' : 'bg-white border-4 border-blue-600'} z-10 mt-1 transition-colors"></div>
+                                        <div class="flex-1 pb-4">
+                                            <p class="text-[10px] font-bold ${isActive ? 'text-red-500' : 'text-blue-500'} uppercase">${t[0]}</p>
+                                            <div class="bg-white/60 flex-1 p-4 rounded-2xl shadow-sm border border-slate-100 group-hover:bg-white transition-colors relative mt-1 ${isActive ? 'border-red-200 ring-1 ring-red-100 shadow-md' : ''}">
+                                                ${isActive ? '<span class="absolute -top-2 right-4 bg-red-500 text-white text-[9px] font-bold px-2 py-0.5 rounded uppercase shadow-sm">進行中 Now</span>' : ''}
+                                                <p class="text-[15px] font-bold ${isActive ? 'text-red-700' : 'text-slate-700'}">${t[1]}</p>
+                                            </div>
+                                            ${t[2] ? `
+                                            <div class="absolute left-1.5 top-6 bottom-[-20px] w-[2px] bg-slate-200 z-0">
+                                                <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-slate-100 text-slate-500 text-[9px] font-bold px-2 py-0.5 rounded border border-slate-200 shadow-sm flex items-center gap-1 whitespace-nowrap z-10">
+                                                    <i class="fas ${t[2].includes('飛') || t[2].includes('flight') ? 'fa-plane' : t[2].includes('步行') || t[2].includes('walk') ? 'fa-person-walking' : 'fa-car-side'}"></i> ${t[2]}
+                                                </div>
+                                            </div>
+                                            ` : ''}
+                                        </div>
+                                    </div>
+                                    `;
+                                }).join('')}
+                            </div>
+                        </div>
+                        
+                        <div class="flex flex-col sm:flex-row gap-4">
+                            <div class="flex-1 glass-card p-5 rounded-3xl flex items-center gap-4">
+                                <div class="w-10 h-10 bg-indigo-600 text-white rounded-xl flex items-center justify-center"><i class="fas fa-bed"></i></div>
+                                <div>
+                                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">${ui.hotelLabel}</p>
+                                    <p class="font-bold text-sm ${decryptedHotels ? 'text-indigo-800' : 'text-slate-300 italic'}">${hotel}</p>
+                                </div>
+                            </div>
+                            <a href="https://www.google.com/maps/search/?api=1&query=${day.mapUrl}" target="_blank" class="bg-slate-900 text-white p-5 rounded-3xl flex items-center justify-center gap-2 font-bold text-sm"><i class="fas fa-location-arrow text-blue-400"></i> MAP</a>
+                        </div>
+                    </div>
+                    <div class="lg:col-span-5 h-[400px] lg:h-auto">
+                        <div class="glass-card rounded-[2.5rem] p-2 h-full shadow-2xl">
+                            <iframe frameborder="0" class="w-full h-full rounded-[2rem]" src="https://maps.google.com/maps?q=${day.mapUrl}&t=&z=13&ie=UTF8&iwloc=&output=embed"></iframe>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function initSnow() {
+            const container = document.getElementById('snowfalls');
+            if(!container) return;
+            const particleCount = 30; // 調整雪花數量
+            for (let i = 0; i < particleCount; i++) {
+                const flake = document.createElement('div');
+                flake.className = 'snowflake';
+                // 隨機大小、位置、動畫持續時間與延遲
+                const size = Math.random() * 4 + 2; 
+                flake.style.width = size + 'px';
+                flake.style.height = size + 'px';
+                flake.style.left = Math.random() * 100 + 'vw';
+                flake.style.animationDuration = Math.random() * 10 + 10 + 's';
+                flake.style.animationDelay = Math.random() * 10 + 's';
+                container.appendChild(flake);
+            }
+        }
+
+        updateUI();
+        initSnow();
+        fetchExchangeRate();
+    </script>
+</body>
+</html>
