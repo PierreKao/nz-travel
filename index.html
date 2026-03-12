@@ -245,12 +245,110 @@
         `;
         document.body.insertAdjacentHTML('beforeend', modalHTML);
 
+        // Hidden upload input for Memories
+        const uploadHTML = `<input type="file" id="memory-upload" accept="image/*" class="hidden">`;
+        document.body.insertAdjacentHTML('beforeend', uploadHTML);
+
         const ENCRYPTED_HOTELS = "U2FsdGVkX1/5B7ukylTrcGjm0fKXPxOORKLwexAFiM7PQj0iJ4VSrYodK89sZYwKjzEZUjUQBOuWThstnVLG3OTtftpfc9JocyZssCpUontSb8YDsusQTyLLl3H4GyuxcwojvMxO6XVDTuDuiXUBHIqfNhhMC0eqK4Vw/eF09Spv7Nr7MgSd6z+wTMeo6aY9qe3X4ed0DpcU0Z/3EuV6caUFiQHgFGdB9pfPpr3P+K5BK06WnMRDowp7kEmMa/Fro0+CinlZEv6/lbRty8rRY5UlTJLIvHMerea6ASxqlc53xjeOrpHUHUQ1mmOpA7zy8SNb37O8vF3oDwOReu1hhkOAOQRY8pypdnxyIs+W1o+3Bcd4VTbTeAfM8HYyLff+gKvSOADGGiUAivL3BxFa1herFwTIW+wnFXpgKgSGwfTByLYju+Zmx4T3uNgTBM1bnFOwQoz+UaI/xbUNilO7/nuPeXoeIsE4rkKGActJ6gmOGUwgjZA9J7YiE2BD2aCfUZpuVVT/NripRq0nh9j/R7AmEvgA3yULLQQT3P7y1A75Bq3+f79EnVuYBsujubifHMFDinWRUUJkJRCKzQgqtg7sL8TXfLX1U1Y4NcGmCpms1TlEvg3APrpSlYLfAaOq3IdiZwHkmstNTtGw20jc51Jenjg1/hYEg+QXx5zGviw="; 
 
         let decryptedHotels = null; 
         let currentLang = 'zh';
         let activeDayIndex = -1; // 預設顯示大綱
         let isAurora = false;
+
+        // --- Memory Anchors (IndexedDB) ---
+        const DB_NAME = 'NZTravelMemories';
+        const DB_VERSION = 1;
+        let db;
+
+        const request = indexedDB.open(DB_NAME, DB_VERSION);
+        request.onupgradeneeded = (e) => {
+            const db = e.target.result;
+            if (!db.objectStoreNames.contains('memories')) {
+                const store = db.createObjectStore('memories', { keyPath: 'id', autoIncrement: true });
+                store.createIndex('spotKey', 'spotKey', { unique: false });
+            }
+        };
+        request.onsuccess = (e) => { db = e.target.result; };
+
+        async function saveMemory(spotKey, photoData, note) {
+            return new Promise((resolve) => {
+                const transaction = db.transaction(['memories'], 'readwrite');
+                const store = transaction.objectStore('memories');
+                store.add({ spotKey, photoData, note, timestamp: Date.now() });
+                transaction.oncomplete = () => resolve(true);
+            });
+        }
+
+        async function getMemories(spotKey) {
+            return new Promise((resolve) => {
+                const transaction = db.transaction(['memories'], 'readonly');
+                const store = transaction.objectStore('memories');
+                const index = store.index('spotKey');
+                const request = index.getAll(spotKey);
+                request.onsuccess = () => resolve(request.result);
+            });
+        }
+
+        async function deleteMemory(id) {
+            return new Promise((resolve) => {
+                const transaction = db.transaction(['memories'], 'readwrite');
+                const store = transaction.objectStore('memories');
+                store.delete(id);
+                transaction.oncomplete = () => resolve(true);
+            });
+        }
+
+        function openMemoryUpload(dayIdx, spotIdx) {
+            const input = document.getElementById('memory-upload');
+            input.onchange = (e) => handleMemoryUpload(e, dayIdx, spotIdx);
+            input.click();
+        }
+
+        async function handleMemoryUpload(event, dayIdx, spotIdx) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                const photoData = e.target.result;
+                const note = prompt(currentLang === 'zh' ? '為這張照片加點描述吧？' : 'Add a description for this photo?') || '';
+                const spotKey = `d${dayIdx}_s${spotIdx}`;
+                await saveMemory(spotKey, photoData, note);
+                if ("vibrate" in navigator) navigator.vibrate(10);
+                updateUI(); // Refresh to show new memory
+            };
+            reader.readAsDataURL(file);
+        }
+
+        async function loadSpotMemories(dayIdx, spotIdx) {
+            const spotKey = `d${dayIdx}_s${spotIdx}`;
+            const memories = await getMemories(spotKey);
+            const container = document.getElementById(`memory-container-${dayIdx}-${spotIdx}`);
+            if (!container) return;
+            if (memories.length === 0) {
+                container.innerHTML = '';
+                return;
+            }
+
+            container.innerHTML = memories.map(m => `
+                <div class="group relative bg-white/80 rounded-2xl p-2 shadow-sm border border-slate-100 animate-in fade-in slide-in-from-bottom-2 duration-500">
+                    <img src="${m.photoData}" class="w-full h-auto rounded-xl shadow-inner border border-slate-50">
+                    ${m.note ? `<p class="text-[11px] text-slate-600 mt-2 px-2 pb-1 italic font-medium">"${m.note}"</p>` : ''}
+                    <button onclick="confirmDeleteMemory(${m.id})" class="absolute top-4 right-4 w-7 h-7 bg-red-500/80 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center shadow-lg backdrop-blur-sm hover:bg-red-600">
+                        <i class="fas fa-times text-[10px]"></i>
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        async function confirmDeleteMemory(id) {
+            if (confirm(currentLang === 'zh' ? '確定要刪除這段回憶嗎？' : 'Delete this memory?')) {
+                await deleteMemory(id);
+                if ("vibrate" in navigator) navigator.vibrate(20);
+                updateUI();
+            }
+        }
 
         function toggleAurora() {
             isAurora = !isAurora;
@@ -821,8 +919,17 @@
                                         <div class="flex-1 pb-4">
                                             <p class="text-[10px] font-bold ${isActive ? 'text-red-500' : 'text-blue-500'} uppercase">${t[0]}</p>
                                             <div class="bg-white/60 flex-1 p-4 rounded-2xl shadow-sm border border-slate-100 group-hover:bg-white transition-colors relative mt-1 ${isActive ? 'border-red-200 ring-1 ring-red-100 shadow-md' : ''}">
-                                                ${isActive ? '<span class="absolute -top-2 right-4 bg-red-500 text-white text-[9px] font-bold px-2 py-0.5 rounded uppercase shadow-sm">進行中 Now</span>' : ''}
-                                                <p class="text-[15px] font-bold ${isActive ? 'text-red-700' : 'text-slate-700'}">${t[1]}</p>
+                                                <div class="flex items-start justify-between">
+                                                    <div class="flex-1">
+                                                        ${isActive ? '<span class="absolute -top-2 right-4 bg-red-500 text-white text-[9px] font-bold px-2 py-0.5 rounded uppercase shadow-sm">進行中 Now</span>' : ''}
+                                                        <p class="text-[15px] font-bold ${isActive ? 'text-red-700' : 'text-slate-700'}">${t[1]}</p>
+                                                    </div>
+                                                    <button onclick="openMemoryUpload(${activeDayIndex}, ${index})" class="ml-2 w-8 h-8 rounded-full bg-white/80 text-slate-400 hover:bg-blue-100 hover:text-blue-600 flex items-center justify-center transition-all shrink-0 shadow-sm border border-slate-100">
+                                                        <i class="fas fa-camera"></i>
+                                                    </button>
+                                                </div>
+                                                <!-- Memory Container -->
+                                                <div id="memory-container-${activeDayIndex}-${index}" class="mt-4 space-y-3"></div>
                                             </div>
                                             ${t[2] ? `
                                             <div class="absolute left-1.5 top-6 bottom-[-20px] w-[2px] bg-slate-200 z-0">
@@ -862,6 +969,11 @@
                     </div>
                 </div>
             `;
+
+            // Load memories for each spot after HTML is injected
+            lang.timeline.forEach((_, index) => {
+                loadSpotMemories(activeDayIndex, index);
+            });
         }
 
         function initSnow() {
