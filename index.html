@@ -106,6 +106,44 @@
             -webkit-mask-image: linear-gradient(to right, transparent, black 15px, black calc(100% - 15px), transparent);
         }
 
+        /* --- Dark Mode (Aurora Theme) Overrides --- */
+        body.theme-dark {
+            color: #f1f5f9;
+        }
+        body.theme-dark .glass-card,
+        body.theme-dark header,
+        body.theme-dark .mobile-nav,
+        body.theme-dark .bg-white\/50,
+        body.theme-dark .bg-white\/60,
+        body.theme-dark .bg-white\/70,
+        body.theme-dark .bg-white\/90,
+        body.theme-dark .day-btn.bg-white,
+        body.theme-dark #weather-box,
+        body.theme-dark #notice-board > div {
+            background-color: rgba(15, 23, 42, 0.6) !important;
+            border-color: rgba(255, 255, 255, 0.1) !important;
+            color: #f8fafc !important;
+            backdrop-filter: blur(12px);
+        }
+        body.theme-dark .text-slate-800,
+        body.theme-dark .text-slate-700,
+        body.theme-dark .text-slate-900 {
+            color: #f8fafc !important;
+        }
+        body.theme-dark .text-slate-500,
+        body.theme-dark .text-slate-400 {
+            color: #94a3b8 !important;
+        }
+        body.theme-dark .timeline-line::before {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        /* Make accent colors neon in dark mode */
+        body.theme-dark .text-blue-600,
+        body.theme-dark .text-blue-700 { color: #38bdf8 !important; }
+        body.theme-dark .bg-blue-100 { background-color: rgba(56, 189, 248, 0.2) !important; color: #38bdf8 !important; }
+        body.theme-dark .bg-blue-600 { background-color: #0284c7 !important; color: white !important; }
+        body.theme-dark .active-tab { background-color: #8b5cf6 !important; border-color: #a78bfa !important; box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4); }
+
         @media (max-width: 768px) {
             .mobile-nav { 
                 position: fixed; bottom: 0; left: 0; right: 0; 
@@ -118,7 +156,7 @@
         }
     </style>
 </head>
-<body class="text-slate-900 overflow-x-hidden">
+<body class="text-slate-900 overflow-x-hidden transition-colors duration-1000">
 
     <div class="bg-overlay" id="bg-day"></div>
     <div id="bg-aurora" class="aurora-bg transition-opacity duration-1000 pointer-events-none opacity-0"></div>
@@ -214,6 +252,11 @@
         function toggleAurora() {
             isAurora = !isAurora;
             document.getElementById('bg-aurora').style.opacity = isAurora ? '1' : '0';
+            if (isAurora) {
+                document.body.classList.add('theme-dark');
+            } else {
+                document.body.classList.remove('theme-dark');
+            }
         }
 
         const translations = {
