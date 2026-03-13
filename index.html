@@ -141,6 +141,7 @@
         /* Make accent colors neon in dark mode */
         body.theme-dark .text-blue-600,
         body.theme-dark .text-blue-700 { color: #38bdf8 !important; }
+        body.theme-dark .bg-indigo-600 { background-color: #312e81 !important; color: #e0e7ff !important; }
         body.theme-dark .bg-blue-100 { background-color: rgba(56, 189, 248, 0.2) !important; color: #38bdf8 !important; }
         body.theme-dark .bg-blue-600 { background-color: #0284c7 !important; color: white !important; }
         body.theme-dark #drawer-menu { 
@@ -352,6 +353,40 @@
         `;
         document.body.insertAdjacentHTML('beforeend', noticeModalHTML);
 
+        const converterModalHTML = `
+        <div id="converter-modal" class="fixed inset-0 z-[120] hidden flex-col items-center justify-center p-4 sm:p-0">
+            <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity opacity-0" id="converter-backdrop" onclick="closeConverter()"></div>
+            <div class="bg-white/95 backdrop-blur-xl rounded-[2.5rem] p-8 shadow-2xl w-full max-w-sm relative z-10 scale-95 opacity-0 transition-all duration-300" id="converter-content">
+                <button onclick="closeConverter()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100 transition-colors">
+                    <i class="fas fa-times"></i>
+                </button>
+                <div class="text-center mb-8">
+                    <div class="w-14 h-14 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center text-2xl mx-auto mb-4 shadow-sm">
+                        <i class="fas fa-calculator"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-800" id="converter-title">匯率換算器</h3>
+                    <p class="text-[11px] text-slate-500 mt-2 font-medium" id="converter-rate-info">1 NZD ≈ -- TWD (含 1.5% 手續費)</p>
+                </div>
+                <div class="space-y-5">
+                    <div class="relative">
+                        <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">NZD (紐幣)</label>
+                        <input type="number" id="nzd-input" value="1" step="0.01" class="w-full bg-slate-50 border border-slate-200 px-4 py-3 rounded-2xl text-lg font-black text-slate-700 focus:outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition-all shadow-inner" oninput="convertCurrency('nzd')">
+                        <div class="absolute right-4 bottom-3.5 text-slate-300 font-bold text-xs">$</div>
+                    </div>
+                    <div class="flex justify-center -my-2 relative z-10">
+                        <div class="bg-white p-2 rounded-full shadow-md border border-slate-100"><i class="fas fa-arrows-up-down text-emerald-500"></i></div>
+                    </div>
+                    <div class="relative">
+                        <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">TWD (台幣)</label>
+                        <input type="number" id="twd-input" class="w-full bg-slate-50 border border-slate-200 px-4 py-3 rounded-2xl text-lg font-black text-emerald-600 focus:outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition-all shadow-inner" oninput="convertCurrency('twd')">
+                        <div class="absolute right-4 bottom-3.5 text-slate-300 font-bold text-xs">$</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', converterModalHTML);
+
         // Hidden upload input for Memories
         const uploadHTML = `<input type="file" id="memory-upload" accept="image/*" class="hidden">`;
         document.body.insertAdjacentHTML('beforeend', uploadHTML);
@@ -362,6 +397,7 @@
         let currentLang = 'zh';
         let activeDayIndex = -1; // 預設顯示大綱
         let isAurora = false;
+        let currentNZDRate = 19.5; // Default fallback
 
         // --- Memory Anchors (IndexedDB) ---
         const DB_NAME = 'NZTravelMemories';
@@ -662,6 +698,10 @@
                 dateModalTitle: "設定行程出發日期",
                 dateInputLabel: "請選擇您的出發日：",
                 confirmBtn: "確認設定",
+                converterTitle: "匯率換算器",
+                nzdLabel: "NZD (紐幣)",
+                twdLabel: "TWD (台幣)",
+                nzdFeeNote: "1 NZD ≈ {rate} TWD (含 1.5% 手續費)",
                 notices: [
                     { icon: "fa-passport", title: "NZeTA", content: "簽證核准件", desc: "紐西蘭電子旅行授權 (NZeTA) 必須在出發前至少 72 小時完成申請。建議使用 NZeTA 官方手機 App 申請，費用較低且包含 IVL (國際旅客保育及旅遊稅)。申請完成後請將 PDF 核准件存入手機或列印。" },
                     { icon: "fa-car", title: "冬季自駕", content: "慎防黑冰、備妥雪鏈", desc: "紐西蘭南島冬季路面常有黑冰 (Black Ice)，這是一種極難察覺的透明冰層。開車時請保持冷靜，避免急煞與大角度轉彎。清晨與深夜、背陰處路段應減速。租車時務必確認備有雪鏈並練習安裝。" },
@@ -686,6 +726,10 @@
                 dateModalTitle: "Set Departure Date",
                 dateInputLabel: "Select your departure date:",
                 confirmBtn: "Confirm Date",
+                converterTitle: "Currency Converter",
+                nzdLabel: "NZD (Dollar)",
+                twdLabel: "TWD (Taiwanese Dollar)",
+                nzdFeeNote: "1 NZD ≈ {rate} TWD (incl. 1.5% fee)",
                 notices: [
                     { icon: "fa-passport", title: "Visa", content: "NZeTA Status", desc: "The NZeTA (New Zealand Electronic Travel Authority) is mandatory for visitors from visa-waiver countries. Apply at least 72 hours before departure via the official mobile app for a discount. The IVL levy is included in the fee." },
                     { icon: "fa-car", title: "Winter Drive", content: "Watch for black ice", desc: "Winter roads in the South Island can have 'Black Ice'—thin, transparent ice that is extremely slippery. Drive carefully during sunrise, sunset, and in shaded areas. Always carry snow chains and know how to fit them." },
@@ -878,11 +922,22 @@
                 // Fetch latest exchange rate from a free public API
                 const res = await fetch('https://api.exchangerate-api.com/v4/latest/NZD');
                 const data = await res.json();
-                const twdRate = data.rates['TWD'].toFixed(2);
+                const rawRate = data.rates['TWD'];
+                const twdRateWithFee = (rawRate * 1.015).toFixed(2);
+                currentNZDRate = parseFloat(twdRateWithFee);
                 
+                const note = translations['zh'].nzdFeeNote.replace('{rate}', currentNZDRate);
+                const noteEn = translations['en'].nzdFeeNote.replace('{rate}', currentNZDRate);
+
                 // Update internal translation data
-                translations['zh'].notices.find(n => n.id === 'exchangeRate').content = `1 NZD ≈ ${twdRate} TWD`;
-                translations['en'].notices.find(n => n.id === 'exchangeRate').content = `1 NZD ≈ ${twdRate} TWD`;
+                translations['zh'].notices.find(n => n.id === 'exchangeRate').content = note;
+                translations['en'].notices.find(n => n.id === 'exchangeRate').content = noteEn;
+                
+                // Update converter info if open
+                const rateInfo = document.getElementById('converter-rate-info');
+                if (rateInfo) {
+                    rateInfo.innerText = currentLang === 'zh' ? note : noteEn;
+                }
                 
                 // Re-render UI to display fetched rate if we are in overview
                 if (activeDayIndex === -1 && document.getElementById('notice-board')) {
@@ -890,10 +945,61 @@
                 }
             } catch (e) {
                 console.warn('Failed to fetch exchange rate', e);
-                const fallback = "1 NZD ≈ 19.5 TWD";
+                const fallback = "1 NZD ≈ 19.8 TWD (含手續費)";
                 translations['zh'].notices.find(n => n.id === 'exchangeRate').content = fallback;
                 translations['en'].notices.find(n => n.id === 'exchangeRate').content = fallback;
                 if (activeDayIndex === -1 && document.getElementById('notice-board')) updateUI();
+            }
+        }
+
+        function openConverter() {
+            const modal = document.getElementById('converter-modal');
+            const backdrop = document.getElementById('converter-backdrop');
+            const content = document.getElementById('converter-content');
+            
+            document.getElementById('converter-title').innerText = translations[currentLang].converterTitle;
+            const note = currentLang === 'zh' ? translations['zh'].nzdFeeNote.replace('{rate}', currentNZDRate) : translations['en'].nzdFeeNote.replace('{rate}', currentNZDRate);
+            document.getElementById('converter-rate-info').innerText = note;
+            
+            document.getElementById('nzd-input').value = 1;
+            document.getElementById('twd-input').value = currentNZDRate;
+
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            
+            requestAnimationFrame(() => {
+                backdrop.classList.replace('opacity-0', 'opacity-100');
+                content.classList.replace('opacity-0', 'opacity-100');
+                content.classList.replace('scale-95', 'scale-100');
+            });
+            if ("vibrate" in navigator) navigator.vibrate(5);
+        }
+
+        function closeConverter() {
+            const modal = document.getElementById('converter-modal');
+            const backdrop = document.getElementById('converter-backdrop');
+            const content = document.getElementById('converter-content');
+            
+            backdrop.classList.replace('opacity-100', 'opacity-0');
+            content.classList.replace('opacity-100', 'opacity-0');
+            content.classList.replace('scale-100', 'scale-95');
+            
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }, 300);
+        }
+
+        function convertCurrency(source) {
+            const nzdInput = document.getElementById('nzd-input');
+            const twdInput = document.getElementById('twd-input');
+            
+            if (source === 'nzd') {
+                const val = parseFloat(nzdInput.value) || 0;
+                twdInput.value = (val * currentNZDRate).toFixed(0);
+            } else {
+                const val = parseFloat(twdInput.value) || 0;
+                nzdInput.value = (val / currentNZDRate).toFixed(2);
             }
         }
 
@@ -1090,6 +1196,16 @@
                         <span class="font-bold text-amber-900">${translations[currentLang].dateModalTitle}</span>
                     </div>
                     <i class="fas fa-chevron-right text-amber-200 group-hover:translate-x-1 transition-transform"></i>
+                </button>
+
+                <button onclick="openConverter(); toggleDrawer(false);" class="w-full flex items-center justify-between p-4 bg-emerald-50 rounded-2xl hover:bg-emerald-100 transition-all group">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-white shadow-sm rounded-xl flex items-center justify-center text-emerald-600">
+                            <i class="fas fa-calculator"></i>
+                        </div>
+                        <span class="font-bold text-emerald-900">${translations[currentLang].converterTitle}</span>
+                    </div>
+                    <i class="fas fa-chevron-right text-emerald-200 group-hover:translate-x-1 transition-transform"></i>
                 </button>
 
                 <button onclick="printItinerary(); toggleDrawer(false);" class="w-full flex items-center justify-between p-4 bg-indigo-50 rounded-2xl hover:bg-indigo-100 transition-all group">
@@ -1461,6 +1577,11 @@
         updateUI();
         initSnow();
         fetchExchangeRate();
+
+        // Check if first time (no start date)
+        if (!savedStartDate) {
+            setTimeout(openDateModal, 800);
+        }
     </script>
 </body>
 </html>
