@@ -1369,11 +1369,14 @@
                             const dayDate = new Date(day.actualDate);
                             const isWeekend = dayDate.getDay() === 0 || dayDate.getDay() === 6;
 
+                            const [y, m, d] = day.actualDate.split('-');
+                            const displayDate = savedStartDate ? `${parseInt(m)}/${parseInt(d)}` : `D${i+1}`;
+
                             return `
                             <div onclick="activeDayIndex=${i}; updateUI();" class="relative flex items-center p-4 rounded-2xl ${isWeekend ? 'bg-amber-50/50 border-amber-100 hover:bg-amber-50' : 'bg-white/50 border-slate-100 hover:bg-white'} border cursor-pointer transition-all overflow-hidden group">
                                 ${isPast ? '<div class="absolute inset-0 bg-slate-50/50 z-10 rounded-2xl flex items-center justify-center backdrop-blur-[0.5px] pointer-events-none transition-all duration-300 group-hover:bg-transparent group-hover:backdrop-blur-none"><div class="border-2 border-emerald-500/80 text-emerald-500/80 font-black text-[10px] uppercase tracking-widest px-2 py-0.5 rounded transform -rotate-12 shadow-sm transition-opacity duration-300 group-hover:opacity-0">Completed</div></div>' : ''}
                                 <div class="w-10 h-10 ${isToday ? 'bg-red-500 text-white animate-pulse' : (isPast ? 'bg-slate-200 text-slate-400' : (isWeekend ? 'bg-amber-100 text-amber-600' : 'bg-blue-100 text-blue-600'))} rounded-lg flex flex-col items-center justify-center mr-4 shrink-0 transition-colors z-0">
-                                    <span class="text-sm font-bold">D${i+1}</span>
+                                    <span class="text-sm font-bold">${displayDate}</span>
                                 </div>
                                 <div class="flex-1">
                                     <div class="flex items-center gap-2">
