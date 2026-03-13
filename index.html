@@ -1313,7 +1313,11 @@
                 const isToday = day.actualDate === todayStr;
                 const btn = document.createElement('button');
                 btn.className = `day-btn md:w-full text-left px-4 py-2 rounded-xl text-sm font-bold border mb-1 flex-shrink-0 ${i === activeDayIndex ? 'active-tab' : 'bg-white/70 backdrop-blur-sm'}`;
-                btn.innerHTML = `<span class="${isToday ? 'text-red-500 animate-pulse' : ''}">D${i+1}</span> ${day.city[currentLang]}`; // Highlight D1, D2 etc if today
+                
+                const [y, m, d] = day.actualDate.split('-');
+                const displayDate = savedStartDate ? `${parseInt(m)}/${parseInt(d)}` : `D${i+1}`;
+                
+                btn.innerHTML = `<span class="${isToday ? 'text-red-500 animate-pulse' : ''}">${displayDate}</span> ${day.city[currentLang]}`; // Highlight date if today
                 btn.onclick = () => { activeDayIndex = i; updateUI(); };
                 nav.appendChild(btn);
             });
