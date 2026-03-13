@@ -385,9 +385,9 @@
         document.body.insertAdjacentHTML('beforeend', printChoiceModalHTML);
 
         const dateModalHTML = `
-        <div id="date-modal" class="fixed inset-0 z-[100] hidden flex-col items-center justify-center p-4 sm:p-0">
+        <div id="date-modal" class="fixed inset-0 z-[100] hidden flex-col items-center justify-center p-4">
             <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity opacity-0" id="date-modal-backdrop" onclick="closeDateModal()"></div>
-            <div class="bg-white/95 backdrop-blur-xl rounded-[2.5rem] p-6 sm:p-10 shadow-2xl w-full max-w-sm relative z-10 scale-95 opacity-0 transition-all duration-300" id="date-modal-content">
+            <div class="bg-white/95 backdrop-blur-xl rounded-[2.5rem] p-5 sm:p-10 shadow-2xl w-full max-w-sm relative z-10 scale-95 opacity-0 transition-all duration-300 overflow-hidden" id="date-modal-content">
                 <div class="text-center mb-6">
                     <div class="w-14 h-14 bg-amber-100 text-amber-600 rounded-2xl flex items-center justify-center text-2xl mx-auto mb-4 shadow-sm">
                         <i class="fas fa-calendar-day"></i>
@@ -396,7 +396,7 @@
                     <p class="text-[13px] text-slate-500 mt-2 leading-relaxed" id="date-modal-desc">請選擇您抵達紐西蘭的出發日。</p>
                 </div>
                 <div class="space-y-4">
-                    <input type="date" id="start-date-input" class="w-full bg-slate-50 border border-slate-200 px-4 py-3 rounded-2xl text-center focus:outline-none focus:border-amber-500 focus:ring-4 focus:ring-amber-500/10 transition-all shadow-inner font-bold text-slate-700">
+                    <input type="date" id="start-date-input" class="w-full max-w-full bg-slate-50 border border-slate-200 px-4 py-3 rounded-2xl text-center focus:outline-none focus:border-amber-500 focus:ring-4 focus:ring-amber-500/10 transition-all shadow-inner font-bold text-slate-700">
                     <button onclick="submitStartDate()" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold py-3.5 px-4 rounded-2xl shadow-lg shadow-amber-600/20 hover:shadow-amber-600/30 transition-all transform active:scale-95">
                         確認設定
                     </button>
