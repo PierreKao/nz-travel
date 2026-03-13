@@ -1367,6 +1367,7 @@
                             const isToday = day.actualDate === todayStr;
                             const isPast = new Date(day.actualDate) < new Date(todayStr);
                             const dayDate = new Date(day.actualDate);
+                            const isWeekend = dayDate.getDay() === 0 || dayDate.getDay() === 6;
                             const [y, m, d] = day.actualDate.split('-');
                             const displayDate = savedStartDate ? `${parseInt(m)}/${parseInt(d)}` : `D${i+1}`;
                             const weekdayStr = dayDate.toLocaleDateString(currentLang === 'zh' ? 'zh-TW' : 'en-US', { weekday: 'short' });
