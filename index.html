@@ -385,6 +385,29 @@
             }
         }
 
+        function updateMapQuery(query) {
+            const iframe = document.getElementById('day-map-iframe');
+            if (iframe) {
+                // Ensure we don't accidentally navigate away if query is empty
+                if (!query) return;
+                
+                // Add a subtle "loading" state to parent container
+                const container = iframe.parentElement;
+                container.classList.add('opacity-50');
+                
+                // Construct the Google Maps search URL
+                const safeQuery = encodeURIComponent(query);
+                iframe.src = `https://maps.google.com/maps?q=${safeQuery}&t=&z=14&ie=UTF8&iwloc=&output=embed`;
+                
+                iframe.onload = () => {
+                    container.classList.remove('opacity-50');
+                    container.classList.add('animate-in', 'fade-in', 'duration-500');
+                };
+
+                if ("vibrate" in navigator) navigator.vibrate(5);
+            }
+        }
+
         const translations = {
             zh: {
                 header: "紐西蘭南島 · 冬季自駕",
@@ -1008,13 +1031,13 @@
                                         <div class="w-4 h-4 rounded-full ${isActive ? 'bg-red-500 border-4 border-red-200 animate-pulse' : 'bg-white border-4 border-blue-600'} z-10 mt-1 transition-colors"></div>
                                         <div class="flex-1 pb-4">
                                             <p class="text-[10px] font-bold ${isActive ? 'text-red-500' : 'text-blue-500'} uppercase">${t[0]}</p>
-                                            <div class="bg-white/60 flex-1 p-4 rounded-2xl shadow-sm border border-slate-100 group-hover:bg-white transition-colors relative mt-1 ${isActive ? 'border-red-200 ring-1 ring-red-100 shadow-md' : ''}">
+                                            <div onclick="updateMapQuery('${t[1]}')" class="bg-white/60 flex-1 p-4 rounded-2xl shadow-sm border border-slate-100 hover:bg-white hover:shadow-md hover:border-blue-200 cursor-pointer transition-all relative mt-1 ${isActive ? 'border-red-200 ring-1 ring-red-100 shadow-md' : ''}">
                                                 <div class="flex items-start justify-between">
                                                     <div class="flex-1">
                                                         ${isActive ? '<span class="absolute -top-2 right-4 bg-red-500 text-white text-[9px] font-bold px-2 py-0.5 rounded uppercase shadow-sm">進行中 Now</span>' : ''}
                                                         <p class="text-[15px] font-bold ${isActive ? 'text-red-700' : 'text-slate-700'}">${t[1]}</p>
                                                     </div>
-                                                    <button onclick="openMemoryUpload(${activeDayIndex}, ${index})" class="ml-2 w-8 h-8 rounded-full bg-white/80 text-slate-400 hover:bg-blue-100 hover:text-blue-600 flex items-center justify-center transition-all shrink-0 shadow-sm border border-slate-100">
+                                                    <button onclick="event.stopPropagation(); openMemoryUpload(${activeDayIndex}, ${index})" class="ml-2 w-8 h-8 rounded-full bg-white/80 text-slate-400 hover:bg-blue-100 hover:text-blue-600 flex items-center justify-center transition-all shrink-0 shadow-sm border border-slate-100">
                                                         <i class="fas fa-camera"></i>
                                                     </button>
                                                 </div>
@@ -1054,7 +1077,7 @@
                                 <span class="text-xs font-bold text-slate-400 uppercase tracking-widest animate-pulse">Loading Map...</span>
                             </div>
                             <!-- Map iframe -->
-                            <iframe frameborder="0" class="relative w-full h-full rounded-[2rem] z-10 opacity-0 transition-opacity duration-1000" onload="this.style.opacity=1" src="https://maps.google.com/maps?q=${day.mapUrl}&t=&z=13&ie=UTF8&iwloc=&output=embed"></iframe>
+                            <iframe id="day-map-iframe" frameborder="0" class="relative w-full h-full rounded-[2rem] z-10 opacity-0 transition-opacity duration-1000" onload="this.style.opacity=1" src="https://maps.google.com/maps?q=${day.mapUrl}&t=&z=13&ie=UTF8&iwloc=&output=embed"></iframe>
                         </div>
                     </div>
                 </div>
