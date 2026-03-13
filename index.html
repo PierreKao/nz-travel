@@ -156,18 +156,23 @@
             main { padding-bottom: 24px; }
             /* Fix header right side distortion */
             header .flex.items-center.gap-3 {
-                gap: 0.25rem !important;
+                gap: 0.5rem !important;
                 flex-wrap: nowrap;
                 justify-content: flex-end;
             }
+            #weather-box {
+                background: rgba(255,255,255,0.4);
+                padding: 0.35rem 0.6rem !important;
+                border-radius: 1rem;
+            }
+            #weather-box .text-right { display: block !important; } 
             header button, header a#weather-box {
                 flex-shrink: 0 !important;
-                padding-left: 0.5rem !important;
-                padding-right: 0.5rem !important;
             }
-            header button i { margin-right: 0 !important; }
-            header #weather-box { padding: 0.25rem 0.5rem !important; }
-            header #weather-box .text-right { display: none; } /* Hide text on mobile for weather */
+
+            /* Drawer Animation */
+            #drawer-menu { transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+            #drawer-overlay { transition: opacity 0.4s ease; }
         }
     </style>
 </head>
@@ -187,32 +192,70 @@
             <p class="text-[10px] text-blue-600 font-bold uppercase tracking-widest">Winter Adventure</p>
         </div>
         
-        <div class="flex items-center gap-3">
-            <a id="weather-box" href="#" target="_blank" class="hidden sm:flex items-center gap-3 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 px-3 py-1.5 rounded-xl shadow-sm transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 pointer-events-none cursor-pointer">
-                <div id="weather-icon-container" class="text-2xl drop-shadow-sm animate-pulse"></div>
+        <div class="flex items-center gap-1 sm:gap-3">
+            <!-- Weather (Always Full) -->
+            <a id="weather-box" href="#" target="_blank" class="flex items-center gap-2 sm:gap-3 border border-blue-100/30 transition-all duration-300 hover:shadow-md pointer-events-none cursor-pointer">
+                <div id="weather-icon-container" class="text-xl sm:text-2xl drop-shadow-sm animate-pulse"></div>
                 <div class="text-right">
-                    <div id="weather-city" class="text-[10px] font-bold text-slate-500 leading-none tracking-wide">City</div>
-                    <div id="weather-temp" class="text-sm text-blue-700 font-extrabold leading-none mt-1 drop-shadow-sm">--°C</div>
+                    <div id="weather-city" class="text-[8px] sm:text-[10px] font-bold text-slate-500 leading-none tracking-wide">City</div>
+                    <div id="weather-temp" class="text-[10px] sm:text-sm text-blue-700 font-extrabold leading-none mt-0.5 drop-shadow-sm">--°C</div>
                 </div>
             </a>
-            <button onclick="printItinerary()" class="hidden sm:flex bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-full text-[12px] font-bold transition-all shadow-sm items-center gap-1 group">
-                <i class="fas fa-print group-hover:scale-110 transition-transform"></i> <span id="ui-print-btn" class="hidden sm:inline">列印</span>
-            </button>
-            <button id="unlock-btn" onclick="askPassword()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 sm:px-4 sm:py-1.5 rounded-full text-[11px] sm:text-[12px] font-bold transition-all shadow-sm">
+
+            <!-- Secondary Actions (Desktop Only) -->
+            <div class="hidden lg:flex items-center gap-2">
+                <button onclick="printItinerary()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-full text-[12px] font-bold transition-all shadow-sm items-center gap-1 group">
+                    <i class="fas fa-print group-hover:scale-110 transition-transform"></i> <span id="ui-print-btn">列印</span>
+                </button>
+                <button onclick="toggleAurora()" class="bg-slate-800 hover:bg-slate-900 text-purple-300 px-3 py-1.5 rounded-full text-[12px] font-bold transition-all shadow-sm flex items-center justify-center relative overflow-hidden group">
+                    <div class="absolute inset-0 bg-gradient-to-r from-purple-500/30 to-emerald-500/30 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                    <i class="fas fa-moon relative z-10"></i>
+                </button>
+            </div>
+
+            <!-- Primary Actions (Restored) -->
+            <button id="unlock-btn" onclick="askPassword()" class="bg-blue-600 hover:bg-blue-700 text-white px-2.5 py-1 sm:px-4 sm:py-1.5 rounded-full text-[11px] sm:text-[12px] font-bold transition-all shadow-sm">
                 <i class="fas fa-key sm:mr-1"></i> <span id="ui-unlock-text" class="hidden sm:inline">解鎖住宿</span>
             </button>
-            <button onclick="toggleAurora()" class="hidden sm:flex bg-slate-800 hover:bg-slate-900 text-purple-300 px-3 py-1 sm:px-3 sm:py-1.5 rounded-full text-[11px] sm:text-[12px] font-bold transition-all shadow-sm flex items-center justify-center relative overflow-hidden group">
-                <div class="absolute inset-0 bg-gradient-to-r from-purple-500/30 to-emerald-500/30 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                <i class="fas fa-moon relative z-10"></i>
-            </button>
-            <button onclick="toggleLang()" class="hidden sm:flex bg-slate-200 hover:bg-slate-300 text-slate-700 px-2 py-1 sm:px-3 sm:py-1.5 rounded-full text-[11px] sm:text-[12px] font-bold transition-all shadow-sm">
-                EN/中
-            </button>
-            <button onclick="openDateModal()" class="bg-amber-100 hover:bg-amber-200 text-amber-700 px-3 py-1 sm:px-3 sm:py-1.5 rounded-full text-[11px] sm:text-[12px] font-bold transition-all shadow-sm">
+            
+            <button onclick="openDateModal()" class="hidden sm:flex bg-amber-100 hover:bg-amber-200 text-amber-700 px-3 py-1.5 rounded-full text-[12px] font-bold transition-all shadow-sm">
                 <i class="fas fa-calendar-days"></i>
+            </button>
+
+            <!-- Mobile Menu Toggle -->
+            <button onclick="toggleDrawer(true)" class="lg:hidden w-8 h-8 flex items-center justify-center text-slate-600 hover:bg-slate-100 rounded-full transition-all">
+                <i class="fas fa-bars text-lg"></i>
+            </button>
+
+            <!-- Language Toggle (Desktop Only) -->
+            <button id="lang-toggle-desktop" onclick="toggleLang()" class="hidden lg:flex bg-slate-200 hover:bg-slate-300 text-slate-700 px-3 py-1.5 rounded-full text-[12px] font-bold transition-all shadow-sm">
+                English
             </button>
         </div>
     </header>
+
+    <!-- Mobile Drawer Menu -->
+    <div id="drawer-container" class="fixed inset-0 z-[110] hidden">
+        <div id="drawer-overlay" class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm opacity-0" onclick="toggleDrawer(false)"></div>
+        <div id="drawer-menu" class="absolute top-0 right-0 bottom-0 w-[280px] bg-white translate-x-full shadow-2xl overflow-y-auto">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-10">
+                    <h3 class="font-black text-slate-400 uppercase tracking-widest text-xs">Menu</h3>
+                    <button onclick="toggleDrawer(false)" class="w-8 h-8 flex items-center justify-center text-slate-400 hover:bg-slate-100 rounded-full transition-all">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <div class="space-y-4" id="drawer-links">
+                    <!-- Links and toggles go here -->
+                </div>
+
+                <div class="mt-12 pt-8 border-t border-slate-100">
+                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider text-center">New Zealand 2025</p>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <div class="max-w-7xl mx-auto flex flex-col md:flex-row min-h-screen">
         <!-- Sidebar Navigation -->
@@ -978,6 +1021,76 @@
         function toggleLang() {
             currentLang = currentLang === 'zh' ? 'en' : 'zh';
             updateUI();
+            if (document.getElementById('drawer-container').style.display !== 'none') {
+                renderDrawerMenu();
+            }
+        }
+
+        function toggleDrawer(open) {
+            const container = document.getElementById('drawer-container');
+            const overlay = document.getElementById('drawer-overlay');
+            const menu = document.getElementById('drawer-menu');
+            
+            if (open) {
+                container.classList.remove('hidden');
+                renderDrawerMenu();
+                setTimeout(() => {
+                    overlay.classList.replace('opacity-0', 'opacity-100');
+                    menu.classList.replace('translate-x-full', 'translate-x-0');
+                }, 10);
+            } else {
+                overlay.classList.replace('opacity-100', 'opacity-0');
+                menu.classList.replace('translate-x-0', 'translate-x-full');
+                setTimeout(() => {
+                    container.classList.add('hidden');
+                }, 400);
+            }
+        }
+
+        function renderDrawerMenu() {
+            const links = document.getElementById('drawer-links');
+            const ui = translations[currentLang];
+            links.innerHTML = `
+                <button onclick="toggleLang(); toggleDrawer(false);" class="w-full flex items-center justify-between p-4 bg-slate-50 rounded-2xl hover:bg-slate-100 transition-all group">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-white shadow-sm rounded-xl flex items-center justify-center text-slate-600">
+                            <i class="fas fa-language"></i>
+                        </div>
+                        <span class="font-bold text-slate-700">${currentLang === 'zh' ? 'English' : '中文 (繁體)'}</span>
+                    </div>
+                    <i class="fas fa-chevron-right text-slate-300 group-hover:translate-x-1 transition-transform"></i>
+                </button>
+
+                <button onclick="toggleAurora(); toggleDrawer(false);" class="w-full flex items-center justify-between p-4 bg-slate-900 text-white rounded-2xl hover:opacity-90 transition-all group">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center text-purple-300">
+                            <i class="fas fa-moon"></i>
+                        </div>
+                        <span class="font-bold">${isAurora ? (currentLang==='zh'?'切換回日間模式':'Switch to Day Mode') : (currentLang==='zh'?'極光/星空模式':'Aurora / Night Mode')}</span>
+                    </div>
+                    <i class="fas fa-chevron-right text-white/30 group-hover:translate-x-1 transition-transform"></i>
+                </button>
+
+                <button onclick="openDateModal(); toggleDrawer(false);" class="w-full flex items-center justify-between p-4 bg-amber-50 rounded-2xl hover:bg-amber-100 transition-all group">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-white shadow-sm rounded-xl flex items-center justify-center text-amber-600">
+                            <i class="fas fa-calendar-day"></i>
+                        </div>
+                        <span class="font-bold text-amber-900">${translations[currentLang].dateModalTitle}</span>
+                    </div>
+                    <i class="fas fa-chevron-right text-amber-200 group-hover:translate-x-1 transition-transform"></i>
+                </button>
+
+                <button onclick="printItinerary(); toggleDrawer(false);" class="w-full flex items-center justify-between p-4 bg-indigo-50 rounded-2xl hover:bg-indigo-100 transition-all group">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-white shadow-sm rounded-xl flex items-center justify-center text-indigo-600">
+                            <i class="fas fa-print"></i>
+                        </div>
+                        <span class="font-bold text-indigo-900">${translations[currentLang].printBtn}</span>
+                    </div>
+                    <i class="fas fa-chevron-right text-indigo-200 group-hover:translate-x-1 transition-transform"></i>
+                </button>
+            `;
         }
 
         function saveChecklist(id, isChecked) {
@@ -1070,25 +1183,11 @@
                 nav.appendChild(btn);
             });
 
-            // Mobile-only Settings in Nav
-            const settingsHeader = document.createElement('div');
-            settingsHeader.className = "flex sm:hidden h-10 items-center px-4 shrink-0 border-l border-slate-200 mx-2 text-[10px] font-black text-slate-400 uppercase tracking-widest";
-            settingsHeader.innerText = "Settings";
-            nav.appendChild(settingsHeader);
-
-            // Aurora Toggle for Nav
-            const aurBtn = document.createElement('button');
-            aurBtn.className = "flex sm:hidden day-btn bg-slate-800 text-purple-300 px-4 py-2 rounded-xl text-xs font-bold border border-slate-700 shrink-0 mr-1";
-            aurBtn.innerHTML = `<i class="fas fa-moon mr-2"></i> ${isAurora ? (currentLang==='zh'?'日照':'Day') : (currentLang==='zh'?'極光':'Aurora')}`;
-            aurBtn.onclick = toggleAurora;
-            nav.appendChild(aurBtn);
-
-            // Lang Toggle for Nav
-            const lnBtn = document.createElement('button');
-            lnBtn.className = "flex sm:hidden day-btn bg-slate-100 text-slate-700 px-4 py-2 rounded-xl text-xs font-bold border border-slate-200 shrink-0 mr-4";
-            lnBtn.innerText = currentLang === 'zh' ? 'English' : '中文';
-            lnBtn.onclick = toggleLang;
-            nav.appendChild(lnBtn);
+            // Update Language Toggle Desktop text
+            const desktopLangBtn = document.getElementById('lang-toggle-desktop');
+            if (desktopLangBtn) {
+                desktopLangBtn.innerText = currentLang === 'zh' ? 'English' : '中文';
+            }
 
             const content = document.getElementById('content-display');
             if (activeDayIndex === -1) {
