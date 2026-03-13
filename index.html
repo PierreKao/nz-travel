@@ -888,11 +888,14 @@
             const memoriesCount = allMemories.length;
             const includePhotos = memoriesCount > 0 && confirm(currentLang === 'zh' ? `偵測到 ${memoriesCount} 張照片，是否一併列印？` : `Found ${memoriesCount} photos. Include them in the print?`);
 
-            let printWindow = window.open('', '_blank');
+            const printFrame = document.getElementById('print-frame');
+            const printDocument = printFrame.contentDocument || printFrame.contentWindow.document;
+
             let printHtml = `
             <!DOCTYPE html>
             <html>
             <head>
+                <meta charset="UTF-8">
                 <title>${ui.header}</title>
                 <style>
                     body { font-family: 'Inter', 'Noto Sans TC', sans-serif; color: #1e293b; margin: 0; padding: 40px; line-height: 1.6; background: #fff; }
@@ -965,10 +968,16 @@
             });
             
             printHtml += `</body></html>`;
-            printWindow.document.write(printHtml);
-            printWindow.document.close();
-            printWindow.focus();
-            setTimeout(() => { printWindow.print(); printWindow.close(); }, 800);
+
+            printDocument.open();
+            printDocument.write(printHtml);
+            printDocument.close();
+
+            // Wait for styles and potential images to load
+            setTimeout(() => {
+                printFrame.contentWindow.focus();
+                printFrame.contentWindow.print();
+            }, 1000);
         }
 
         async function fetchExchangeRate() {
