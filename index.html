@@ -778,6 +778,9 @@
                 printOnlyItinerary: "僅列印行程",
                 printWithPhotos: "包含回憶照片",
                 printCancel: "取消",
+                resetDataBtn: "重置所有資料",
+                resetConfirmMsg: "確定要重置所有資料嗎？這將會永久刪除所有出發日期、清單進度以及儲存的照片與筆記。",
+                resetSuccessMsg: "資料已成功重置。",
                 notices: [
                     { icon: "fa-passport", title: "NZeTA", content: "簽證核准件", desc: "紐西蘭電子旅行授權 (NZeTA) 必須在出發前至少 72 小時完成申請。建議使用 NZeTA 官方手機 App 申請，費用較低且包含 IVL (國際旅客保育及旅遊稅)。申請完成後請將 PDF 核准件存入手機或列印。" },
                     { icon: "fa-car", title: "冬季自駕", content: "慎防黑冰、備妥雪鏈", desc: "紐西蘭南島冬季路面常有黑冰 (Black Ice)，這是一種極難察覺的透明冰層。開車時請保持冷靜，避免急煞與大角度轉彎。清晨與深夜、背陰處路段應減速。租車時務必確認備有雪鏈並練習安裝。" },
@@ -806,6 +809,9 @@
                 nzdLabel: "NZD (Dollar)",
                 twdLabel: "TWD (Taiwanese Dollar)",
                 nzdFeeNote: "1 NZD ≈ {rate} TWD (incl. 1.5% fee)",
+                resetDataBtn: "Reset All Data",
+                resetConfirmMsg: "Are you sure you want to reset all data? This will permanently delete your start date, checklist progress, and all saved photos/notes.",
+                resetSuccessMsg: "Data has been successfully reset.",
                 notices: [
                     { icon: "fa-passport", title: "Visa", content: "NZeTA Status", desc: "The NZeTA (New Zealand Electronic Travel Authority) is mandatory for visitors from visa-waiver countries. Apply at least 72 hours before departure via the official mobile app for a discount. The IVL levy is included in the fee." },
                     { icon: "fa-car", title: "Winter Drive", content: "Watch for black ice", desc: "Winter roads in the South Island can have 'Black Ice'—thin, transparent ice that is extremely slippery. Drive carefully during sunrise, sunset, and in shaded areas. Always carry snow chains and know how to fit them." },
@@ -1354,6 +1360,15 @@
                         <span class="font-bold text-indigo-900">${translations[currentLang].printBtn}</span>
                     </div>
                     <i class="fas fa-chevron-right text-indigo-200 group-hover:translate-x-1 transition-transform"></i>
+                </button>
+
+                <button onclick="resetAllData()" class="w-full flex items-center justify-between p-4 bg-red-50 rounded-2xl hover:bg-red-100 transition-all group mt-8">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-white shadow-sm rounded-xl flex items-center justify-center text-red-600">
+                            <i class="fas fa-trash-can"></i>
+                        </div>
+                        <span class="font-bold text-red-900">${translations[currentLang].resetDataBtn}</span>
+                    </div>
                 </button>
             `;
         }
