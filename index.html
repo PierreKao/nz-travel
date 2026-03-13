@@ -451,6 +451,48 @@
         const uploadHTML = `<input type="file" id="memory-upload" accept="image/*" class="hidden">`;
         document.body.insertAdjacentHTML('beforeend', uploadHTML);
 
+        const flightModalHTML = `
+        <div id="flight-modal" class="fixed inset-0 z-[120] hidden flex-col items-center justify-center p-4 sm:p-0">
+            <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity opacity-0" id="flight-modal-backdrop" onclick="closeFlightModal()"></div>
+            <div class="bg-white/95 backdrop-blur-xl rounded-[2.5rem] p-8 shadow-2xl w-full max-w-sm relative z-10 scale-95 opacity-0 transition-all duration-300" id="flight-modal-content">
+                <button onclick="closeFlightModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100 transition-colors">
+                    <i class="fas fa-times"></i>
+                </button>
+                <div class="text-center mb-8">
+                    <div class="w-16 h-16 bg-sky-100 text-sky-600 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-4 shadow-sm">
+                        <i class="fas fa-plane"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-800" id="flight-modal-title">查詢紐航班次</h3>
+                    <p class="text-[12px] text-slate-500 mt-1 font-medium">Air New Zealand 國內線</p>
+                </div>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">航線 Route</label>
+                        <div class="grid grid-cols-2 gap-2" id="flight-route-btns">
+                            <button onclick="selectFlightRoute('AKL','ZQN')" id="route-AKL-ZQN" class="route-btn px-4 py-3 rounded-2xl border-2 text-sm font-bold transition-all border-sky-500 bg-sky-500 text-white">
+                                ✈ AKL → ZQN
+                            </button>
+                            <button onclick="selectFlightRoute('CHC','AKL')" id="route-CHC-AKL" class="route-btn px-4 py-3 rounded-2xl border-2 text-sm font-bold transition-all border-slate-200 bg-white text-slate-600 hover:border-sky-300">
+                                ✈ CHC → AKL
+                            </button>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">日期 Date</label>
+                        <input type="date" id="flight-date-input" class="w-full bg-slate-50 border border-slate-200 px-4 py-3 rounded-2xl text-center focus:outline-none focus:border-sky-500 focus:ring-4 focus:ring-sky-500/10 transition-all shadow-inner font-bold text-slate-700">
+                    </div>
+                    <button onclick="searchFlights()" class="w-full bg-sky-600 hover:bg-sky-700 text-white font-bold py-3.5 px-4 rounded-2xl shadow-lg shadow-sky-600/20 hover:shadow-sky-600/30 transition-all transform active:scale-95 flex items-center justify-center gap-2">
+                        <i class="fas fa-magnifying-glass"></i> <span id="flight-search-btn-text">搜尋班次</span>
+                    </button>
+                    <p class="text-[10px] text-slate-400 text-center leading-relaxed">
+                        將開啟 Air New Zealand 官網查詢即時班次與訂票
+                    </p>
+                </div>
+            </div>
+        </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', flightModalHTML);
+
         const ENCRYPTED_HOTELS = "U2FsdGVkX1/5B7ukylTrcGjm0fKXPxOORKLwexAFiM7PQj0iJ4VSrYodK89sZYwKjzEZUjUQBOuWThstnVLG3OTtftpfc9JocyZssCpUontSb8YDsusQTyLLl3H4GyuxcwojvMxO6XVDTuDuiXUBHIqfNhhMC0eqK4Vw/eF09Spv7Nr7MgSd6z+wTMeo6aY9qe3X4ed0DpcU0Z/3EuV6caUFiQHgFGdB9pfPpr3P+K5BK06WnMRDowp7kEmMa/Fro0+CinlZEv6/lbRty8rRY5UlTJLIvHMerea6ASxqlc53xjeOrpHUHUQ1mmOpA7zy8SNb37O8vF3oDwOReu1hhkOAOQRY8pypdnxyIs+W1o+3Bcd4VTbTeAfM8HYyLff+gKvSOADGGiUAivL3BxFa1herFwTIW+wnFXpgKgSGwfTByLYju+Zmx4T3uNgTBM1bnFOwQoz+UaI/xbUNilO7/nuPeXoeIsE4rkKGActJ6gmOGUwgjZA9J7YiE2BD2aCfUZpuVVT/NripRq0nh9j/R7AmEvgA3yULLQQT3P7y1A75Bq3+f79EnVuYBsujubifHMFDinWRUUJkJRCKzQgqtg7sL8TXfLX1U1Y4NcGmCpms1TlEvg3APrpSlYLfAaOq3IdiZwHkmstNTtGw20jc51Jenjg1/hYEg+QXx5zGviw="; 
 
         let decryptedHotels = null; 
@@ -781,6 +823,7 @@
                 resetDataBtn: "重置所有資料",
                 resetConfirmMsg: "確定要重置所有資料嗎？這將會永久刪除所有出發日期、清單進度以及儲存的照片與筆記。",
                 resetSuccessMsg: "資料已成功重置。",
+                flightSearchBtn: "查詢紐航班次",
                 notices: [
                     { icon: "fa-passport", title: "NZeTA", content: "簽證核准件", desc: "紐西蘭電子旅行授權 (NZeTA) 必須在出發前至少 72 小時完成申請。建議使用 NZeTA 官方手機 App 申請，費用較低且包含 IVL (國際旅客保育及旅遊稅)。申請完成後請將 PDF 核准件存入手機或列印。" },
                     { icon: "fa-car", title: "冬季自駕", content: "慎防黑冰、備妥雪鏈", desc: "紐西蘭南島冬季路面常有黑冰 (Black Ice)，這是一種極難察覺的透明冰層。開車時請保持冷靜，避免急煞與大角度轉彎。清晨與深夜、背陰處路段應減速。租車時務必確認備有雪鏈並練習安裝。" },
@@ -812,6 +855,7 @@
                 resetDataBtn: "Reset All Data",
                 resetConfirmMsg: "Are you sure you want to reset all data? This will permanently delete your start date, checklist progress, and all saved photos/notes.",
                 resetSuccessMsg: "Data has been successfully reset.",
+                flightSearchBtn: "Search Air NZ Flights",
                 notices: [
                     { icon: "fa-passport", title: "Visa", content: "NZeTA Status", desc: "The NZeTA (New Zealand Electronic Travel Authority) is mandatory for visitors from visa-waiver countries. Apply at least 72 hours before departure via the official mobile app for a discount. The IVL levy is included in the fee." },
                     { icon: "fa-car", title: "Winter Drive", content: "Watch for black ice", desc: "Winter roads in the South Island can have 'Black Ice'—thin, transparent ice that is extremely slippery. Drive carefully during sunrise, sunset, and in shaded areas. Always carry snow chains and know how to fit them." },
@@ -1075,6 +1119,70 @@
                 alert(ui.resetSuccessMsg);
                 window.location.reload();
             }
+        }
+
+        let selectedFlightOrigin = 'AKL';
+        let selectedFlightDest = 'ZQN';
+
+        function openFlightModal() {
+            const modal = document.getElementById('flight-modal');
+            const backdrop = document.getElementById('flight-modal-backdrop');
+            const content = document.getElementById('flight-modal-content');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            setTimeout(() => {
+                backdrop.classList.replace('opacity-0', 'opacity-100');
+                content.classList.replace('opacity-0', 'opacity-100');
+                content.classList.replace('scale-95', 'scale-100');
+            }, 10);
+            // Default date: today or the trip's D2 date
+            const dateInput = document.getElementById('flight-date-input');
+            if (!dateInput.value) {
+                // Try to find the AKL-ZQN day in the itinerary (Day 02)
+                const d2 = itinerary[1];
+                dateInput.value = d2 && d2.actualDate ? d2.actualDate : new Date().toISOString().split('T')[0];
+            }
+            // Update UI text for lang
+            const ui = translations[currentLang];
+            document.getElementById('flight-modal-title').innerText = ui.flightSearchBtn;
+            document.getElementById('flight-search-btn-text').innerText = currentLang === 'zh' ? '搜尋班次' : 'Search Flights';
+            if ("vibrate" in navigator) navigator.vibrate(10);
+        }
+
+        function closeFlightModal() {
+            const modal = document.getElementById('flight-modal');
+            const backdrop = document.getElementById('flight-modal-backdrop');
+            const content = document.getElementById('flight-modal-content');
+            backdrop.classList.replace('opacity-100', 'opacity-0');
+            content.classList.replace('opacity-100', 'opacity-0');
+            content.classList.replace('scale-100', 'scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }, 300);
+        }
+
+        function selectFlightRoute(origin, dest) {
+            selectedFlightOrigin = origin;
+            selectedFlightDest = dest;
+            document.querySelectorAll('.route-btn').forEach(btn => {
+                btn.classList.remove('border-sky-500', 'bg-sky-500', 'text-white');
+                btn.classList.add('border-slate-200', 'bg-white', 'text-slate-600');
+            });
+            const active = document.getElementById('route-' + origin + '-' + dest);
+            if (active) {
+                active.classList.remove('border-slate-200', 'bg-white', 'text-slate-600');
+                active.classList.add('border-sky-500', 'bg-sky-500', 'text-white');
+            }
+        }
+
+        function searchFlights() {
+            const date = document.getElementById('flight-date-input').value;
+            if (!date) { alert(currentLang === 'zh' ? '請選擇日期' : 'Please select a date.'); return; }
+            // Air New Zealand booking URL with pre-filled parameters
+            const url = `https://www.airnewzealand.co.nz/book/flights#/?o=${selectedFlightOrigin}&d=${selectedFlightDest}&dd=${date}&pa=1&ct=R`;
+            window.open(url, '_blank');
+            closeFlightModal();
         }
 
         async function fetchExchangeRate() {
@@ -1376,6 +1484,16 @@
                         <span class="font-bold text-indigo-900">${translations[currentLang].printBtn}</span>
                     </div>
                     <i class="fas fa-chevron-right text-indigo-200 group-hover:translate-x-1 transition-transform"></i>
+                </button>
+
+                <button onclick="openFlightModal(); toggleDrawer(false);" class="w-full flex items-center justify-between p-4 bg-sky-50 rounded-2xl hover:bg-sky-100 transition-all group">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-white shadow-sm rounded-xl flex items-center justify-center text-sky-600">
+                            <i class="fas fa-plane"></i>
+                        </div>
+                        <span class="font-bold text-sky-900">${translations[currentLang].flightSearchBtn}</span>
+                    </div>
+                    <i class="fas fa-chevron-right text-sky-200 group-hover:translate-x-1 transition-transform"></i>
                 </button>
 
                 <button onclick="resetAllData()" class="w-full flex items-center justify-between p-4 bg-red-50 rounded-2xl hover:bg-red-100 transition-all group mt-4">
