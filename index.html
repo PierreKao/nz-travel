@@ -351,6 +351,33 @@
         `;
         document.body.insertAdjacentHTML('beforeend', modalHTML);
 
+        const printChoiceModalHTML = `
+        <div id="print-choice-modal" class="fixed inset-0 z-[100] hidden flex-col items-center justify-center p-4 sm:p-0">
+            <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity opacity-0" id="print-modal-backdrop" onclick="closePrintModal()"></div>
+            <div class="bg-white/90 backdrop-blur-md rounded-[2rem] p-8 sm:p-10 shadow-2xl w-full max-w-sm relative z-10 scale-95 opacity-0 transition-all duration-300" id="print-modal-content">
+                <div class="text-center mb-8">
+                    <div class="w-16 h-16 bg-indigo-100 text-indigo-600 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-4 shadow-sm">
+                        <i class="fas fa-print"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-800" id="print-modal-title">列印選項</h3>
+                    <p class="text-sm text-slate-500 mt-2" id="print-modal-desc">行程中包含旅行照片與回憶，請問要如何列印？</p>
+                </div>
+                <div class="space-y-3">
+                    <button onclick="executePrint(true)" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 px-4 rounded-xl shadow-md hover:shadow-lg transition-all transform active:scale-95 flex items-center justify-center gap-2">
+                        <i class="fas fa-images"></i> <span id="print-btn-photos">包含回憶照片</span>
+                    </button>
+                    <button onclick="executePrint(false)" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3 px-4 rounded-xl transition-all transform active:scale-95 flex items-center justify-center gap-2">
+                        <i class="fas fa-file-lines"></i> <span id="print-btn-only">僅列印行程</span>
+                    </button>
+                    <button onclick="closePrintModal()" class="w-full text-slate-400 font-bold py-2 px-4 text-sm hover:text-slate-600 transition-colors">
+                        取消
+                    </button>
+                </div>
+            </div>
+        </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', printChoiceModalHTML);
+
         const dateModalHTML = `
         <div id="date-modal" class="fixed inset-0 z-[100] hidden flex-col items-center justify-center p-4 sm:p-0">
             <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity opacity-0" id="date-modal-backdrop" onclick="closeDateModal()"></div>
@@ -746,6 +773,11 @@
                 nzdLabel: "NZD (紐幣)",
                 twdLabel: "TWD (台幣)",
                 nzdFeeNote: "1 NZD ≈ {rate} TWD (含 1.5% 手續費)",
+                printChoiceTitle: "列印選項",
+                printChoiceDesc: "行程中包含旅行照片與回憶，請問要如何列印？",
+                printOnlyItinerary: "僅列印行程",
+                printWithPhotos: "包含回憶照片",
+                printCancel: "取消",
                 notices: [
                     { icon: "fa-passport", title: "NZeTA", content: "簽證核准件", desc: "紐西蘭電子旅行授權 (NZeTA) 必須在出發前至少 72 小時完成申請。建議使用 NZeTA 官方手機 App 申請，費用較低且包含 IVL (國際旅客保育及旅遊稅)。申請完成後請將 PDF 核准件存入手機或列印。" },
                     { icon: "fa-car", title: "冬季自駕", content: "慎防黑冰、備妥雪鏈", desc: "紐西蘭南島冬季路面常有黑冰 (Black Ice)，這是一種極難察覺的透明冰層。開車時請保持冷靜，避免急煞與大角度轉彎。清晨與深夜、背陰處路段應減速。租車時務必確認備有雪鏈並練習安裝。" },
@@ -913,13 +945,56 @@
         async function printItinerary() {
             const ui = translations[currentLang];
             
-            // Fetch all memories if they exist
+            // Fetch all memories
             const allMemories = await fetchAllMemories();
-            const memoriesCount = allMemories.length;
-            const includePhotos = memoriesCount > 0 && confirm(currentLang === 'zh' ? `偵測到 ${memoriesCount} 張照片，是否一併列印？` : `Found ${memoriesCount} photos. Include them in the print?`);
+            
+            if (allMemories.length > 0) {
+                // Open choice modal if memories exist
+                openPrintChoices(allMemories);
+            } else {
+                // If no memories, just print directly (still need user tick for iOS, but here it's simple)
+                executePrint(false); 
+            }
+        }
 
+        let tempAllMemories = [];
+        function openPrintChoices(memories) {
+            tempAllMemories = memories;
+            const modal = document.getElementById('print-choice-modal');
+            const backdrop = document.getElementById('print-modal-backdrop');
+            const content = document.getElementById('print-modal-content');
+            
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            setTimeout(() => {
+                backdrop.classList.replace('opacity-0', 'opacity-100');
+                content.classList.replace('opacity-0', 'opacity-100');
+                content.classList.replace('scale-95', 'scale-100');
+            }, 10);
+            if ("vibrate" in navigator) navigator.vibrate(10);
+        }
+
+        function closePrintModal() {
+            const modal = document.getElementById('print-choice-modal');
+            const backdrop = document.getElementById('print-modal-backdrop');
+            const content = document.getElementById('print-modal-content');
+            backdrop.classList.replace('opacity-100', 'opacity-0');
+            content.classList.replace('opacity-100', 'opacity-0');
+            content.classList.replace('scale-100', 'scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }, 300);
+        }
+
+        async function executePrint(includePhotos) {
+            const ui = translations[currentLang];
             const printArea = document.getElementById('print-area');
-            let printHtml = `<h1>${ui.header}</h1>`;
+            
+            // Close modal first
+            closePrintModal();
+
+            let printHtml = `<h1 style="font-size: 2.5rem; font-weight: 900; color: #1e3a8a; margin-bottom: 40px; border-bottom: 4px solid #3b82f6; padding-bottom: 20px;">${ui.header}</h1>`;
             
             itinerary.forEach((day, dayIndex) => {
                 const lang = day[currentLang];
@@ -943,7 +1018,7 @@
                 `;
 
                 if (includePhotos) {
-                    const dayMemories = allMemories.filter(m => m.spotKey.startsWith(`d${dayIndex}_`));
+                    const dayMemories = tempAllMemories.filter(m => m.spotKey.startsWith(`d${dayIndex}_`));
                     if (dayMemories.length > 0) {
                         printHtml += `<div class="photo-grid">`;
                         dayMemories.forEach(m => {
@@ -963,12 +1038,21 @@
             
             printArea.innerHTML = printHtml;
 
-            // Wait for styles and potential images to settle
+            // CRITICAL for iOS: Wait for images to load and DOM to settle
+            // Even simple text rendering needs a small beat on mobile Safari
             setTimeout(() => {
                 window.print();
-                // We keep it there for a moment so the print job finishes, then clear
-                setTimeout(() => { printArea.innerHTML = ''; }, 2000);
-            }, 800);
+                
+                // Cleanup using standard events which are more reliable
+                const cleanup = () => {
+                    printArea.innerHTML = '';
+                    window.removeEventListener('afterprint', cleanup);
+                };
+                window.addEventListener('afterprint', cleanup);
+                
+                // Fallback cleanup if afterprint doesn't fire (some older iOS versions)
+                setTimeout(cleanup, 2000);
+            }, 500);
         }
 
         async function fetchExchangeRate() {
@@ -1402,6 +1486,14 @@
                     </div>
                 </div>
             `).join('');
+
+            // Update Print Choice Modal Translations
+            document.getElementById('print-modal-title').innerText = ui.printChoiceTitle;
+            document.getElementById('print-modal-desc').innerText = ui.printChoiceDesc;
+            document.getElementById('print-btn-photos').innerText = ui.printWithPhotos;
+            document.getElementById('print-btn-only').innerText = ui.printOnlyItinerary;
+            const cancelBtn = document.querySelector('#print-choice-modal button:last-child');
+            if (cancelBtn) cancelBtn.innerText = ui.printCancel;
         }
 
         function renderOverview(container, ui) {
