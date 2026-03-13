@@ -193,6 +193,9 @@
             <button onclick="toggleLang()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-2 py-1 sm:px-3 sm:py-1.5 rounded-full text-[11px] sm:text-[12px] font-bold transition-all shadow-sm">
                 EN/中
             </button>
+            <button onclick="openDateModal()" class="bg-amber-100 hover:bg-amber-200 text-amber-700 px-3 py-1 sm:px-3 sm:py-1.5 rounded-full text-[11px] sm:text-[12px] font-bold transition-all shadow-sm">
+                <i class="fas fa-calendar-days"></i>
+            </button>
         </div>
     </header>
 
@@ -244,6 +247,28 @@
         </div>
         `;
         document.body.insertAdjacentHTML('beforeend', modalHTML);
+
+        const dateModalHTML = `
+        <div id="date-modal" class="fixed inset-0 z-[100] hidden flex-col items-center justify-center p-4 sm:p-0">
+            <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity opacity-0" id="date-modal-backdrop" onclick="closeDateModal()"></div>
+            <div class="bg-white/90 backdrop-blur-md rounded-[2rem] p-8 sm:p-10 shadow-2xl w-full max-w-sm relative z-10 scale-95 opacity-0 transition-all duration-300" id="date-modal-content">
+                <div class="text-center mb-6">
+                    <div class="w-16 h-16 bg-amber-100 text-amber-600 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-4 shadow-sm">
+                        <i class="fas fa-calendar-day"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-800" id="date-modal-title">設定出發日期</h3>
+                    <p class="text-sm text-slate-500 mt-2" id="date-modal-desc">請選擇您抵達紐西蘭的出發日。</p>
+                </div>
+                <div class="space-y-4">
+                    <input type="date" id="start-date-input" class="w-full bg-white border border-slate-200 px-4 py-3 rounded-xl text-center focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-200 transition-all shadow-inner">
+                    <button onclick="submitStartDate()" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold py-3 px-4 rounded-xl shadow-md hover:shadow-lg transition-all transform active:scale-95">
+                        確認設定
+                    </button>
+                </div>
+            </div>
+        </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', dateModalHTML);
 
         // Hidden upload input for Memories
         const uploadHTML = `<input type="file" id="memory-upload" accept="image/*" class="hidden">`;
@@ -372,6 +397,10 @@
                 unlockDone: "已解鎖",
                 locked: "🔒 點擊上方解鎖",
                 printBtn: "列印",
+                dateBtn: "設定出發日",
+                dateModalTitle: "設定行程出發日期",
+                dateInputLabel: "請選擇您的出發日：",
+                confirmBtn: "確認設定",
                 notices: [
                     { icon: "fa-passport", title: "NZeTA", content: "簽證核准件" },
                     { icon: "fa-car", title: "冬季自駕", content: "慎防黑冰、備妥雪鏈" },
@@ -392,6 +421,10 @@
                 unlockDone: "Unlocked",
                 locked: "🔒 Click Unlock",
                 printBtn: "Print",
+                dateBtn: "Set Start Date",
+                dateModalTitle: "Set Departure Date",
+                dateInputLabel: "Select your departure date:",
+                confirmBtn: "Confirm Date",
                 notices: [
                     { icon: "fa-passport", title: "Visa", content: "NZeTA Status" },
                     { icon: "fa-car", title: "Winter Drive", content: "Watch for black ice" },
@@ -443,13 +476,64 @@
             { date: "Day 13", city: { zh: "台北", en: "Taipei" }, mapUrl: "Taipei+101", zh: { title: "✈️ 回家：奧克蘭 → 台北", timeline: [["07:30", "前往機場", "11 hr 飛航"], ["09:40", "起飛回台", "搭車"], ["17:05", "抵達台北"]] }, en: { title: "✈️ Home: AKL to TPE", timeline: [["07:30", "To AKL Airport", "11 hr flight"], ["09:40", "Depart AKL", "drive"], ["17:05", "Arrive Taipei"]] } }
         ];
 
-        // Dynamically assign actualDate starting from today to demonstrate time-aware UI without hardcoding real dates
-        const startDate = new Date();
-        itinerary.forEach((day, i) => {
-            const d = new Date(startDate);
-            d.setDate(startDate.getDate() + i);
-            day.actualDate = d.toISOString().split('T')[0];
-        });
+        // Date Logic
+        function updateItineraryDates(start) {
+            itinerary.forEach((day, i) => {
+                const d = new Date(start);
+                d.setDate(start.getDate() + i);
+                day.actualDate = d.toISOString().split('T')[0];
+            });
+        }
+
+        const savedStartDate = localStorage.getItem('nz_trip_start_date');
+        let startDate = savedStartDate ? new Date(savedStartDate) : new Date();
+        updateItineraryDates(startDate);
+
+        function openDateModal() {
+            const modal = document.getElementById('date-modal');
+            const backdrop = document.getElementById('date-modal-backdrop');
+            const content = document.getElementById('date-modal-content');
+            const input = document.getElementById('start-date-input');
+            const ui = translations[currentLang];
+            
+            document.getElementById('date-modal-title').innerText = ui.dateModalTitle;
+            document.getElementById('date-modal-desc').innerText = ui.dateInputLabel;
+            document.querySelector('#date-modal button').innerText = ui.confirmBtn;
+            
+            input.value = startDate.toISOString().split('T')[0];
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            setTimeout(() => {
+                backdrop.classList.replace('opacity-0', 'opacity-100');
+                content.classList.replace('opacity-0', 'opacity-100');
+                content.classList.replace('scale-95', 'scale-100');
+            }, 10);
+        }
+
+        function closeDateModal() {
+            const modal = document.getElementById('date-modal');
+            const backdrop = document.getElementById('date-modal-backdrop');
+            const content = document.getElementById('date-modal-content');
+            backdrop.classList.replace('opacity-100', 'opacity-0');
+            content.classList.replace('opacity-100', 'opacity-0');
+            content.classList.replace('scale-100', 'scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }, 300);
+        }
+
+        function submitStartDate() {
+            const dateVal = document.getElementById('start-date-input').value;
+            if (dateVal) {
+                startDate = new Date(dateVal);
+                localStorage.setItem('nz_trip_start_date', dateVal);
+                updateItineraryDates(startDate);
+                if ("vibrate" in navigator) navigator.vibrate([10, 30, 10]);
+                closeDateModal();
+                updateUI();
+            }
+        }
 
         // Test helper: read ?simTime=2025-06-25T14:30 from URL or use testTime(dayNumber, timeStr) in console
         const urlParams = new URLSearchParams(window.location.search);
@@ -783,16 +867,21 @@
                             const todayStr = now.toISOString().split('T')[0];
                             const isToday = day.actualDate === todayStr;
                             const isPast = new Date(day.actualDate) < new Date(todayStr);
+                            const dayDate = new Date(day.actualDate);
+                            const isWeekend = dayDate.getDay() === 0 || dayDate.getDay() === 6;
 
                             return `
-                            <div onclick="activeDayIndex=${i}; updateUI();" class="relative flex items-center p-4 rounded-2xl bg-white/50 border border-slate-100 hover:bg-white cursor-pointer transition-all overflow-hidden group">
+                            <div onclick="activeDayIndex=${i}; updateUI();" class="relative flex items-center p-4 rounded-2xl ${isWeekend ? 'bg-amber-50/50 border-amber-100 hover:bg-amber-50' : 'bg-white/50 border-slate-100 hover:bg-white'} border cursor-pointer transition-all overflow-hidden group">
                                 ${isPast ? '<div class="absolute inset-0 bg-slate-50/50 z-10 rounded-2xl flex items-center justify-center backdrop-blur-[0.5px] pointer-events-none transition-all duration-300 group-hover:bg-transparent group-hover:backdrop-blur-none"><div class="border-2 border-emerald-500/80 text-emerald-500/80 font-black text-[10px] uppercase tracking-widest px-2 py-0.5 rounded transform -rotate-12 shadow-sm transition-opacity duration-300 group-hover:opacity-0">Completed</div></div>' : ''}
-                                <div class="w-10 h-10 ${isToday ? 'bg-red-500 text-white animate-pulse' : (isPast ? 'bg-slate-200 text-slate-400' : 'bg-blue-100 text-blue-600')} rounded-lg flex flex-col items-center justify-center mr-4 shrink-0 transition-colors z-0">
+                                <div class="w-10 h-10 ${isToday ? 'bg-red-500 text-white animate-pulse' : (isPast ? 'bg-slate-200 text-slate-400' : (isWeekend ? 'bg-amber-100 text-amber-600' : 'bg-blue-100 text-blue-600'))} rounded-lg flex flex-col items-center justify-center mr-4 shrink-0 transition-colors z-0">
                                     <span class="text-sm font-bold">D${i+1}</span>
                                 </div>
                                 <div class="flex-1">
-                                    <h4 class="font-bold text-slate-800 text-sm">${day[currentLang].title}</h4>
-                                    <p class="text-[10px] text-slate-400 uppercase font-bold">${day.city[currentLang]}</p>
+                                    <div class="flex items-center gap-2">
+                                        <h4 class="font-bold text-slate-800 text-sm">${day[currentLang].title}</h4>
+                                        ${isWeekend ? `<span class="text-[9px] bg-amber-500 text-white px-1.5 py-0.5 rounded font-black uppercase tracking-tighter">${currentLang === 'zh' ? '週末' : 'WND'}</span>` : ''}
+                                    </div>
+                                    <p class="text-[10px] text-slate-400 uppercase font-bold">${day.city[currentLang]} · ${dayDate.toLocaleDateString(currentLang === 'zh' ? 'zh-TW' : 'en-US', { month: 'short', day: 'numeric', weekday: 'short' })}</p>
                                 </div>
                             </div>
                             `;
@@ -905,10 +994,11 @@
                     <div class="lg:col-span-7 space-y-6">
                         <div class="glass-card rounded-[2.5rem] p-8 shadow-2xl relative border-t border-white/60">
                             <div class="mb-8">
-                                <span class="${isToday ? 'bg-red-500 animate-pulse' : 'bg-blue-600'} text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase mb-2 inline-block transition-colors">Day ${activeDayIndex + 1}</span>
-                                ${day.drive ? `<span class="bg-amber-500 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase mb-2 ml-1 inline-block"><i class="fas fa-car mr-1"></i> ${ui.driveTimeLabel}: ${day.drive}</span>` : ''}
+                                <span class="${isToday ? 'bg-red-500 animate-pulse' : (new Date(day.actualDate).getDay() === 0 || new Date(day.actualDate).getDay() === 6 ? 'bg-amber-500' : 'bg-blue-600')} text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase mb-2 inline-block transition-colors">Day ${activeDayIndex + 1}</span>
+                                ${day.drive ? `<span class="bg-indigo-500 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase mb-2 ml-1 inline-block"><i class="fas fa-car mr-1"></i> ${ui.driveTimeLabel}: ${day.drive}</span>` : ''}
+                                ${(new Date(day.actualDate).getDay() === 0 || new Date(day.actualDate).getDay() === 6) ? `<span class="bg-amber-100 text-amber-700 text-[10px] font-black px-3 py-1 rounded-full uppercase mb-2 ml-1 inline-block border border-amber-200"><i class="fas fa-calendar-star mr-1"></i> ${currentLang === 'zh' ? '週末假期' : 'WEEKEND'}</span>` : ''}
                                 <h2 class="text-4xl font-extrabold text-slate-800">${lang.title}</h2>
-                                <p class="text-slate-500 font-bold mt-1 text-sm flex items-center gap-1.5"><i class="fas fa-location-dot"></i> ${day.city[currentLang]}</p>
+                                <p class="text-slate-500 font-bold mt-1 text-sm flex items-center gap-1.5"><i class="fas fa-calendar-day"></i> ${new Date(day.actualDate).toLocaleDateString(currentLang === 'zh' ? 'zh-TW' : 'en-US', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' })} · ${day.city[currentLang]}</p>
                             </div>
                             <div class="timeline-line space-y-8 pl-1">
                                 ${lang.timeline.map((t, index) => {
