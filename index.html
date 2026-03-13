@@ -186,6 +186,34 @@
             #drawer-menu { transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
             #drawer-overlay { transition: opacity 0.4s ease; }
         }
+
+        @media print {
+            body { background: white !important; }
+            #app, #drawer-overlay, #drawer-menu, #initial-date-modal, #password-modal, #converter-modal, .mobile-nav, header, .snow-container, .bg-overlay, .aurora-bg { 
+                display: none !important; 
+            }
+            #print-area { 
+                display: block !important; 
+                position: absolute; 
+                top: 0; 
+                left: 0; 
+                width: 100%; 
+                background: white;
+                color: #1e293b;
+            }
+            .day-block { margin-bottom: 40px; page-break-inside: avoid; border: 1px solid #e2e8f0; border-radius: 20px; padding: 25px; background: #fff; }
+            .day-header { font-size: 1.25rem; font-weight: 800; margin-bottom: 20px; color: #1e40af; border-bottom: 2px solid #eff6ff; padding-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+            .city-badge { font-size: 0.85rem; background: #eff6ff; color: #2563eb; padding: 4px 12px; border-radius: 20px; font-weight: 700; }
+            .timeline-item { display: flex; margin-bottom: 12px; font-size: 1rem; }
+            .timeline-time { width: 100px; font-weight: 800; color: #64748b; font-size: 0.9rem; }
+            .timeline-desc { flex: 1; color: #0f172a; font-weight: 600; }
+            .hotel-info { margin-top: 20px; background: #f8fafc; padding: 15px 20px; border-radius: 12px; font-size: 0.9rem; font-weight: 800; border-left: 6px solid #3b82f6; color: #334155; }
+            .photo-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-top: 20px; border-top: 1px dashed #e2e8f0; padding-top: 20px; }
+            .photo-item { border: 1px solid #f1f5f9; border-radius: 12px; padding: 8px; background: #fafafa; }
+            .photo-img { width: 100%; height: 200px; object-fit: cover; border-radius: 8px; }
+            .photo-note { font-size: 0.75rem; color: #64748b; margin-top: 8px; font-style: italic; text-align: center; }
+        }
+        #print-area { display: none; }
     </style>
 </head>
 <body class="text-slate-900 overflow-x-hidden transition-colors duration-1000">
@@ -194,6 +222,7 @@
     <div id="bg-aurora" class="aurora-bg transition-opacity duration-1000 pointer-events-none opacity-0"></div>
     <div class="snow-container" id="snowfalls"></div>
 
+    <div id="app" class="pb-24 lg:pb-0">
     <!-- Header -->
     <header class="bg-white/70 backdrop-blur-md border-b sticky top-0 z-50 px-3 py-2 sm:px-6 sm:py-3 flex justify-between items-center shadow-sm">
         <div onclick="activeDayIndex = -1; updateUI();" class="cursor-pointer shrink-0">
@@ -291,6 +320,7 @@
             <!-- Spacer for mobile bottom nav -->
             <div class="h-32 md:h-8 w-full"></div>
         </main>
+    </div>
     </div>
 
     <script>
@@ -888,44 +918,8 @@
             const memoriesCount = allMemories.length;
             const includePhotos = memoriesCount > 0 && confirm(currentLang === 'zh' ? `偵測到 ${memoriesCount} 張照片，是否一併列印？` : `Found ${memoriesCount} photos. Include them in the print?`);
 
-            const printFrame = document.getElementById('print-frame');
-            const printDocument = printFrame.contentDocument || printFrame.contentWindow.document;
-
-            let printHtml = `
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <meta charset="UTF-8">
-                <title>${ui.header}</title>
-                <style>
-                    body { font-family: 'Inter', 'Noto Sans TC', sans-serif; color: #1e293b; margin: 0; padding: 40px; line-height: 1.6; background: #fff; }
-                    h1 { text-align: center; color: #0f172a; margin-bottom: 40px; border-bottom: 3px solid #f1f5f9; padding-bottom: 20px; font-size: 32px; font-weight: 800; }
-                    .day-block { margin-bottom: 40px; page-break-inside: avoid; border: 1px solid #e2e8f0; border-radius: 20px; padding: 25px; background: #fff; }
-                    .day-header { font-size: 1.25rem; font-weight: 800; margin-bottom: 20px; color: #1e40af; border-bottom: 2px solid #eff6ff; padding-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
-                    .city-badge { font-size: 0.85rem; background: #eff6ff; color: #2563eb; padding: 4px 12px; border-radius: 20px; font-weight: 700; }
-                    .timeline { margin-bottom: 20px; }
-                    .timeline-item { display: flex; margin-bottom: 12px; font-size: 1rem; }
-                    .timeline-time { width: 100px; font-weight: 800; color: #64748b; font-size: 0.9rem; }
-                    .timeline-desc { flex: 1; color: #0f172a; font-weight: 600; }
-                    .hotel-info { margin-top: 20px; background: #f8fafc; padding: 15px 20px; border-radius: 12px; font-size: 0.9rem; font-weight: 800; border-left: 6px solid #3b82f6; color: #334155; }
-                    
-                    /* Photo Grid Styling */
-                    .photo-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-top: 20px; border-top: 1px dashed #e2e8f0; padding-top: 20px; }
-                    .photo-item { border: 1px solid #f1f5f9; border-radius: 12px; padding: 8px; background: #fafafa; }
-                    .photo-img { width: 100%; height: 200px; object-fit: cover; border-radius: 8px; }
-                    .photo-note { font-size: 0.75rem; color: #64748b; margin-top: 8px; font-style: italic; text-align: center; }
-                    
-                    @media print {
-                        body { padding: 20px; }
-                        h1 { font-size: 24px; margin-bottom: 20px; }
-                        .day-block { border-color: #cbd5e1; margin-bottom: 30px; }
-                        .photo-grid { grid-template-columns: repeat(2, 1fr); }
-                    }
-                </style>
-            </head>
-            <body>
-                <h1>${ui.header}</h1>
-            `;
+            const printArea = document.getElementById('print-area');
+            let printHtml = `<h1>${ui.header}</h1>`;
             
             itinerary.forEach((day, dayIndex) => {
                 const lang = day[currentLang];
@@ -967,17 +961,14 @@
                 printHtml += `</div>`;
             });
             
-            printHtml += `</body></html>`;
+            printArea.innerHTML = printHtml;
 
-            printDocument.open();
-            printDocument.write(printHtml);
-            printDocument.close();
-
-            // Wait for styles and potential images to load
+            // Wait for styles and potential images to settle
             setTimeout(() => {
-                printFrame.contentWindow.focus();
-                printFrame.contentWindow.print();
-            }, 1000);
+                window.print();
+                // We keep it there for a moment so the print job finishes, then clear
+                setTimeout(() => { printArea.innerHTML = ''; }, 2000);
+            }, 800);
         }
 
         async function fetchExchangeRate() {
@@ -1656,5 +1647,6 @@
             setTimeout(openDateModal, 800);
         }
     </script>
+    <div id="print-area"></div>
 </body>
 </html>
