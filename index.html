@@ -82,9 +82,9 @@
         }
 
         .glass-card {
-            background: rgba(255, 255, 255, 0.92);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
         }
 
         .active-tab { 
@@ -116,14 +116,15 @@
         body.theme-dark .bg-white\/50,
         body.theme-dark .bg-white\/60,
         body.theme-dark .bg-white\/70,
+        body.theme-dark .bg-white\/80,
         body.theme-dark .bg-white\/90,
         body.theme-dark .day-btn.bg-white,
         body.theme-dark #weather-box,
         body.theme-dark #notice-board > div {
-            background-color: rgba(15, 23, 42, 0.6) !important;
+            background-color: rgba(15, 23, 42, 0.5) !important;
             border-color: rgba(255, 255, 255, 0.1) !important;
             color: #f8fafc !important;
-            backdrop-filter: blur(12px);
+            backdrop-filter: blur(16px);
         }
         body.theme-dark .text-slate-800,
         body.theme-dark .text-slate-700,
@@ -147,9 +148,10 @@
         @media (max-width: 768px) {
             .mobile-nav { 
                 position: fixed; bottom: 0; left: 0; right: 0; 
-                background: rgba(255,255,255,0.95); 
+                background: rgba(255, 255, 255, 0.7); 
+                backdrop-filter: blur(12px);
                 z-index: 100; display: flex; overflow-x: auto; 
-                padding: 8px; gap: 6px; border-top: 1px solid #e2e8f0;
+                padding: 8px; gap: 6px; border-top: 1px solid rgba(255,255,255,0.3);
             }
             main { padding-bottom: 24px; }
             .day-btn { padding: 6px 10px !important; font-size: 0.8rem !important; }
@@ -163,7 +165,7 @@
     <div class="snow-container" id="snowfalls"></div>
 
     <!-- Header -->
-    <header class="bg-white/90 backdrop-blur-md border-b sticky top-0 z-50 px-3 py-2 sm:px-6 sm:py-3 flex justify-between items-center shadow-sm">
+    <header class="bg-white/70 backdrop-blur-md border-b sticky top-0 z-50 px-3 py-2 sm:px-6 sm:py-3 flex justify-between items-center shadow-sm">
         <div onclick="activeDayIndex = -1; updateUI();" class="cursor-pointer shrink-0">
             <h1 class="text-sm sm:text-lg font-bold text-slate-800 flex items-center gap-1 sm:gap-2">
                 <i class="fas fa-snowflakes text-blue-500"></i>
@@ -269,6 +271,19 @@
         </div>
         `;
         document.body.insertAdjacentHTML('beforeend', dateModalHTML);
+
+        const noticeModalHTML = `
+        <div id="notice-modal" class="fixed inset-0 z-[100] hidden flex-col items-center justify-center p-4">
+            <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-md transition-opacity opacity-0" id="notice-modal-backdrop" onclick="closeNoticeModal()"></div>
+            <div class="bg-white rounded-[2.5rem] p-8 sm:p-12 shadow-2xl w-full max-w-lg relative z-10 scale-95 opacity-0 transition-all duration-300" id="notice-modal-content">
+                <button onclick="closeNoticeModal()" class="absolute top-6 right-6 text-slate-400 hover:text-slate-600 w-10 h-10 flex items-center justify-center rounded-full hover:bg-slate-100 transition-all">
+                    <i class="fas fa-times"></i>
+                </button>
+                <div id="notice-detail-content"></div>
+            </div>
+        </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', noticeModalHTML);
 
         // Hidden upload input for Memories
         const uploadHTML = `<input type="file" id="memory-upload" accept="image/*" class="hidden">`;
@@ -385,27 +400,183 @@
             }
         }
 
+        const SPOT_VISUALS = [
+            { 
+                keywords: ["Skyline", "Gondola", "纜車", "Luge", "溜溜車"], 
+                img: "https://images.unsplash.com/photo-1507699622108-4be3abc69e28?auto=format&fit=crop&q=80&w=1200", 
+                title_zh: "皇后鎮天際線纜車", title_en: "Skyline Queenstown" 
+            },
+            { 
+                keywords: ["Glenorchy", "格萊諾基", "魔戒"], 
+                img: "https://images.unsplash.com/photo-1589330273594-fade1ee91647?auto=format&fit=crop&q=80&w=1200", 
+                title_zh: "格萊諾基碼頭", title_en: "Glenorchy Pier" 
+            },
+            { 
+                keywords: ["Wanaka", "瓦納卡", "Tree", "孤獨的樹"], 
+                img: "https://images.unsplash.com/photo-1510414842594-a61c69b5ae57?auto=format&fit=crop&q=80&w=1200", 
+                title_zh: "瓦納卡湖中樹", title_en: "That Wanaka Tree" 
+            },
+            { 
+                keywords: ["Oamaru", "奧瑪魯", "Penguin", "企鵝"], 
+                img: "https://images.unsplash.com/photo-1510672981848-a1c4f1cb5ccf?auto=format&fit=crop&q=80&w=1200", 
+                title_zh: "奧瑪魯企鵝棲息地", title_en: "Oamaru Penguin Colony" 
+            },
+            { 
+                keywords: ["Salmon", "鮭魚", "Pukaki", "普卡基"], 
+                img: "https://images.unsplash.com/photo-1599084993091-1cb5c0321741?auto=format&fit=crop&q=80&w=1200", 
+                title_zh: "普卡基湖：蒂芬鮭魚", title_en: "Alpine Salmon Farm" 
+            },
+            { 
+                keywords: ["Mt. Cook", "庫克山", "Hooker Valley", "胡克谷", "健行"], 
+                img: "https://images.unsplash.com/photo-1469521669194-babc820d938b?auto=format&fit=crop&q=80&w=1200", 
+                title_zh: "庫克山：胡克谷步道", title_en: "Mount Cook / Hooker Valley" 
+            },
+            { 
+                keywords: ["Tekapo", "蒂卡波", "Church", "Shepherd", "教堂", "牧羊人"], 
+                img: "https://images.unsplash.com/photo-1509012484501-8bca23214732?auto=format&fit=crop&q=80&w=1200", 
+                title_zh: "蒂卡波：牧羊人教堂", title_en: "Church of the Good Shepherd" 
+            },
+            { 
+                keywords: ["John", "約翰山", "Observatory", "天文台"], 
+                img: "https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?auto=format&fit=crop&q=80&w=1200", 
+                title_zh: "約翰山天文台", title_en: "Mt. John Observatory" 
+            },
+            { 
+                keywords: ["Christchurch", "基督城", "機場", "CHC"], 
+                img: "https://images.unsplash.com/photo-1517032145880-99c968f447f5?auto=format&fit=crop&q=80&w=1200", 
+                title_zh: "基督城：花園城市", title_en: "Christchurch City" 
+            },
+            { 
+                keywords: ["Puzzling", "奇幻世界", "迷宮"], 
+                img: "https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?auto=format&fit=crop&q=80&w=1200", 
+                title_zh: "瓦納卡：Puzzling World", title_en: "Puzzling World Wanaka" 
+            }
+        ];
+
         function updateMapQuery(query) {
             const iframe = document.getElementById('day-map-iframe');
             if (iframe) {
-                // Ensure we don't accidentally navigate away if query is empty
                 if (!query) return;
+
+                // Reset state
+                hideSpotVisual();
+                iframe.style.opacity = '1';
                 
-                // Add a subtle "loading" state to parent container
-                const container = iframe.parentElement;
-                container.classList.add('opacity-50');
-                
-                // Construct the Google Maps search URL
-                const safeQuery = encodeURIComponent(query);
-                iframe.src = `https://maps.google.com/maps?q=${safeQuery}&t=&z=14&ie=UTF8&iwloc=&output=embed`;
-                
-                iframe.onload = () => {
-                    container.classList.remove('opacity-50');
-                    container.classList.add('animate-in', 'fade-in', 'duration-500');
-                };
+                // Check for immersive spot visual
+                let spotMatch = null;
+                const lowerQuery = query.toLowerCase();
+                for (const item of SPOT_VISUALS) {
+                    if (item.keywords.some(kw => lowerQuery.includes(kw.toLowerCase()))) {
+                        spotMatch = item;
+                        break;
+                    }
+                }
+
+                if (spotMatch) {
+                    showSpotVisual(spotMatch, query);
+                } else {
+                    const container = iframe.parentElement;
+                    container.classList.add('opacity-50');
+                    const safeQuery = encodeURIComponent(query);
+                    iframe.src = `https://maps.google.com/maps?q=${safeQuery}&t=&z=14&ie=UTF8&iwloc=&output=embed`;
+                    iframe.onload = () => container.classList.remove('opacity-50');
+                }
 
                 if ("vibrate" in navigator) navigator.vibrate(5);
             }
+        }
+
+        function showSpotVisual(spot, query) {
+            let container = document.getElementById('day-map-iframe').parentElement;
+            let visualOverlay = document.getElementById('spot-visual-overlay');
+            
+            if (!visualOverlay) {
+                container.insertAdjacentHTML('beforeend', `
+                    <div id="spot-visual-overlay" class="absolute inset-2 z-20 bg-slate-900 rounded-[2rem] overflow-hidden animate-in fade-in duration-500">
+                        <img id="spot-visual-img" class="w-full h-full object-cover opacity-0 transition-opacity duration-700" src="">
+                        <div class="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-transparent to-transparent"></div>
+                        <div class="absolute bottom-0 left-0 right-0 p-8 text-white z-30">
+                            <h3 id="spot-visual-title" class="text-2xl font-bold mb-2"></h3>
+                            <div class="flex gap-3">
+                                <button onclick="hideSpotVisual()" class="bg-white/20 hover:bg-white/30 border border-white/30 backdrop-blur-md text-white px-4 py-2 rounded-full text-xs font-bold transition-all flex items-center gap-2">
+                                    <i class="fas fa-map-location-dot"></i> ${currentLang === 'zh' ? '查看地圖' : 'View Map'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `);
+                visualOverlay = document.getElementById('spot-visual-overlay');
+            }
+            
+            visualOverlay.classList.remove('hidden');
+            const img = document.getElementById('spot-visual-img');
+            img.classList.remove('opacity-100');
+            img.style.opacity = '0';
+            img.src = spot.img;
+            img.onload = () => img.style.opacity = '1';
+            img.onerror = () => hideSpotVisual(); // Fail gracefully to map if image is broken
+            
+            document.getElementById('spot-visual-title').innerText = currentLang === 'zh' ? spot.title_zh : spot.title_en;
+            
+            const iframe = document.getElementById('day-map-iframe');
+            iframe.src = `https://maps.google.com/maps?q=${encodeURIComponent(query)}&t=&z=14&ie=UTF8&iwloc=&output=embed`;
+        }
+
+        function hideSpotVisual() {
+            const overlay = document.getElementById('spot-visual-overlay');
+            if (overlay) {
+                overlay.classList.add('hidden');
+            }
+        }
+
+        function showNoticeModal(idx) {
+            const notice = translations[currentLang].notices[idx];
+            const modal = document.getElementById('notice-modal');
+            const backdrop = document.getElementById('notice-modal-backdrop');
+            const content = document.getElementById('notice-modal-content');
+            const detailContainer = document.getElementById('notice-detail-content');
+
+            detailContainer.innerHTML = `
+                <div class="flex items-center gap-4 mb-6">
+                    <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-3xl flex items-center justify-center text-3xl shadow-sm">
+                        <i class="fas ${notice.icon}"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-2xl font-black text-slate-800">${notice.title}</h3>
+                        <p class="text-blue-600 font-bold text-sm tracking-wider uppercase">${currentLang === 'zh' ? '行前必讀' : 'TRAVEL ADVICE'}</p>
+                    </div>
+                </div>
+                <div class="prose prose-slate max-w-none">
+                    <p class="text-slate-600 leading-relaxed text-lg font-medium">${notice.desc}</p>
+                </div>
+                <div class="mt-8 pt-6 border-t border-slate-100 flex justify-end">
+                    <button onclick="closeNoticeModal()" class="bg-slate-900 text-white px-6 py-3 rounded-2xl font-bold hover:bg-slate-800 transition-all active:scale-95 shadow-lg">
+                        ${currentLang === 'zh' ? '我知道了' : 'Got it'}
+                    </button>
+                </div>
+            `;
+
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            setTimeout(() => {
+                backdrop.classList.replace('opacity-0', 'opacity-100');
+                content.classList.replace('opacity-0', 'opacity-100');
+                content.classList.replace('scale-95', 'scale-100');
+            }, 10);
+            if ("vibrate" in navigator) navigator.vibrate(10);
+        }
+
+        function closeNoticeModal() {
+            const modal = document.getElementById('notice-modal');
+            const backdrop = document.getElementById('notice-modal-backdrop');
+            const content = document.getElementById('notice-modal-content');
+            backdrop.classList.replace('opacity-100', 'opacity-0');
+            content.classList.replace('opacity-100', 'opacity-0');
+            content.classList.replace('scale-100', 'scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }, 300);
         }
 
         const translations = {
@@ -425,12 +596,12 @@
                 dateInputLabel: "請選擇您的出發日：",
                 confirmBtn: "確認設定",
                 notices: [
-                    { icon: "fa-passport", title: "NZeTA", content: "簽證核准件" },
-                    { icon: "fa-car", title: "冬季自駕", content: "慎防黑冰、備妥雪鏈" },
-                    { id: "exchangeRate", icon: "fa-coins", title: "即時匯率", content: "取得中..." },
-                    { icon: "fa-temperature-low", title: "氣溫", content: "-2°C ~ 10°C (南島)" },
-                    { icon: "fa-plug", title: "插座", content: "八字型 Type I" },
-                    { icon: "fa-phone", title: "緊急", content: "報警急救撥打 111" }
+                    { icon: "fa-passport", title: "NZeTA", content: "簽證核准件", desc: "紐西蘭電子旅行授權 (NZeTA) 必須在出發前至少 72 小時完成申請。建議使用 NZeTA 官方手機 App 申請，費用較低且包含 IVL (國際旅客保育及旅遊稅)。申請完成後請將 PDF 核准件存入手機或列印。" },
+                    { icon: "fa-car", title: "冬季自駕", content: "慎防黑冰、備妥雪鏈", desc: "紐西蘭南島冬季路面常有黑冰 (Black Ice)，這是一種極難察覺的透明冰層。開車時請保持冷靜，避免急煞與大角度轉彎。清晨與深夜、背陰處路段應減速。租車時務必確認備有雪鏈並練習安裝。" },
+                    { id: "exchangeRate", icon: "fa-coins", title: "即時匯率", content: "取得中...", desc: "紐西蘭主要使用信用卡 (Visa/Mastercard)，即便在市集也很普及。建議準備約 200-300 元紐幣現金以備不時之需（如偏遠地區小店）。您可以下載匯率換算 App 隨時監控。" },
+                    { icon: "fa-temperature-low", title: "氣溫", content: "-2°C ~ 10°C (南島)", desc: "冬季温差極大，室內與車內通常有暖氣。建議採用「洋蔥式穿法」：底層排汗發熱衣、中層保暖刷毛或羊毛層、外層防風防水外套。帽子、手套與圍巾在戶外行程是必備的。" },
+                    { icon: "fa-plug", title: "插座", content: "八字型 Type I", desc: "紐西蘭使用的是三孔八字型插座 (Type I)，電壓為 230-240V。建議購買專用的轉接頭，或者帶一個台灣的多孔延長線搭配一個轉接頭使用。" },
+                    { icon: "fa-phone", title: "緊急", content: "報警急救撥打 111", desc: "在紐西蘭遇到任何紧急狀況（救護車、警察、消防），請直接撥打 111。如果是輕微報案或非緊急協助，可撥打 105。山區或偏遠地區收訊可能不佳，建議事先下載離線地圖。" }
                 ]
             },
             en: {
@@ -449,12 +620,12 @@
                 dateInputLabel: "Select your departure date:",
                 confirmBtn: "Confirm Date",
                 notices: [
-                    { icon: "fa-passport", title: "Visa", content: "NZeTA Status" },
-                    { icon: "fa-car", title: "Winter Drive", content: "Watch for black ice" },
-                    { id: "exchangeRate", icon: "fa-coins", title: "Live Rate", content: "Fetching..." },
-                    { icon: "fa-temperature-low", title: "Temp", content: "-2°C ~ 10°C (South)" },
-                    { icon: "fa-plug", title: "Power", content: "Type I Plug" },
-                    { icon: "fa-phone", title: "SOS", content: "Dial 111" }
+                    { icon: "fa-passport", title: "Visa", content: "NZeTA Status", desc: "The NZeTA (New Zealand Electronic Travel Authority) is mandatory for visitors from visa-waiver countries. Apply at least 72 hours before departure via the official mobile app for a discount. The IVL levy is included in the fee." },
+                    { icon: "fa-car", title: "Winter Drive", content: "Watch for black ice", desc: "Winter roads in the South Island can have 'Black Ice'—thin, transparent ice that is extremely slippery. Drive carefully during sunrise, sunset, and in shaded areas. Always carry snow chains and know how to fit them." },
+                    { id: "exchangeRate", icon: "fa-coins", title: "Live Rate", content: "Fetching...", desc: "New Zealand is almost cashless. Most places accept credit cards and mobile payments. However, having a small amount of NZD (approx. $200) is recommended for remote areas or emergency small purchases." },
+                    { icon: "fa-temperature-low", title: "Temp", content: "-2°C ~ 10°C (South)", desc: "Temperatures vary wildly. Indoor areas are heated. Use the 3-layer method: Thermal base, warm middle layer (wool/fleece), and a wind/waterproof outer shell. Accessories like beanies and gloves are essential." },
+                    { icon: "fa-plug", title: "Power", content: "Type I Plug", desc: "New Zealand uses Type I plugs (3 pins, flat-angled) at 230-240V. Ensure you have the correct adapters. Most modern chargers for phones and laptops are dual-voltage (100-240V)." },
+                    { icon: "fa-phone", title: "SOS", content: "Dial 111", desc: "Dial 111 for all emergencies (Police, Fire, Ambulance). For non-urgent police reports, dial 105. Note that mobile coverage can be patchy in remote mountain areas like Milford Sound or parts of the West Coast." }
                 ]
             }
         };
@@ -849,7 +1020,7 @@
             itinerary.forEach((day, i) => {
                 const isToday = day.actualDate === todayStr;
                 const btn = document.createElement('button');
-                btn.className = `day-btn md:w-full text-left px-4 py-2 rounded-xl text-sm font-bold border mb-1 ${i === activeDayIndex ? 'active-tab' : 'bg-white'}`;
+                btn.className = `day-btn md:w-full text-left px-4 py-2 rounded-xl text-sm font-bold border mb-1 ${i === activeDayIndex ? 'active-tab' : 'bg-white/70 backdrop-blur-sm'}`;
                 btn.innerHTML = `<span class="${isToday ? 'text-red-500 animate-pulse' : ''}">D${i+1}</span> ${day.city[currentLang]}`; // Highlight D1, D2 etc if today
                 btn.onclick = () => { activeDayIndex = i; updateUI(); };
                 nav.appendChild(btn);
@@ -868,11 +1039,14 @@
             }
 
             // Notices
-            document.getElementById('notice-board').innerHTML = ui.notices.map(n => `
-                <div class="bg-white/90 p-4 rounded-xl shadow-sm border border-slate-100 flex flex-col justify-center">
-                    <i class="fas ${n.icon} text-blue-500 mb-2"></i>
+            document.getElementById('notice-board').innerHTML = ui.notices.map((n, idx) => `
+                <div onclick="showNoticeModal(${idx})" class="bg-white/90 p-4 rounded-xl shadow-sm border border-slate-100 flex flex-col justify-center cursor-pointer hover:shadow-md hover:border-blue-200 hover:-translate-y-1 transition-all group">
+                    <i class="fas ${n.icon} text-blue-500 mb-2 group-hover:scale-110 transition-transform"></i>
                     <h5 class="font-bold text-sm">${n.title}</h5>
                     <p class="text-[11px] text-slate-500 mt-1 leading-tight">${n.content}</p>
+                    <div class="mt-2 text-[9px] text-blue-400 font-bold opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 uppercase">
+                        ${currentLang === 'zh' ? '點擊查看詳解' : 'Learn more'} <i class="fas fa-chevron-right text-[8px]"></i>
+                    </div>
                 </div>
             `).join('');
         }
@@ -1077,7 +1251,7 @@
                                 <span class="text-xs font-bold text-slate-400 uppercase tracking-widest animate-pulse">Loading Map...</span>
                             </div>
                             <!-- Map iframe -->
-                            <iframe id="day-map-iframe" frameborder="0" class="relative w-full h-full rounded-[2rem] z-10 opacity-0 transition-opacity duration-1000" onload="this.style.opacity=1" src="https://maps.google.com/maps?q=${day.mapUrl}&t=&z=13&ie=UTF8&iwloc=&output=embed"></iframe>
+                            <iframe id="day-map-iframe" frameborder="0" class="relative w-full h-full rounded-[2rem] z-10 transition-opacity duration-1000" src="https://maps.google.com/maps?q=${day.mapUrl}&t=&z=13&ie=UTF8&iwloc=&output=embed"></iframe>
                         </div>
                     </div>
                 </div>
@@ -1087,6 +1261,9 @@
             lang.timeline.forEach((_, index) => {
                 loadSpotMemories(activeDayIndex, index);
             });
+
+            // Auto-trigger map/spot visual for the day's main destination
+            setTimeout(() => updateMapQuery(day.mapUrl), 50);
         }
 
         function initSnow() {
