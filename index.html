@@ -216,6 +216,9 @@
 
             <!-- Secondary Actions (Desktop Only) -->
             <div class="hidden lg:flex items-center gap-2">
+                <button onclick="openConverter()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-full text-[12px] font-bold transition-all shadow-sm items-center gap-1 group">
+                    <i class="fas fa-calculator group-hover:scale-110 transition-transform"></i> <span id="ui-calc-btn">換算</span>
+                </button>
                 <button onclick="printItinerary()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-full text-[12px] font-bold transition-all shadow-sm items-center gap-1 group">
                     <i class="fas fa-print group-hover:scale-110 transition-transform"></i> <span id="ui-print-btn">列印</span>
                 </button>
@@ -1279,6 +1282,11 @@
             document.getElementById('ui-unlock-text').innerText = decryptedHotels ? ui.unlockDone : ui.unlockBtn;
             if (document.getElementById('ui-print-btn')) {
                 document.getElementById('ui-print-btn').innerText = ui.printBtn;
+            }
+            if (document.getElementById('ui-calc-btn')) {
+                document.getElementById('ui-calc-btn').innerText = ui.converterTitle.includes(' ') ? ui.converterTitle.split(' ')[1] : ui.converterTitle;
+                // For 'Currency Converter' -> 'Converter', or just keep it short
+                document.getElementById('ui-calc-btn').innerText = currentLang === 'zh' ? '換算' : 'Conv';
             }
             
             const nav = document.getElementById('nav-container');
