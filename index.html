@@ -143,6 +143,17 @@
         body.theme-dark .text-blue-700 { color: #38bdf8 !important; }
         body.theme-dark .bg-blue-100 { background-color: rgba(56, 189, 248, 0.2) !important; color: #38bdf8 !important; }
         body.theme-dark .bg-blue-600 { background-color: #0284c7 !important; color: white !important; }
+        body.theme-dark #drawer-menu { 
+            background-color: rgba(15, 23, 42, 0.9) !important; 
+            border-left: 1px solid rgba(255, 255, 255, 0.1) !important;
+            backdrop-filter: blur(24px);
+        }
+        body.theme-dark #drawer-links button {
+            background-color: rgba(255, 255, 255, 0.05) !important;
+            border-color: rgba(255, 255, 255, 0.1) !important;
+            color: #f8fafc !important;
+        }
+        body.theme-dark #drawer-links button i { color: #38bdf8 !important; }
         body.theme-dark .active-tab { background-color: #8b5cf6 !important; border-color: #a78bfa !important; box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4); }
 
         @media (max-width: 768px) {
@@ -274,7 +285,7 @@
             </div>
 
             <!-- Spacer for mobile bottom nav -->
-            <div class="h-24 md:h-8 w-full"></div>
+            <div class="h-32 md:h-8 w-full"></div>
         </main>
     </div>
 
