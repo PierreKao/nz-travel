@@ -251,9 +251,6 @@
                 <button onclick="printItinerary()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-full text-[12px] font-bold transition-all shadow-sm items-center gap-1 group">
                     <i class="fas fa-print group-hover:scale-110 transition-transform"></i> <span id="ui-print-btn">列印</span>
                 </button>
-                <button onclick="resetAllData()" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 rounded-full text-[12px] font-bold transition-all shadow-sm flex items-center justify-center group" title="Reset All Data">
-                    <i class="fas fa-trash-can group-hover:scale-110 transition-transform"></i>
-                </button>
                 <button onclick="toggleAurora()" class="bg-slate-800 hover:bg-slate-900 text-purple-300 px-3 py-1.5 rounded-full text-[12px] font-bold transition-all shadow-sm flex items-center justify-center relative overflow-hidden group">
                     <div class="absolute inset-0 bg-gradient-to-r from-purple-500/30 to-emerald-500/30 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                     <i class="fas fa-moon relative z-10"></i>
@@ -1475,13 +1472,9 @@
                 nav.appendChild(btn);
             });
 
-            // Add Reset Data button to sidebar (Desktop visibility)
-            const spacer = document.createElement('div');
-            spacer.className = "flex-1 hidden md:block";
-            nav.appendChild(spacer);
-
+            // Add simple Reset Data link to sidebar for desktop
             const resetBtn = document.createElement('button');
-            resetBtn.className = "day-btn md:w-full text-left px-5 py-3 rounded-xl font-bold border mt-6 flex items-center gap-2 bg-red-50 text-red-700 border-red-100 hover:bg-red-100 transition-all hidden md:flex";
+            resetBtn.className = "day-btn md:w-full text-left px-4 py-2 rounded-xl text-xs font-bold border mt-6 flex items-center gap-2 text-red-500 border-red-100 hover:bg-red-50 transition-all hidden md:flex";
             resetBtn.innerHTML = `<i class="fas fa-trash-can"></i> ${ui.resetDataBtn}`;
             resetBtn.onclick = resetAllData;
             nav.appendChild(resetBtn);
