@@ -445,6 +445,17 @@
             });
         }
 
+        async function fetchAllMemories() {
+            return new Promise((resolve) => {
+                if (!db) return resolve([]);
+                const transaction = db.transaction(['memories'], 'readonly');
+                const store = transaction.objectStore('memories');
+                const request = store.getAll();
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => resolve([]);
+            });
+        }
+
         function openMemoryUpload(dayIdx, spotIdx) {
             const input = document.getElementById('memory-upload');
             input.onchange = (e) => handleMemoryUpload(e, dayIdx, spotIdx);
@@ -869,8 +880,14 @@
             return '<i class="fas fa-cloud-sun text-orange-400 drop-shadow-[0_0_8px_rgba(251,146,60,0.5)]"></i>';
         }
 
-        function printItinerary() {
+        async function printItinerary() {
             const ui = translations[currentLang];
+            
+            // Fetch all memories if they exist
+            const allMemories = await fetchAllMemories();
+            const memoriesCount = allMemories.length;
+            const includePhotos = memoriesCount > 0 && confirm(currentLang === 'zh' ? `偵測到 ${memoriesCount} 張照片，是否一併列印？` : `Found ${memoriesCount} photos. Include them in the print?`);
+
             let printWindow = window.open('', '_blank');
             let printHtml = `
             <!DOCTYPE html>
@@ -878,46 +895,80 @@
             <head>
                 <title>${ui.header}</title>
                 <style>
-                    body { font-family: 'Inter', 'Noto Sans TC', sans-serif; color: #1e293b; margin: 0; padding: 30px; line-height: 1.6; }
-                    h1 { text-align: center; color: #0f172a; margin-bottom: 30px; border-bottom: 2px solid #e2e8f0; padding-bottom: 15px; font-size: 28px; }
-                    .day-block { margin-bottom: 25px; page-break-inside: avoid; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-                    .day-header { font-size: 1.1rem; font-weight: bold; margin-bottom: 15px; color: #1e40af; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
-                    .city-badge { font-size: 0.8rem; background: #eff6ff; color: #2563eb; padding: 2px 8px; border-radius: 12px; text-transform: uppercase; }
-                    .timeline-item { display: flex; margin-bottom: 10px; font-size: 0.95rem; }
-                    .timeline-time { width: 90px; font-weight: bold; color: #64748b; font-size: 0.85rem; padding-top: 2px; text-transform: uppercase; }
-                    .timeline-desc { flex: 1; color: #0f172a; font-weight: 500; }
-                    .hotel-info { margin-top: 15px; background: #f8fafc; padding: 12px 15px; border-radius: 8px; font-size: 0.85rem; font-weight: bold; border-left: 4px solid #3b82f6; display: flex; gap: 8px; align-items: center; color: #334155; }
+                    body { font-family: 'Inter', 'Noto Sans TC', sans-serif; color: #1e293b; margin: 0; padding: 40px; line-height: 1.6; background: #fff; }
+                    h1 { text-align: center; color: #0f172a; margin-bottom: 40px; border-bottom: 3px solid #f1f5f9; padding-bottom: 20px; font-size: 32px; font-weight: 800; }
+                    .day-block { margin-bottom: 40px; page-break-inside: avoid; border: 1px solid #e2e8f0; border-radius: 20px; padding: 25px; background: #fff; }
+                    .day-header { font-size: 1.25rem; font-weight: 800; margin-bottom: 20px; color: #1e40af; border-bottom: 2px solid #eff6ff; padding-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+                    .city-badge { font-size: 0.85rem; background: #eff6ff; color: #2563eb; padding: 4px 12px; border-radius: 20px; font-weight: 700; }
+                    .timeline { margin-bottom: 20px; }
+                    .timeline-item { display: flex; margin-bottom: 12px; font-size: 1rem; }
+                    .timeline-time { width: 100px; font-weight: 800; color: #64748b; font-size: 0.9rem; }
+                    .timeline-desc { flex: 1; color: #0f172a; font-weight: 600; }
+                    .hotel-info { margin-top: 20px; background: #f8fafc; padding: 15px 20px; border-radius: 12px; font-size: 0.9rem; font-weight: 800; border-left: 6px solid #3b82f6; color: #334155; }
+                    
+                    /* Photo Grid Styling */
+                    .photo-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-top: 20px; border-top: 1px dashed #e2e8f0; padding-top: 20px; }
+                    .photo-item { border: 1px solid #f1f5f9; border-radius: 12px; padding: 8px; background: #fafafa; }
+                    .photo-img { width: 100%; height: 200px; object-fit: cover; border-radius: 8px; }
+                    .photo-note { font-size: 0.75rem; color: #64748b; margin-top: 8px; font-style: italic; text-align: center; }
+                    
+                    @media print {
+                        body { padding: 20px; }
+                        h1 { font-size: 24px; margin-bottom: 20px; }
+                        .day-block { border-color: #cbd5e1; margin-bottom: 30px; }
+                        .photo-grid { grid-template-columns: repeat(2, 1fr); }
+                    }
                 </style>
             </head>
             <body>
                 <h1>${ui.header}</h1>
             `;
             
-            itinerary.forEach((day, index) => {
+            itinerary.forEach((day, dayIndex) => {
                 const lang = day[currentLang];
-                const hotel = decryptedHotels ? decryptedHotels[index] : ui.locked;
+                const hotel = decryptedHotels ? decryptedHotels[dayIndex] : ui.locked;
+                
                 printHtml += `
                     <div class="day-block">
                         <div class="day-header">
-                            <span>Day ${index + 1} | ${lang.title}</span>
+                            <span>Day ${dayIndex + 1} | ${lang.title}</span>
                             <span class="city-badge">${day.city[currentLang]}</span>
                         </div>
-                        ${lang.timeline.map(t => `
-                            <div class="timeline-item">
-                                <div class="timeline-time">${t[0]}</div>
-                                <div class="timeline-desc">${t[1]}</div>
-                            </div>
-                        `).join('')}
+                        <div class="timeline">
+                            ${lang.timeline.map(t => `
+                                <div class="timeline-item">
+                                    <div class="timeline-time">${t[0]}</div>
+                                    <div class="timeline-desc">${t[1]}</div>
+                                </div>
+                            `).join('')}
+                        </div>
                         <div class="hotel-info">🛏️ ${ui.hotelLabel}: ${hotel}</div>
-                    </div>
                 `;
+
+                if (includePhotos) {
+                    const dayMemories = allMemories.filter(m => m.spotKey.startsWith(`d${dayIndex}_`));
+                    if (dayMemories.length > 0) {
+                        printHtml += `<div class="photo-grid">`;
+                        dayMemories.forEach(m => {
+                            printHtml += `
+                                <div class="photo-item">
+                                    <img src="${m.photoData}" class="photo-img">
+                                    ${m.note ? `<div class="photo-note">"${m.note}"</div>` : ''}
+                                </div>
+                            `;
+                        });
+                        printHtml += `</div>`;
+                    }
+                }
+
+                printHtml += `</div>`;
             });
             
             printHtml += `</body></html>`;
             printWindow.document.write(printHtml);
             printWindow.document.close();
             printWindow.focus();
-            setTimeout(() => { printWindow.print(); printWindow.close(); }, 500);
+            setTimeout(() => { printWindow.print(); printWindow.close(); }, 800);
         }
 
         async function fetchExchangeRate() {
