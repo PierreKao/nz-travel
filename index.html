@@ -1061,6 +1061,22 @@
             }, 500);
         }
 
+        async function resetAllData() {
+            const ui = translations[currentLang];
+            if (!confirm(ui.resetConfirmMsg)) return;
+            localStorage.removeItem('nz_trip_start_date');
+            localStorage.removeItem('nz_travel_checklist');
+            if (db) {
+                const tx = db.transaction(['memories'], 'readwrite');
+                tx.objectStore('memories').clear();
+                tx.oncomplete = () => { alert(ui.resetSuccessMsg); window.location.reload(); };
+                tx.onerror = () => { window.location.reload(); };
+            } else {
+                alert(ui.resetSuccessMsg);
+                window.location.reload();
+            }
+        }
+
         async function fetchExchangeRate() {
             try {
                 // Fetch latest exchange rate from a free public API
@@ -1362,12 +1378,12 @@
                     <i class="fas fa-chevron-right text-indigo-200 group-hover:translate-x-1 transition-transform"></i>
                 </button>
 
-                <button onclick="resetAllData()" class="w-full flex items-center justify-between p-4 bg-red-50 rounded-2xl hover:bg-red-100 transition-all group mt-8">
+                <button onclick="resetAllData()" class="w-full flex items-center justify-between p-4 bg-red-50 rounded-2xl hover:bg-red-100 transition-all group mt-4">
                     <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 bg-white shadow-sm rounded-xl flex items-center justify-center text-red-600">
+                        <div class="w-10 h-10 bg-red-100 shadow-sm rounded-xl flex items-center justify-center text-red-600">
                             <i class="fas fa-trash-can"></i>
                         </div>
-                        <span class="font-bold text-red-900">${translations[currentLang].resetDataBtn}</span>
+                        <span class="font-bold text-red-800">${translations[currentLang].resetDataBtn}</span>
                     </div>
                 </button>
             `;
@@ -1472,12 +1488,12 @@
                 nav.appendChild(btn);
             });
 
-            // Add simple Reset Data link to sidebar for desktop
-            const resetBtn = document.createElement('button');
-            resetBtn.className = "day-btn md:w-full text-left px-4 py-2 rounded-xl text-xs font-bold border mt-6 flex items-center gap-2 text-red-500 border-red-100 hover:bg-red-50 transition-all hidden md:flex";
-            resetBtn.innerHTML = `<i class="fas fa-trash-can"></i> ${ui.resetDataBtn}`;
-            resetBtn.onclick = resetAllData;
-            nav.appendChild(resetBtn);
+            // Reset button at the bottom of sidebar (desktop only)
+            const resetSideBtn = document.createElement('button');
+            resetSideBtn.className = 'day-btn md:w-full text-left px-4 py-2 rounded-xl text-xs font-bold border mt-4 flex items-center gap-2 text-red-500 border-red-100 hover:bg-red-50 transition-all hidden md:flex';
+            resetSideBtn.innerHTML = '<i class="fas fa-trash-can"></i> ' + ui.resetDataBtn;
+            resetSideBtn.onclick = resetAllData;
+            nav.appendChild(resetSideBtn);
 
             // Update Language Toggle Desktop text
             const desktopLangBtn = document.getElementById('lang-toggle-desktop');
