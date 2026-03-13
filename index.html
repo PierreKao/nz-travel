@@ -154,17 +154,20 @@
                 padding: 8px; gap: 6px; border-top: 1px solid rgba(255,255,255,0.3);
             }
             main { padding-bottom: 24px; }
-            .day-btn { padding: 6px 10px !important; font-size: 0.8rem !important; }
-            
             /* Fix header right side distortion */
             header .flex.items-center.gap-3 {
-                gap: 0.35rem !important;
+                gap: 0.25rem !important;
+                flex-wrap: nowrap;
+                justify-content: flex-end;
             }
-            header button {
+            header button, header a#weather-box {
+                flex-shrink: 0 !important;
                 padding-left: 0.5rem !important;
                 padding-right: 0.5rem !important;
             }
             header button i { margin-right: 0 !important; }
+            header #weather-box { padding: 0.25rem 0.5rem !important; }
+            header #weather-box .text-right { display: none; } /* Hide text on mobile for weather */
         }
     </style>
 </head>
@@ -198,11 +201,11 @@
             <button id="unlock-btn" onclick="askPassword()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 sm:px-4 sm:py-1.5 rounded-full text-[11px] sm:text-[12px] font-bold transition-all shadow-sm">
                 <i class="fas fa-key sm:mr-1"></i> <span id="ui-unlock-text" class="hidden sm:inline">解鎖住宿</span>
             </button>
-            <button onclick="toggleAurora()" class="bg-slate-800 hover:bg-slate-900 text-purple-300 px-3 py-1 sm:px-3 sm:py-1.5 rounded-full text-[11px] sm:text-[12px] font-bold transition-all shadow-sm flex items-center justify-center relative overflow-hidden group">
+            <button onclick="toggleAurora()" class="hidden sm:flex bg-slate-800 hover:bg-slate-900 text-purple-300 px-3 py-1 sm:px-3 sm:py-1.5 rounded-full text-[11px] sm:text-[12px] font-bold transition-all shadow-sm flex items-center justify-center relative overflow-hidden group">
                 <div class="absolute inset-0 bg-gradient-to-r from-purple-500/30 to-emerald-500/30 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                 <i class="fas fa-moon relative z-10"></i>
             </button>
-            <button onclick="toggleLang()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-2 py-1 sm:px-3 sm:py-1.5 rounded-full text-[11px] sm:text-[12px] font-bold transition-all shadow-sm">
+            <button onclick="toggleLang()" class="hidden sm:flex bg-slate-200 hover:bg-slate-300 text-slate-700 px-2 py-1 sm:px-3 sm:py-1.5 rounded-full text-[11px] sm:text-[12px] font-bold transition-all shadow-sm">
                 EN/中
             </button>
             <button onclick="openDateModal()" class="bg-amber-100 hover:bg-amber-200 text-amber-700 px-3 py-1 sm:px-3 sm:py-1.5 rounded-full text-[11px] sm:text-[12px] font-bold transition-all shadow-sm">
@@ -872,10 +875,12 @@
             document.getElementById('weather-temp').innerText = "...";
             
             try {
-                const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${coord.lat}&longitude=${coord.lon}&current_weather=true`);
+                const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${coord.lat}&longitude=${coord.lon}&current_weather=true&daily=temperature_2m_max,temperature_2m_min&timezone=auto`);
                 const data = await res.json();
                 const temp = Math.round(data.current_weather.temperature);
                 const code = data.current_weather.weathercode;
+                const maxTemp = Math.round(data.daily.temperature_2m_max[0]);
+                const minTemp = Math.round(data.daily.temperature_2m_min[0]);
                 
                 // Simplified WMO code mapping
                 let desc = "Clear";
@@ -885,7 +890,7 @@
                 if (code >= 71 && code <= 77) desc = "Snow";
                 if (code >= 80 && code <= 99) desc = "Storm";
 
-                document.getElementById('weather-temp').innerText = `${temp}°C`;
+                document.getElementById('weather-temp').innerText = `${temp}° (${maxTemp}°/${minTemp}°)`;
                 document.getElementById('weather-icon-container').innerHTML = getWeatherIcon(desc);
             } catch (e) {
                 console.warn('Weather fetch failed', e);
@@ -1059,11 +1064,31 @@
             itinerary.forEach((day, i) => {
                 const isToday = day.actualDate === todayStr;
                 const btn = document.createElement('button');
-                btn.className = `day-btn md:w-full text-left px-4 py-2 rounded-xl text-sm font-bold border mb-1 ${i === activeDayIndex ? 'active-tab' : 'bg-white/70 backdrop-blur-sm'}`;
+                btn.className = `day-btn md:w-full text-left px-4 py-2 rounded-xl text-sm font-bold border mb-1 flex-shrink-0 ${i === activeDayIndex ? 'active-tab' : 'bg-white/70 backdrop-blur-sm'}`;
                 btn.innerHTML = `<span class="${isToday ? 'text-red-500 animate-pulse' : ''}">D${i+1}</span> ${day.city[currentLang]}`; // Highlight D1, D2 etc if today
                 btn.onclick = () => { activeDayIndex = i; updateUI(); };
                 nav.appendChild(btn);
             });
+
+            // Mobile-only Settings in Nav
+            const settingsHeader = document.createElement('div');
+            settingsHeader.className = "flex sm:hidden h-10 items-center px-4 shrink-0 border-l border-slate-200 mx-2 text-[10px] font-black text-slate-400 uppercase tracking-widest";
+            settingsHeader.innerText = "Settings";
+            nav.appendChild(settingsHeader);
+
+            // Aurora Toggle for Nav
+            const aurBtn = document.createElement('button');
+            aurBtn.className = "flex sm:hidden day-btn bg-slate-800 text-purple-300 px-4 py-2 rounded-xl text-xs font-bold border border-slate-700 shrink-0 mr-1";
+            aurBtn.innerHTML = `<i class="fas fa-moon mr-2"></i> ${isAurora ? (currentLang==='zh'?'日照':'Day') : (currentLang==='zh'?'極光':'Aurora')}`;
+            aurBtn.onclick = toggleAurora;
+            nav.appendChild(aurBtn);
+
+            // Lang Toggle for Nav
+            const lnBtn = document.createElement('button');
+            lnBtn.className = "flex sm:hidden day-btn bg-slate-100 text-slate-700 px-4 py-2 rounded-xl text-xs font-bold border border-slate-200 shrink-0 mr-4";
+            lnBtn.innerText = currentLang === 'zh' ? 'English' : '中文';
+            lnBtn.onclick = toggleLang;
+            nav.appendChild(lnBtn);
 
             const content = document.getElementById('content-display');
             if (activeDayIndex === -1) {
