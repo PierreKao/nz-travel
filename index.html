@@ -259,6 +259,8 @@
                     <i class="fas fa-trash-can group-hover:scale-110 transition-transform"></i> <span id="ui-reset-btn">清除</span>
                 </button>
 
+
+
             </div>
 
             <!-- Primary Actions (Restored) -->
@@ -458,39 +460,27 @@
         const flightModalHTML = `
         <div id="flight-modal" class="fixed inset-0 z-[120] hidden flex-col items-center justify-center p-4 sm:p-0">
             <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity opacity-0" id="flight-modal-backdrop" onclick="closeFlightModal()"></div>
-            <div class="bg-white/95 backdrop-blur-xl rounded-[2.5rem] p-8 shadow-2xl w-full max-w-sm relative z-10 scale-95 opacity-0 transition-all duration-300" id="flight-modal-content">
+            <div class="bg-white/95 backdrop-blur-xl rounded-[2.5rem] p-8 shadow-2xl w-full max-w-lg relative z-10 scale-95 opacity-0 transition-all duration-300" id="flight-modal-content">
                 <button onclick="closeFlightModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100 transition-colors">
                     <i class="fas fa-times"></i>
                 </button>
-                <div class="text-center mb-8">
-                    <div class="w-16 h-16 bg-sky-100 text-sky-600 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-4 shadow-sm">
+                <div class="text-center mb-6">
+                    <div class="w-12 h-12 bg-sky-100 text-sky-600 rounded-2xl flex items-center justify-center mx-auto mb-3 text-xl">
                         <i class="fas fa-plane"></i>
                     </div>
-                    <h3 class="text-xl font-bold text-slate-800" id="flight-modal-title">查詢紐航班次</h3>
-                    <p class="text-[12px] text-slate-500 mt-1 font-medium">Air New Zealand 國內線</p>
+                    <h3 class="text-xl font-bold text-slate-800" id="flight-modal-title">國內線航班參考</h3>
+                    <p class="text-xs text-slate-500 font-bold mt-1 uppercase tracking-widest">Regular Flight Schedule</p>
                 </div>
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">航線 Route</label>
-                        <div class="grid grid-cols-2 gap-2" id="flight-route-btns">
-                            <button onclick="selectFlightRoute('AKL','ZQN')" id="route-AKL-ZQN" class="route-btn px-4 py-3 rounded-2xl border-2 text-sm font-bold transition-all border-sky-500 bg-sky-500 text-white">
-                                ✈ AKL → ZQN
-                            </button>
-                            <button onclick="selectFlightRoute('CHC','AKL')" id="route-CHC-AKL" class="route-btn px-4 py-3 rounded-2xl border-2 text-sm font-bold transition-all border-slate-200 bg-white text-slate-600 hover:border-sky-300">
-                                ✈ CHC → AKL
-                            </button>
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">日期 Date</label>
-                        <input type="date" id="flight-date-input" class="w-full bg-slate-50 border border-slate-200 px-4 py-3 rounded-2xl text-center focus:outline-none focus:border-sky-500 focus:ring-4 focus:ring-sky-500/10 transition-all shadow-inner font-bold text-slate-700">
-                    </div>
-                    <button onclick="searchFlights()" class="w-full bg-sky-600 hover:bg-sky-700 text-white font-bold py-3.5 px-4 rounded-2xl shadow-lg shadow-sky-600/20 hover:shadow-sky-600/30 transition-all transform active:scale-95 flex items-center justify-center gap-2">
-                        <i class="fas fa-magnifying-glass"></i> <span id="flight-search-btn-text">搜尋班次</span>
+                
+                <div class="space-y-6 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar" id="flight-modal-body">
+                    <!-- Tables will be injected here during opening -->
+                </div>
+
+                <div class="mt-8">
+                    <button onclick="window.open('https://www.airnewzealand.co.nz/book/flights', '_blank')" class="w-full bg-sky-600 hover:bg-sky-700 text-white font-bold py-4 px-4 rounded-2xl shadow-lg shadow-sky-600/20 hover:shadow-sky-600/30 transition-all transform active:scale-95 flex items-center justify-center gap-2">
+                        <i class="fas fa-external-link-alt text-sm"></i> <span id="flight-search-btn-text">前往紐航官網訂票</span>
                     </button>
-                    <p class="text-[10px] text-slate-400 text-center leading-relaxed">
-                        將開啟 Air New Zealand 官網查詢即時班次與訂票
-                    </p>
+                    <p class="text-[10px] text-slate-400 text-center mt-3 font-bold uppercase tracking-tighter">Official Air New Zealand Booking Site</p>
                 </div>
             </div>
         </div>
@@ -751,6 +741,12 @@
 
         function showNoticeModal(idx) {
             const notice = translations[currentLang].notices[idx];
+            
+            if (notice.id === 'flights') {
+                openFlightModal();
+                return;
+            }
+
             const modal = document.getElementById('notice-modal');
             const backdrop = document.getElementById('notice-modal-backdrop');
             const content = document.getElementById('notice-modal-content');
@@ -834,7 +830,8 @@
                     { id: "exchangeRate", icon: "fa-coins", title: "即時匯率", content: "取得中...", desc: "紐西蘭主要使用信用卡 (Visa/Mastercard)，即便在市集也很普及。建議準備約 200-300 元紐幣現金以備不時之需（如偏遠地區小店）。您可以下載匯率換算 App 隨時監控。" },
                     { icon: "fa-temperature-low", title: "氣溫", content: "-2°C ~ 10°C (南島)", desc: "冬季温差極大，室內與車內通常有暖氣。建議採用「洋蔥式穿法」：底層排汗發熱衣、中層保暖刷毛或羊毛層、外層防風防水外套。帽子、手套與圍巾在戶外行程是必備的。" },
                     { icon: "fa-plug", title: "插座", content: "八字型 Type I", desc: "紐西蘭使用的是三孔八字型插座 (Type I)，電壓為 230-240V。建議購買專用的轉接頭，或者帶一個台灣的多孔延長線搭配一個轉接頭使用。" },
-                    { icon: "fa-phone", title: "緊急", content: "報警急救撥打 111", desc: "在紐西蘭遇到任何紧急狀況（救護車、警察、消防），請直接撥打 111。如果是輕微報案或非緊急協助，可撥打 105。山區或偏遠地區收訊可能不佳，建議事先下載離線地圖。" }
+                    { icon: "fa-phone", title: "緊急", content: "報警急救撥打 111", desc: "在紐西蘭遇到任何紧急狀況（救護車、警察、消防），請直接撥打 111。如果是輕微報案或非緊急協助，可撥打 105。山區或偏遠地區收訊可能不佳，建議事先下載離線地圖。" },
+                    { id: "flights", icon: "fa-plane", title: "國內線航班", content: "定期航班參考", desc: "查看 AKL-ZQN 及 CHC-AKL 定期航班時刻表與官網訂票連結。" }
                 ]
             },
             en: {
@@ -866,7 +863,8 @@
                     { id: "exchangeRate", icon: "fa-coins", title: "Live Rate", content: "Fetching...", desc: "New Zealand is almost cashless. Most places accept credit cards and mobile payments. However, having a small amount of NZD (approx. $200) is recommended for remote areas or emergency small purchases." },
                     { icon: "fa-temperature-low", title: "Temp", content: "-2°C ~ 10°C (South)", desc: "Temperatures vary wildly. Indoor areas are heated. Use the 3-layer method: Thermal base, warm middle layer (wool/fleece), and a wind/waterproof outer shell. Accessories like beanies and gloves are essential." },
                     { icon: "fa-plug", title: "Power", content: "Type I Plug", desc: "New Zealand uses Type I plugs (3 pins, flat-angled) at 230-240V. Ensure you have the correct adapters. Most modern chargers for phones and laptops are dual-voltage (100-240V)." },
-                    { icon: "fa-phone", title: "SOS", content: "Dial 111", desc: "Dial 111 for all emergencies (Police, Fire, Ambulance). For non-urgent police reports, dial 105. Note that mobile coverage can be patchy in remote mountain areas like Milford Sound or parts of the West Coast." }
+                    { icon: "fa-phone", title: "SOS", content: "Dial 111", desc: "Dial 111 for all emergencies (Police, Fire, Ambulance). For non-urgent police reports, dial 105. Note that mobile coverage can be patchy in remote mountain areas like Milford Sound or parts of the West Coast." },
+                    { id: "flights", icon: "fa-plane", title: "Flights", content: "Flight Schedule", desc: "View regular flight schedules for AKL-ZQN and CHC-AKL routes and official booking links." }
                 ]
             }
         };
@@ -1132,6 +1130,8 @@
             const modal = document.getElementById('flight-modal');
             const backdrop = document.getElementById('flight-modal-backdrop');
             const content = document.getElementById('flight-modal-content');
+            const body = document.getElementById('flight-modal-body');
+
             modal.classList.remove('hidden');
             modal.classList.add('flex');
             setTimeout(() => {
@@ -1139,17 +1139,39 @@
                 content.classList.replace('opacity-0', 'opacity-100');
                 content.classList.replace('scale-95', 'scale-100');
             }, 10);
-            // Default date: today or the trip's D2 date
-            const dateInput = document.getElementById('flight-date-input');
-            if (!dateInput.value) {
-                // Try to find the AKL-ZQN day in the itinerary (Day 02)
-                const d2 = itinerary[1];
-                dateInput.value = d2 && d2.actualDate ? d2.actualDate : new Date().toISOString().split('T')[0];
-            }
-            // Update UI text for lang
-            const ui = translations[currentLang];
-            document.getElementById('flight-modal-title').innerText = ui.flightSearchBtn;
-            document.getElementById('flight-search-btn-text').innerText = currentLang === 'zh' ? '搜尋班次' : 'Search Flights';
+
+            // Inject the schedules
+            body.innerHTML = Object.keys(REGULAR_FLIGHTS).map(route => `
+                <div class="bg-sky-50/50 p-6 rounded-3xl border border-sky-100 mb-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h4 class="text-sm font-black text-sky-800 uppercase tracking-widest">${route}</h4>
+                        <i class="fas fa-plane text-sky-200"></i>
+                    </div>
+                    <div class="overflow-x-auto overflow-hidden">
+                        <table class="w-full text-left text-xs bg-white rounded-2xl overflow-hidden shadow-sm">
+                            <thead>
+                                <tr class="text-sky-500/70 uppercase font-black tracking-tighter border-b border-sky-100/50">
+                                    <th class="p-3 font-black">${currentLang === 'zh' ? '班次' : 'Flight'}</th>
+                                    <th class="p-3 font-black">${currentLang === 'zh' ? '起飛' : 'Dep'}</th>
+                                    <th class="p-3 font-black">${currentLang === 'zh' ? '抵達' : 'Arr'}</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-sky-100/30">
+                                ${REGULAR_FLIGHTS[route].map(f => `
+                                    <tr class="hover:bg-sky-50 transition-colors">
+                                        <td class="p-3 font-bold text-sky-900">${f.flight}</td>
+                                        <td class="p-3 font-black text-slate-600">${f.dep}</td>
+                                        <td class="p-3 font-black text-slate-600">${f.arr}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `).join('');
+
+            document.getElementById('flight-modal-title').innerText = currentLang === 'zh' ? '國內線航班參考' : 'Regular Flight Schedule';
+            document.getElementById('flight-search-btn-text').innerText = currentLang === 'zh' ? '前往紐航官網訂票' : 'Go to Air NZ Official Site';
             if ("vibrate" in navigator) navigator.vibrate(10);
         }
 
@@ -1490,15 +1512,7 @@
                     <i class="fas fa-chevron-right text-indigo-200 group-hover:translate-x-1 transition-transform"></i>
                 </button>
 
-                <button onclick="openFlightModal(); toggleDrawer(false);" class="w-full flex items-center justify-between p-4 bg-sky-50 rounded-2xl hover:bg-sky-100 transition-all group">
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 bg-white shadow-sm rounded-xl flex items-center justify-center text-sky-600">
-                            <i class="fas fa-plane"></i>
-                        </div>
-                        <span class="font-bold text-sky-900">${translations[currentLang].flightSearchBtn}</span>
-                    </div>
-                    <i class="fas fa-chevron-right text-sky-200 group-hover:translate-x-1 transition-transform"></i>
-                </button>
+
 
                 <button onclick="resetAllData()" class="w-full flex items-center justify-between p-4 bg-red-50 rounded-2xl hover:bg-red-100 transition-all group mt-4">
                     <div class="flex items-center gap-3">
@@ -1578,6 +1592,9 @@
             }
             if (document.getElementById('ui-reset-btn')) {
                 document.getElementById('ui-reset-btn').innerText = currentLang === 'zh' ? '清除' : 'Reset';
+            }
+            if (document.getElementById('ui-flight-btn')) {
+                document.getElementById('ui-flight-btn').innerText = currentLang === 'zh' ? '航班' : 'Flights';
             }
             
             const nav = document.getElementById('nav-container');
@@ -1757,10 +1774,30 @@
             `;
         }
 
+        const REGULAR_FLIGHTS = {
+            "AKL-ZQN": [
+                { flight: "NZ 611", dep: "08:30", arr: "10:25" },
+                { flight: "NZ 615", dep: "10:20", arr: "12:15" },
+                { flight: "NZ 621", dep: "12:25", arr: "14:15" },
+                { flight: "NZ 627", dep: "15:30", arr: "17:25" }
+            ],
+            "CHC-AKL": [
+                { flight: "NZ 538", dep: "09:00", arr: "10:25" },
+                { flight: "NZ 544", dep: "11:30", arr: "12:55" },
+                { flight: "NZ 550", dep: "14:00", arr: "15:25" },
+                { flight: "NZ 562", dep: "18:00", arr: "19:25" }
+            ]
+        };
+
         function renderDay(container, ui) {
             const day = itinerary[activeDayIndex];
             const lang = day[currentLang];
             const hotel = decryptedHotels ? decryptedHotels[activeDayIndex] : ui.locked;
+
+            // Check if it's a domestic flight day
+            let flightRoute = null;
+            if (activeDayIndex === 1) flightRoute = "AKL-ZQN";
+            if (activeDayIndex === 11) flightRoute = "CHC-AKL";
 
             // Check current time and date using simulated time if available
             const now = window.simulatedTime || new Date();
@@ -1801,6 +1838,7 @@
                                 <h2 class="text-4xl font-extrabold text-slate-800">${lang.title}</h2>
                                 <p class="text-slate-500 font-bold mt-1 text-sm flex items-center gap-1.5"><i class="fas fa-calendar-day"></i> ${new Date(day.actualDate).toLocaleDateString(currentLang === 'zh' ? 'zh-TW' : 'en-US', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' })} · ${day.city[currentLang]}</p>
                             </div>
+
                             <div class="timeline-line space-y-8 pl-1">
                                 ${lang.timeline.map((t, index) => {
                                     const isActive = index === activeItemIndex;
