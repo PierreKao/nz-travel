@@ -255,6 +255,10 @@
                     <div class="absolute inset-0 bg-gradient-to-r from-purple-500/30 to-emerald-500/30 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                     <i class="fas fa-moon relative z-10"></i>
                 </button>
+                <button onclick="resetAllData()" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 rounded-full text-[12px] font-bold transition-all shadow-sm flex items-center gap-1 group">
+                    <i class="fas fa-trash-can group-hover:scale-110 transition-transform"></i> <span id="ui-reset-btn">清除</span>
+                </button>
+
             </div>
 
             <!-- Primary Actions (Restored) -->
@@ -1572,6 +1576,9 @@
                 // For 'Currency Converter' -> 'Converter', or just keep it short
                 document.getElementById('ui-calc-btn').innerText = currentLang === 'zh' ? '換算' : 'Conv';
             }
+            if (document.getElementById('ui-reset-btn')) {
+                document.getElementById('ui-reset-btn').innerText = currentLang === 'zh' ? '清除' : 'Reset';
+            }
             
             const nav = document.getElementById('nav-container');
             nav.innerHTML = '';
@@ -1606,12 +1613,7 @@
                 nav.appendChild(btn);
             });
 
-            // Reset button at the bottom of sidebar (desktop only)
-            const resetSideBtn = document.createElement('button');
-            resetSideBtn.className = 'day-btn md:w-full text-left px-4 py-2 rounded-xl text-xs font-bold border mt-4 flex items-center gap-2 text-red-500 border-red-100 hover:bg-red-50 transition-all hidden md:flex';
-            resetSideBtn.innerHTML = '<i class="fas fa-trash-can"></i> ' + ui.resetDataBtn;
-            resetSideBtn.onclick = resetAllData;
-            nav.appendChild(resetSideBtn);
+
 
             // Update Language Toggle Desktop text
             const desktopLangBtn = document.getElementById('lang-toggle-desktop');
