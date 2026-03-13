@@ -155,6 +155,16 @@
             }
             main { padding-bottom: 24px; }
             .day-btn { padding: 6px 10px !important; font-size: 0.8rem !important; }
+            
+            /* Fix header right side distortion */
+            header .flex.items-center.gap-3 {
+                gap: 0.35rem !important;
+            }
+            header button {
+                padding-left: 0.5rem !important;
+                padding-right: 0.5rem !important;
+            }
+            header button i { margin-right: 0 !important; }
         }
     </style>
 </head>
@@ -253,17 +263,17 @@
         const dateModalHTML = `
         <div id="date-modal" class="fixed inset-0 z-[100] hidden flex-col items-center justify-center p-4 sm:p-0">
             <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity opacity-0" id="date-modal-backdrop" onclick="closeDateModal()"></div>
-            <div class="bg-white/90 backdrop-blur-md rounded-[2rem] p-8 sm:p-10 shadow-2xl w-full max-w-sm relative z-10 scale-95 opacity-0 transition-all duration-300" id="date-modal-content">
+            <div class="bg-white/95 backdrop-blur-xl rounded-[2.5rem] p-6 sm:p-10 shadow-2xl w-full max-w-sm relative z-10 scale-95 opacity-0 transition-all duration-300" id="date-modal-content">
                 <div class="text-center mb-6">
-                    <div class="w-16 h-16 bg-amber-100 text-amber-600 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-4 shadow-sm">
+                    <div class="w-14 h-14 bg-amber-100 text-amber-600 rounded-2xl flex items-center justify-center text-2xl mx-auto mb-4 shadow-sm">
                         <i class="fas fa-calendar-day"></i>
                     </div>
                     <h3 class="text-xl font-bold text-slate-800" id="date-modal-title">設定出發日期</h3>
-                    <p class="text-sm text-slate-500 mt-2" id="date-modal-desc">請選擇您抵達紐西蘭的出發日。</p>
+                    <p class="text-[13px] text-slate-500 mt-2 leading-relaxed" id="date-modal-desc">請選擇您抵達紐西蘭的出發日。</p>
                 </div>
                 <div class="space-y-4">
-                    <input type="date" id="start-date-input" class="w-full bg-white border border-slate-200 px-4 py-3 rounded-xl text-center focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-200 transition-all shadow-inner">
-                    <button onclick="submitStartDate()" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold py-3 px-4 rounded-xl shadow-md hover:shadow-lg transition-all transform active:scale-95">
+                    <input type="date" id="start-date-input" class="w-full bg-slate-50 border border-slate-200 px-4 py-3 rounded-2xl text-center focus:outline-none focus:border-amber-500 focus:ring-4 focus:ring-amber-500/10 transition-all shadow-inner font-bold text-slate-700">
+                    <button onclick="submitStartDate()" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold py-3.5 px-4 rounded-2xl shadow-lg shadow-amber-600/20 hover:shadow-amber-600/30 transition-all transform active:scale-95">
                         確認設定
                     </button>
                 </div>
@@ -840,18 +850,47 @@
             box.classList.remove('hidden');
             box.classList.remove('pointer-events-none');
             
-            // Link to detailed weather info
-            box.href = `https://wttr.in/${city.replace(" ","+")}`;
-            
-            document.getElementById('weather-city').innerText = city;
+            // Coordinates mapping for major NZ spots
+            const COORDS = {
+                "Auckland": { lat: -36.8485, lon: 174.7633 },
+                "Queenstown": { lat: -45.0312, lon: 168.6626 },
+                "Glenorchy": { lat: -44.8510, lon: 168.3880 },
+                "Wanaka": { lat: -44.7032, lon: 169.1321 },
+                "Oamaru": { lat: -45.0975, lon: 170.9688 },
+                "Twizel": { lat: -44.2588, lon: 170.1030 },
+                "Mount Cook": { lat: -43.7333, lon: 170.0964 },
+                "Tekapo": { lat: -44.0047, lon: 170.4771 },
+                "Christchurch": { lat: -43.5321, lon: 172.6362 },
+                "Taipei": { lat: 25.0330, lon: 121.5654 }
+            };
+
+            const cityKey = Object.keys(COORDS).find(k => city.includes(k));
+            const coord = cityKey ? COORDS[cityKey] : COORDS["Queenstown"];
+
+            box.href = `https://www.google.com/search?q=${city}+weather`;
+            document.getElementById('weather-city').innerText = cityKey || city;
             document.getElementById('weather-temp').innerText = "...";
+            
             try {
-                const res = await fetch(`https://wttr.in/${city.replace(" ","+")}?format=%t|%C`);
-                const text = await res.text();
-                const [temp, desc] = text.split('|');
-                document.getElementById('weather-temp').innerText = temp;
+                const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${coord.lat}&longitude=${coord.lon}&current_weather=true`);
+                const data = await res.json();
+                const temp = Math.round(data.current_weather.temperature);
+                const code = data.current_weather.weathercode;
+                
+                // Simplified WMO code mapping
+                let desc = "Clear";
+                if (code >= 1 && code <= 3) desc = "Cloudy";
+                if (code >= 45 && code <= 48) desc = "Foggy";
+                if (code >= 51 && code <= 67) desc = "Rain";
+                if (code >= 71 && code <= 77) desc = "Snow";
+                if (code >= 80 && code <= 99) desc = "Storm";
+
+                document.getElementById('weather-temp').innerText = `${temp}°C`;
                 document.getElementById('weather-icon-container').innerHTML = getWeatherIcon(desc);
-            } catch (e) { document.getElementById('weather-temp').innerText = "--"; }
+            } catch (e) {
+                console.warn('Weather fetch failed', e);
+                document.getElementById('weather-temp').innerText = "N/A";
+            }
         }
 
         function askPassword() {
