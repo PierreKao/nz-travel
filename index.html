@@ -163,6 +163,7 @@
         }
         body.theme-dark #drawer-links button i { color: #38bdf8 !important; }
         body.theme-dark .active-tab { background-color: #8b5cf6 !important; border-color: #a78bfa !important; box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4); }
+        body.theme-dark .clock-container { background-color: rgba(255, 255, 255, 0.05) !important; border-color: rgba(255, 255, 255, 0.1) !important; }
 
         @media (max-width: 768px) {
             .mobile-nav { 
@@ -238,6 +239,18 @@
         </div>
         
         <div class="flex items-center gap-1 sm:gap-3">
+            <!-- Clocks (Taipei & NZ) -->
+            <div class="clock-container hidden sm:flex items-center gap-2 px-3 py-1.5 bg-slate-100/50 rounded-2xl border border-slate-200/50 backdrop-blur-sm transition-colors duration-1000">
+                <div class="text-right border-r border-slate-300/50 pr-2">
+                    <div class="text-[8px] font-black text-slate-400 uppercase leading-none tracking-tighter">TPE</div>
+                    <div id="clock-tpe" class="text-[11px] font-black text-slate-700 leading-none mt-1">--:--</div>
+                </div>
+                <div class="text-left pl-1">
+                    <div class="text-[8px] font-black text-slate-400 uppercase leading-none tracking-tighter">NZ</div>
+                    <div id="clock-nz" class="text-[11px] font-black text-blue-600 leading-none mt-1">--:--</div>
+                </div>
+            </div>
+            
             <!-- Weather (Always Full) -->
             <a id="weather-box" href="#" target="_blank" class="flex items-center gap-2 sm:gap-3 border border-blue-100/30 transition-all duration-300 hover:shadow-md pointer-events-none cursor-pointer">
                 <div id="weather-icon-container" class="text-xl sm:text-2xl drop-shadow-sm animate-pulse"></div>
@@ -1931,6 +1944,32 @@
                 container.appendChild(flake);
             }
         }
+
+        function updateClocks() {
+            const now = new Date();
+            const options = { hour: '2-digit', minute: '2-digit', hour12: false };
+            
+            try {
+                const tpeStr = new Intl.DateTimeFormat('en-GB', { ...options, timeZone: 'Asia/Taipei' }).format(now);
+                const nzStr = new Intl.DateTimeFormat('en-GB', { ...options, timeZone: 'Pacific/Auckland' }).format(now);
+
+                const tpeDate = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Taipei' }));
+                const nzDate = new Date(now.toLocaleString('en-US', { timeZone: 'Pacific/Auckland' }));
+                
+                const dayDiff = nzDate.getDate() - tpeDate.getDate();
+                let nzDisplay = nzStr;
+                if (dayDiff > 0) nzDisplay += ` <span class="text-[8px] opacity-60 font-medium">+1</span>`;
+                else if (dayDiff < 0) nzDisplay += ` <span class="text-[8px] opacity-60 font-medium">-1</span>`;
+
+                if (document.getElementById('clock-tpe')) document.getElementById('clock-tpe').innerText = tpeStr;
+                if (document.getElementById('clock-nz')) document.getElementById('clock-nz').innerHTML = nzDisplay;
+            } catch (e) {
+                console.error("Clock update failed", e);
+            }
+        }
+
+        setInterval(updateClocks, 30000);
+        updateClocks();
 
         updateUI();
         initSnow();
