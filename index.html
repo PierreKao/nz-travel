@@ -695,7 +695,7 @@
             }
         ];
 
-        function updateMapQuery(query) {
+        function updateMapQuery(query, customImg) {
             const iframe = document.getElementById('day-map-iframe');
             if (iframe) {
                 if (!query) return;
@@ -704,24 +704,29 @@
                 hideSpotVisual();
                 iframe.style.opacity = '1';
                 
-                // Check for immersive spot visual
-                let spotMatch = null;
-                const lowerQuery = query.toLowerCase();
-                for (const item of SPOT_VISUALS) {
-                    if (item.keywords.some(kw => lowerQuery.includes(kw.toLowerCase()))) {
-                        spotMatch = item;
-                        break;
-                    }
-                }
-
-                if (spotMatch) {
-                    showSpotVisual(spotMatch, query);
+                // If custom image is provided, show it directly
+                if (customImg) {
+                    showSpotVisual({ img: customImg, title_zh: query, title_en: query }, query);
                 } else {
-                    const container = iframe.parentElement;
-                    container.classList.add('opacity-50');
-                    const safeQuery = encodeURIComponent(query);
-                    iframe.src = `https://maps.google.com/maps?q=${safeQuery}&t=&z=14&ie=UTF8&iwloc=&output=embed`;
-                    iframe.onload = () => container.classList.remove('opacity-50');
+                    // Check for immersive spot visual from keywords
+                    let spotMatch = null;
+                    const lowerQuery = query.toLowerCase();
+                    for (const item of SPOT_VISUALS) {
+                        if (item.keywords.some(kw => lowerQuery.includes(kw.toLowerCase()))) {
+                            spotMatch = item;
+                            break;
+                        }
+                    }
+
+                    if (spotMatch) {
+                        showSpotVisual(spotMatch, query);
+                    } else {
+                        const container = iframe.parentElement;
+                        container.classList.add('opacity-50');
+                        const safeQuery = encodeURIComponent(query);
+                        iframe.src = `https://maps.google.com/maps?q=${safeQuery}&t=&z=14&ie=UTF8&iwloc=&output=embed`;
+                        iframe.onload = () => container.classList.remove('opacity-50');
+                    }
                 }
 
                 if ("vibrate" in navigator) navigator.vibrate(5);
@@ -990,6 +995,41 @@
         function removeTimelineItem(dayIdx, itemIdx) {
             itinerary[dayIdx].zh.timeline.splice(itemIdx, 1);
             itinerary[dayIdx].en.timeline.splice(itemIdx, 1);
+            saveItinerary();
+            updateUI();
+        }
+
+        function editMapSettings(dayIdx, itemIdx) {
+            let currentQuery = "";
+            let currentImg = "";
+            let title = "";
+
+            if (itemIdx !== undefined) {
+                currentQuery = itinerary[dayIdx].zh.timeline[itemIdx][3] || itinerary[dayIdx].zh.timeline[itemIdx][1];
+                currentImg = itinerary[dayIdx].zh.timeline[itemIdx][4] || "";
+                title = currentLang === 'zh' ? "設定次活動地圖/圖片" : "Activity Map/Image Settings";
+            } else {
+                currentQuery = itinerary[dayIdx].mapQuery || itinerary[dayIdx].mapUrl;
+                currentImg = itinerary[dayIdx].customImg || "";
+                title = currentLang === 'zh' ? "設定今日主地圖/圖片" : "Day Map/Image Settings";
+            }
+
+            const newQuery = prompt((currentLang === 'zh' ? "地圖搜尋關鍵字 (例如: Queenstown Airport):" : "Map Query (e.g. Queenstown Airport):"), currentQuery);
+            if (newQuery === null) return;
+
+            const newImg = prompt((currentLang === 'zh' ? "風景圖片網址 (自定義照片連結):" : "Landscape Image URL (Custom Photo):"), currentImg);
+            if (newImg === null) return;
+
+            if (itemIdx !== undefined) {
+                itinerary[dayIdx].zh.timeline[itemIdx][3] = newQuery;
+                itinerary[dayIdx].zh.timeline[itemIdx][4] = newImg;
+                itinerary[dayIdx].en.timeline[itemIdx][3] = newQuery;
+                itinerary[dayIdx].en.timeline[itemIdx][4] = newImg;
+            } else {
+                itinerary[dayIdx].mapQuery = newQuery;
+                itinerary[dayIdx].customImg = newImg;
+            }
+            
             saveItinerary();
             updateUI();
         }
@@ -1956,19 +1996,26 @@
                                         <div class="w-4 h-4 rounded-full ${isActive ? 'bg-red-500 border-4 border-red-200 animate-pulse' : 'bg-white border-4 border-blue-600'} z-10 mt-1 transition-colors"></div>
                                         <div class="flex-1 pb-4">
                                             <p contenteditable="${isEditMode}" oninput="handleEdit(${activeDayIndex}, '${currentLang}', 'timeline', this.innerText, ${index}, 0)" class="text-[10px] font-bold ${isActive ? 'text-red-500' : 'text-blue-500'} uppercase outline-none">${t[0]}</p>
-                                            <div onclick="updateMapQuery('${t[1]}')" class="bg-white/60 flex-1 p-4 rounded-2xl shadow-sm border border-slate-100 hover:bg-white hover:shadow-md hover:border-blue-200 cursor-pointer transition-all relative mt-1 ${isActive ? 'border-red-200 ring-1 ring-red-100 shadow-md' : ''}">
+                                            <div onclick="updateMapQuery('${t[3] || t[1]}', '${t[4] || ''}')" class="bg-white/60 flex-1 p-4 rounded-2xl shadow-sm border border-slate-100 hover:bg-white hover:shadow-md hover:border-blue-200 cursor-pointer transition-all relative mt-1 ${isActive ? 'border-red-200 ring-1 ring-red-100 shadow-md' : ''}">
                                                 <div class="flex items-start justify-between">
                                                     <div class="flex-1">
                                                         ${isActive ? '<span class="absolute -top-2 right-4 bg-red-500 text-white text-[9px] font-bold px-2 py-0.5 rounded uppercase shadow-sm">進行中 Now</span>' : ''}
                                                         <p contenteditable="${isEditMode}" oninput="handleEdit(${activeDayIndex}, '${currentLang}', 'timeline', this.innerText, ${index}, 1)" class="text-[15px] font-bold ${isActive ? 'text-red-700' : 'text-slate-700'} outline-none focus:bg-blue-50 rounded px-1">${t[1]}</p>
                                                     </div>
-                                                    <div class="flex flex-col gap-1">
-                                                        <button onclick="event.stopPropagation(); openMemoryUpload(${activeDayIndex}, ${index})" class="w-8 h-8 rounded-full bg-white/80 text-slate-400 hover:bg-blue-100 hover:text-blue-600 flex items-center justify-center transition-all shrink-0 shadow-sm border border-slate-100">
-                                                            <i class="fas fa-camera"></i>
-                                                        </button>
-                                                        ${isEditMode ? `<button onclick="event.stopPropagation(); removeTimelineItem(${activeDayIndex}, ${index})" class="w-8 h-8 rounded-full bg-red-50 text-red-400 hover:bg-red-100 hover:text-red-600 flex items-center justify-center transition-all shrink-0 shadow-sm border border-red-100">
-                                                            <i class="fas fa-trash"></i>
-                                                        </button>` : ''}
+                                                    <div class="flex flex-col gap-1 items-end">
+                                                        <div class="flex gap-1">
+                                                            <button onclick="event.stopPropagation(); openMemoryUpload(${activeDayIndex}, ${index})" class="w-8 h-8 rounded-full bg-white/80 text-slate-400 hover:bg-blue-100 hover:text-blue-600 flex items-center justify-center transition-all shrink-0 shadow-sm border border-slate-100" title="Upload Photo">
+                                                                <i class="fas fa-camera"></i>
+                                                            </button>
+                                                            ${isEditMode ? `
+                                                            <button onclick="event.stopPropagation(); editMapSettings(${activeDayIndex}, ${index})" class="w-8 h-8 rounded-full bg-amber-50 text-amber-500 hover:bg-amber-100 flex items-center justify-center transition-all shrink-0 shadow-sm border border-amber-100" title="Map & Image Settings">
+                                                                <i class="fas fa-gear"></i>
+                                                            </button>
+                                                            <button onclick="event.stopPropagation(); removeTimelineItem(${activeDayIndex}, ${index})" class="w-8 h-8 rounded-full bg-red-50 text-red-400 hover:bg-red-100 hover:text-red-600 flex items-center justify-center transition-all shrink-0 shadow-sm border border-red-100" title="Delete">
+                                                                <i class="fas fa-trash"></i>
+                                                            </button>` : ''}
+                                                        </div>
+                                                        ${isEditMode && (t[3] || t[4]) ? `<span class="text-[8px] font-black text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded uppercase tracking-tighter mt-1">Custom Link Active</span>` : ''}
                                                     </div>
                                                 </div>
                                                 <!-- Memory Container -->
@@ -2024,7 +2071,7 @@
             });
 
             // Auto-trigger map/spot visual for the day's main destination
-            setTimeout(() => updateMapQuery(day.mapUrl), 50);
+            setTimeout(() => updateMapQuery(day.mapQuery || day.mapUrl, day.customImg), 50);
         }
 
         function initSnow() {
