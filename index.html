@@ -6,8 +6,8 @@
     <title>NZ South Island Trip 2025</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link rel="icon" type="image/png" href="assets/favicon.png?v=1">
-    <link rel="apple-touch-icon" href="assets/favicon.png?v=1">
+    <link rel="icon" type="image/png" href="assets/favicon.png?v=2">
+    <link rel="apple-touch-icon" href="assets/favicon.png?v=2">
     <link rel="manifest" href="manifest.json">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -21,6 +21,7 @@
             font-family: 'Inter', 'Noto Sans TC', sans-serif; 
             background: #0f172a; /* 預設深色背景 */
             min-height: 100vh;
+            overscroll-behavior-y: contain; /* Prevent native bounce to implement custom refresh */
         }
 
         /* 靜態背景層，防止滾動跳動 */
@@ -229,6 +230,13 @@
     <div class="bg-overlay" id="bg-day"></div>
     <div id="bg-aurora" class="aurora-bg transition-opacity duration-1000 pointer-events-none opacity-0"></div>
     <div class="snow-container" id="snowfalls"></div>
+
+    <!-- Pull-to-refresh Indicator -->
+    <div id="pull-refresh" class="fixed top-0 left-0 right-0 h-16 flex items-center justify-center z-[200] pointer-events-none opacity-0 transform -translate-y-full transition-all duration-300">
+        <div class="bg-white/90 backdrop-blur-md rounded-full w-10 h-10 flex items-center justify-center shadow-lg border border-slate-200 text-blue-600">
+            <i class="fas fa-arrows-rotate animate-spin-slow" id="refresh-icon"></i>
+        </div>
+    </div>
 
     <div id="app" class="pb-24 lg:pb-0">
     <!-- Header -->
@@ -2028,6 +2036,54 @@
         setInterval(updateClocks, 30000);
         updateClocks();
         initMobileRotation();
+
+        // iOS Pull-to-refresh Logic
+        let touchStart = 0;
+        let touchLast = 0;
+        const pullRefresh = document.getElementById('pull-refresh');
+        const refreshIcon = document.getElementById('refresh-icon');
+
+        window.addEventListener('touchstart', (e) => {
+            if (window.scrollY <= 5) {
+                touchStart = e.touches[0].pageY;
+            } else {
+                touchStart = 0;
+            }
+        }, { passive: true });
+
+        window.addEventListener('touchmove', (e) => {
+            if (touchStart === 0) return;
+            touchLast = e.touches[0].pageY;
+            const distance = touchLast - touchStart;
+
+            if (distance > 0) {
+                const pullProgress = Math.min(distance / 120, 1);
+                pullRefresh.style.opacity = pullProgress;
+                pullRefresh.style.transform = `translateY(${Math.min(distance - 64, 20)}px)`;
+                refreshIcon.style.transform = `rotate(${distance * 2}deg)`;
+            }
+        }, { passive: true });
+
+        window.addEventListener('touchend', () => {
+            if (touchStart === 0) return;
+            const distance = touchLast - touchStart;
+            
+            if (distance > 80) {
+                // Trigger Refresh
+                pullRefresh.style.transform = `translateY(20px)`;
+                refreshIcon.classList.add('fa-spin');
+                if ("vibrate" in navigator) navigator.vibrate(50);
+                setTimeout(() => {
+                    window.location.reload();
+                }, 500);
+            } else {
+                // Cancel Refresh
+                pullRefresh.style.opacity = '0';
+                pullRefresh.style.transform = `translateY(-100%)`;
+            }
+            touchStart = 0;
+            touchLast = 0;
+        }, { passive: true });
 
         updateUI();
         initSnow();
