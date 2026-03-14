@@ -240,7 +240,7 @@
         
         <div class="flex items-center gap-1 sm:gap-3">
             <!-- Clocks (Taipei & NZ) -->
-            <div class="clock-container flex items-center gap-1 sm:gap-2 px-1.5 py-1 sm:px-3 sm:py-1.5 bg-slate-100/50 rounded-xl sm:rounded-2xl border border-slate-200/50 backdrop-blur-sm transition-colors duration-1000">
+            <div class="clock-container flex items-center gap-1 sm:gap-2 px-1.5 py-1 sm:px-3 sm:py-1.5 bg-slate-100/50 rounded-xl sm:rounded-2xl border border-slate-200/50 backdrop-blur-sm transition-all duration-500">
                 <div class="text-right border-r border-slate-300/50 pr-1 sm:pr-2">
                     <div class="text-[7px] sm:text-[8px] font-black text-slate-400 uppercase leading-none tracking-tighter">TPE</div>
                     <div id="clock-tpe" class="text-[10px] sm:text-[11px] font-black text-slate-700 leading-none mt-0.5 sm:mt-1">--:--</div>
@@ -252,7 +252,7 @@
             </div>
             
             <!-- Weather (Always Full) -->
-            <a id="weather-box" href="#" target="_blank" class="flex items-center gap-2 sm:gap-3 border border-blue-100/30 transition-all duration-300 hover:shadow-md pointer-events-none cursor-pointer">
+            <a id="weather-box" href="#" target="_blank" class="flex items-center gap-2 sm:gap-3 border border-blue-100/30 transition-all duration-500 hover:shadow-md pointer-events-none cursor-pointer">
                 <div id="weather-icon-container" class="text-xl sm:text-2xl drop-shadow-sm animate-pulse"></div>
                 <div class="text-right">
                     <div id="weather-city" class="text-[8px] sm:text-[10px] font-bold text-slate-500 leading-none tracking-wide">City</div>
@@ -1968,8 +1968,66 @@
             }
         }
 
+        let mobileHeaderRotationInterval = null;
+        function rotateMobileHeader() {
+            const clock = document.querySelector('.clock-container');
+            const weather = document.getElementById('weather-box');
+            if (!clock || !weather) return;
+
+            if (window.innerWidth >= 640) {
+                clock.classList.remove('hidden');
+                weather.classList.remove('hidden');
+                clock.style.opacity = '1';
+                weather.style.opacity = '1';
+                return;
+            }
+
+            // Toggling with fade effect
+            const isClockVisible = !clock.classList.contains('hidden');
+            
+            // Fade out
+            if (isClockVisible) {
+                clock.style.opacity = '0';
+                setTimeout(() => {
+                    clock.classList.add('hidden');
+                    weather.classList.remove('hidden');
+                    setTimeout(() => weather.style.opacity = '1', 50);
+                }, 400);
+            } else {
+                weather.style.opacity = '0';
+                setTimeout(() => {
+                    weather.classList.add('hidden');
+                    clock.classList.remove('hidden');
+                    setTimeout(() => clock.style.opacity = '1', 50);
+                }, 400);
+            }
+        }
+
+        function initMobileRotation() {
+            if (mobileHeaderRotationInterval) clearInterval(mobileHeaderRotationInterval);
+            // On mobile, hide weather initially to save space, then rotate
+            if (window.innerWidth < 640) {
+                const weather = document.getElementById('weather-box');
+                if (weather) {
+                    weather.classList.add('hidden');
+                    weather.style.opacity = '0';
+                }
+                const clock = document.querySelector('.clock-container');
+                if (clock) clock.style.opacity = '1';
+                
+                mobileHeaderRotationInterval = setInterval(rotateMobileHeader, 6000);
+            } else {
+                const clock = document.querySelector('.clock-container');
+                const weather = document.getElementById('weather-box');
+                if (clock) { clock.classList.remove('hidden'); clock.style.opacity = '1'; }
+                if (weather) { weather.classList.remove('hidden'); weather.style.opacity = '1'; }
+            }
+        }
+
+        window.addEventListener('resize', initMobileRotation);
         setInterval(updateClocks, 30000);
         updateClocks();
+        initMobileRotation();
 
         updateUI();
         initSnow();
