@@ -6,13 +6,6 @@
     <title>NZ South Island Trip 2025</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link rel="icon" type="image/png" href="assets/favicon.png">
-    <link rel="apple-touch-icon" href="assets/favicon.png">
-    <link rel="manifest" href="manifest.json">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="NZ 2025">
-    <meta name="theme-color" content="#0f172a">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;700&family=Inter:wght@400;700&display=swap');
@@ -233,10 +226,7 @@
     <!-- Header -->
     <header class="bg-white/70 backdrop-blur-md border-b sticky top-0 z-50 px-3 py-2 sm:px-6 sm:py-3 flex justify-between items-center shadow-sm">
         <div onclick="activeDayIndex = -1; updateUI();" class="cursor-pointer shrink-0">
-            <h1 class="text-sm sm:text-lg font-bold text-slate-800 flex items-center gap-1 sm:gap-2">
-                <img src="assets/favicon.png" class="w-6 h-6 sm:w-8 sm:h-8 object-contain drop-shadow-sm" alt="NZ Travel Icon">
                 <span id="ui-header-title">紐西蘭南島 · 冬季自駕</span>
-            </h1>
             <p class="text-[10px] text-blue-600 font-bold uppercase tracking-widest">Winter Adventure · v1.0.0</p>
         </div>
         
@@ -838,8 +828,7 @@
                     { icon: "fa-temperature-low", title: "氣溫", content: "-2°C ~ 10°C (南島)", desc: "冬季温差極大，室內與車內通常有暖氣。建議採用「洋蔥式穿法」：底層排汗發熱衣、中層保暖刷毛或羊毛層、外層防風防水外套。帽子、手套與圍巾在戶外行程是必備的。" },
                     { icon: "fa-plug", title: "插座", content: "八字型 Type I", desc: "紐西蘭使用的是三孔八字型插座 (Type I)，電壓為 230-240V。建議購買專用的轉接頭，或者帶一個台灣的多孔延長線搭配一個轉接頭使用。" },
                     { icon: "fa-phone", title: "緊急", content: "報警急救撥打 111", desc: "在紐西蘭遇到任何紧急狀況（救護車、警察、消防），請直接撥打 111。如果是輕微報案或非緊急協助，可撥打 105。山區或偏遠地區收訊可能不佳，建議事先下載離線地圖。" },
-                    { id: "flights", icon: "fa-plane", title: "國內線航班", content: "定期航班參考", desc: "查看 AKL-ZQN 及 CHC-AKL 定期航班時刻表與官網訂票連結。" },
-                    { icon: "fa-mobile-screen-button", title: "安裝為 APP", content: "iOS 桌面快捷", desc: "您可以將此網頁存入 iOS 桌面：點擊瀏覽器底部的「分享」按鈕，選擇「加入主畫面」，即可像 App 一樣隨時開啟。" }
+                    { id: "flights", icon: "fa-plane", title: "國內線航班", content: "定期航班參考", desc: "查看 AKL-ZQN 及 CHC-AKL 定期航班時刻表與官網訂票連結。" }
                 ]
             },
             en: {
@@ -872,8 +861,7 @@
                     { icon: "fa-temperature-low", title: "Temp", content: "-2°C ~ 10°C (South)", desc: "Temperatures vary wildly. Indoor areas are heated. Use the 3-layer method: Thermal base, warm middle layer (wool/fleece), and a wind/waterproof outer shell. Accessories like beanies and gloves are essential." },
                     { icon: "fa-plug", title: "Power", content: "Type I Plug", desc: "New Zealand uses Type I plugs (3 pins, flat-angled) at 230-240V. Ensure you have the correct adapters. Most modern chargers for phones and laptops are dual-voltage (100-240V)." },
                     { icon: "fa-phone", title: "SOS", content: "Dial 111", desc: "Dial 111 for all emergencies (Police, Fire, Ambulance). For non-urgent police reports, dial 105. Note that mobile coverage can be patchy in remote mountain areas like Milford Sound or parts of the West Coast." },
-                    { id: "flights", icon: "fa-plane", title: "Flights", content: "Flight Schedule", desc: "View regular flight schedules for AKL-ZQN and CHC-AKL routes and official booking links." },
-                    { icon: "fa-mobile-screen-button", title: "Install App", content: "iOS Home Screen", desc: "Install this guide on your iOS home screen: tap the 'Share' icon in Safari and select 'Add to Home Screen' to use it like a native app." }
+                    { id: "flights", icon: "fa-plane", title: "Flights", content: "Flight Schedule", desc: "View regular flight schedules for AKL-ZQN and CHC-AKL routes and official booking links." }
                 ]
             }
         };
