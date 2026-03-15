@@ -286,6 +286,9 @@
                 <button onclick="openIOModal()" id="import-export-btn" class="bg-indigo-500 hover:bg-indigo-600 text-white px-3 py-1.5 rounded-full text-[12px] font-bold transition-all shadow-sm flex items-center gap-1 group hidden">
                     <i class="fas fa-file-import group-hover:scale-110 transition-transform"></i> <span id="ui-io-btn">導入/導出</span>
                 </button>
+                <button onclick="syncAllZhToEn()" id="sync-btn" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1.5 rounded-full text-[12px] font-bold transition-all shadow-sm flex items-center gap-1 group hidden">
+                    <i class="fas fa-arrows-rotate group-hover:rotate-180 transition-transform duration-500"></i> <span id="ui-sync-btn">同步至英文</span>
+                </button>
                 <button onclick="exportUpdatedHTML()" id="export-btn" class="bg-gray-700 hover:bg-gray-800 text-white px-3 py-1.5 rounded-full text-[12px] font-bold transition-all shadow-sm flex items-center gap-1 group hidden">
                     <i class="fas fa-download group-hover:scale-110 transition-transform"></i> <span id="ui-export-btn">匯出</span>
                 </button>
@@ -989,7 +992,7 @@
             { date: "Day 01", city: { zh: "台北/奧克蘭", en: "TPE/AKL" }, mapUrl: "Auckland+Airport", zh: { title: "✈️ 啟程：台北 → 奧克蘭", timeline: [["18:35", "桃園機場出發 (NZ 78)", "11 hr 飛航"], ["晚上", "機上休息"]] }, en: { title: "✈️ Departure: TPE to AKL", timeline: [["18:35", "Depart TPE (NZ 78)", "11 hr flight"], ["Night", "Rest on board"]] } },
             { date: "Day 02", city: { zh: "皇鎮", en: "Queenstown" }, mapUrl: "Queenstown,New+Zealand", zh: { title: "🏔️ 抵達：皇后鎮", timeline: [["09:15", "抵達奧克蘭機場", "2 hr 轉機"], ["12:25", "國內線飛往皇后鎮", "2 hr 飛航"], ["14:20", "抵達、取車、超市採買"]] }, en: { title: "🏔️ Arrival: Queenstown", timeline: [["09:15", "Arrive AKL", "2 hr layover"], ["12:25", "Flight to ZQN", "2 hr flight"], ["14:20", "Pick up car & Groceries"]] } },
             { date: "Day 03", city: { zh: "皇后鎮", en: "Queenstown" }, mapUrl: "Skyline+Queenstown", zh: { title: "🚠 皇后鎮：Skyline", timeline: [["早上", "市中心湖畔散步", "15 min 步行"], ["中午", "Skyline Gondola 纜車", "2 hr 停留"], ["下午", "Luge 溜溜車挑戰", "15 min 步行"], ["晚上", "皇后鎮美食漢堡"]] }, en: { title: "🚠 Queenstown: Skyline", timeline: [["Morning", "Lakefront Stroll", "15 min walk"], ["Noon", "Gondola ride", "2 hr stay"], ["Afternoon", "Luge runs", "15 min walk"], ["Evening", "Town Dinner"]] } },
-            { date: "Day 04", city: { zh: "格萊諾基", en: "Glenorchy" }, mapUrl: "Glenorchy+New+Zealand", zh: { title: "⛴️ 蒸汽船與格萊諾基", timeline: [["早上", "前往 Glenorchy 魔戒小鎮", "45 min 車程"], ["中午", "小鎮景點拍照", "45 min 車程"], ["下午", "回市區搭乘 TSS 蒸汽船"]] }, en: { title: "⛴️ Glenorchy or Cruise", timeline: [["AM", "Drive to Glenorchy", "45 min drive"], ["PM", "Visit filming sites", "45 min drive"], ["Evening", "TSS Earnslaw Cruise"]] } },
+            { date: "Day 04", city: { zh: "格萊諾基", en: "Glenorchy" }, mapUrl: "Glenorchy+New+Zealand", zh: { title: "⛴️ 蒸汽船與格萊諾基", timeline: [["早上", "前往 Glenorchy 魔戒小鎮", "45 min 車程"], ["中午", "小鎮景點拍照", "45 min 車程"], ["下午", "回市區搭乘 TSS 蒸汽船"]] }, en: { title: "⛴️ Steamboat & Glenorchy", timeline: [["Morning", "Drive to Glenorchy (LoTR Town)", "45 min drive"], ["Noon", "Sightseeing & Photos", "45 min drive"], ["Afternoon", "Back to town for TSS Earnslaw"]] } },
             { date: "Day 05", city: { zh: "瓦納卡", en: "Wanaka" }, mapUrl: "That+Wanaka+Tree", drive: "1.5 hr", zh: { title: "📷 箭鎮與瓦納卡", timeline: [["09:00", "前往 Arrowtown 箭鎮", "1 hr 車程"], ["中午", "箭鎮午餐", "1 hr 車程"], ["14:00", "抵達 Wanaka", "10 min 車程"], ["傍晚", "尋找孤獨的樹"]] }, en: { title: "📷 Arrowtown & Wanaka", timeline: [["09:00", "Drive to Arrowtown", "1 hr drive"], ["12:00", "Lunch at Arrowtown", "1 hr drive"], ["14:00", "Wanaka Arrival", "10 min drive"], ["Sunset", "The Wanaka Tree"]] } },
             { date: "Day 06", city: { zh: "瓦納卡", en: "Wanaka" }, mapUrl: "Puzzling+World", zh: { title: "🪾 瓦納卡：悠閒全日", timeline: [["上午", "Puzzling World 奇幻世界", "10 min 車程"], ["下午", "瓦納卡湖邊漫步", "10 min 車程"], ["晚上", "瓦納卡特色餐廳"]] }, en: { title: "🪾 Wanaka: Relax Day", timeline: [["AM", "Puzzling World", "10 min drive"], ["PM", "Wanaka Lakefront", "10 min drive"], ["Night", "Wanaka Dinner"]] } },
             { date: "Day 07", city: { zh: "奧瑪魯", en: "Oamaru" }, mapUrl: "Oamaru+Blue+Penguin+Colony", drive: "3.5 hr", zh: { title: "🐧 奧瑪魯：企鵝歸巢", timeline: [["09:00", "離開瓦納卡", "1.5 hr 車程"], ["中午", "沿途景點休息", "2 hr 車程"], ["16:00", "奧瑪魯老城區", "10 min 車程"], ["傍晚", "藍企鵝歸巢觀賞"]] }, en: { title: "🐧 Oamaru: Penguins", timeline: [["09:00", "Leave Wanaka", "1.5 hr drive"], ["12:00", "Stop by Lindis Pass", "2 hr drive"], ["16:00", "Oamaru Old Town", "10 min drive"], ["Sunset", "Blue Penguin Colony"]] } },
@@ -998,10 +1001,26 @@
             { date: "Day 10", city: { zh: "蒂卡波", en: "Tekapo" }, mapUrl: "Church+of+the+Good+Shepherd,Lake+Tekapo", drive: "1.5 hr", zh: { title: "⭐ 蒂卡波：觀星之夜", timeline: [["10:00", "前往 Tekapo", "1 hr 車程"], ["中午", "湖畔教堂午餐", "5 min 步行"], ["下午", "牧羊人教堂拍照", "5 min 車程"], ["18:20", "星空窗觀星"]] }, en: { title: "⭐ Tekapo: Stargazing", timeline: [["10:00", "To Tekapo", "1 hr drive"], ["12:00", "Lakeview Lunch", "5 min walk"], ["PM", "Church of Good Shepherd", "5 min drive"], ["18:20", "Stargazing Window"]] } },
             { date: "Day 11", city: { zh: "蒂卡波", en: "Tekapo" }, mapUrl: "Lake+Tekapo", zh: { title: "🔭 蒂卡波：深度全日", timeline: [["早上", "Mt. John 天文台咖啡", "15 min 車程"], ["下午", "湖邊漫步休憩", "10 min 車程"], ["晚上", "星空窗觀星"]] }, en: { title: "🔭 Tekapo: Full Day", timeline: [["AM", "Mt. John Cafe", "15 min drive"], ["PM", "Tekapo Lakefront", "10 min drive"], ["Night", "Star Session"]] } },
             { date: "Day 12", city: { zh: "基督城", en: "Christchurch" }, mapUrl: "Christchurch+Airport", drive: "3 hr", zh: { title: "🚗 歸途：CHC → AKL", timeline: [["08:30", "準時離開 Tekapo", "3 hr 車程"], ["12:00", "抵達基督城機場", "1.5 hr 飛航"], ["18:10", "飛往奧克蘭"]] }, en: { title: "🚗 Return: CHC to AKL", timeline: [["08:30", "Must leave Tekapo", "3 hr drive"], ["12:00", "Arrive CHC Airport", "1.5 hr flight"], ["18:10", "Flight to AKL"]] } },
-            { date: "Day 13", city: { zh: "台北", en: "Taipei" }, mapUrl: "Taipei+101", zh: { title: "✈️ 回家：奧克蘭 → 台北", timeline: [["07:30", "前往機場", "11 hr 飛航"], ["09:40", "起飛回台", "搭車"], ["17:05", "抵達台北"]] }, en: { title: "✈️ Home: AKL to TPE", timeline: [["07:30", "To AKL Airport", "11 hr flight"], ["09:40", "Depart AKL", "drive"], ["17:05", "Arrive Taipei"]] } }
+            { date: "Day 13", city: { zh: "台北", en: "Taipei" }, mapUrl: "Taipei+101", zh: { title: "✈️ 回家：奧克蘭 → 台北", timeline: [["07:30", "前往機場", "11 hr 飛航"], ["09:40", "起飛回台", "搭車"], ["17:05", "抵達台北"]] }, en: { title: "✈️ Homebound: AKL to TPE", timeline: [["07:30", "To AKL Airport", "11 hr flight"], ["09:40", "Depart for Taiwan", "Drive"], ["17:05", "Arrive in Taipei"]] } }
         ];
 
         let itinerary = JSON.parse(localStorage.getItem('itinerary_custom')) || DEFAULT_ITINERARY;
+
+        function syncAllZhToEn() {
+            // Removed confirm to ensure compatibility with all browsers/automated tools
+            itinerary.forEach((day, i) => {
+                day.en.title = day.zh.title;
+                // Sync city as well to ensure full correspondence
+                day.city.en = day.city.zh;
+                // Deep copy the timeline to avoid reference issues
+                day.en.timeline = JSON.parse(JSON.stringify(day.zh.timeline));
+            });
+            
+            saveItinerary();
+            updateUI();
+            if ("vibrate" in navigator) navigator.vibrate([10, 50]);
+            console.log("Language synchronization (ZH -> EN) completed.");
+        }
 
         function saveItinerary() {
             localStorage.setItem('itinerary_custom', JSON.stringify(itinerary));
@@ -1017,11 +1036,13 @@
                 btn.classList.add('ring-4', 'ring-amber-300');
                 if (exportBtn) exportBtn.classList.remove('hidden');
                 if (ioBtn) ioBtn.classList.remove('hidden');
+                if (document.getElementById('sync-btn')) document.getElementById('sync-btn').classList.remove('hidden');
                 if ("vibrate" in navigator) navigator.vibrate(15);
             } else {
                 btn.classList.remove('ring-4', 'ring-amber-300');
                 if (exportBtn) exportBtn.classList.add('hidden');
                 if (ioBtn) ioBtn.classList.add('hidden');
+                if (document.getElementById('sync-btn')) document.getElementById('sync-btn').classList.add('hidden');
             }
         }
 
@@ -1062,7 +1083,9 @@
                     const displayDate = savedStartDate ? `${parseInt(m)}/${parseInt(d)}` : `D${dayIdx+1}`;
                     const isToday = day.actualDate === (window.simulatedTime || new Date()).toISOString().split('T')[0];
                     
-                    btn.innerHTML = `<span class="${isToday ? 'text-red-500 animate-pulse' : ''}">${displayDate}</span> ${day.city[currentLang]}`;
+                    const title = day[currentLang].title || day.city[currentLang];
+                    const shortTitle = title.length > 10 ? title.substring(0, 10) + '...' : title;
+                    btn.innerHTML = `<span class="${isToday ? 'text-red-500 animate-pulse' : ''}">${displayDate}</span> ${shortTitle}`;
                 }
             });
         }
@@ -1909,6 +1932,9 @@
             if (document.getElementById('ui-io-btn')) {
                 document.getElementById('ui-io-btn').innerText = ui.importExportBtn;
             }
+            if (document.getElementById('ui-sync-btn')) {
+                document.getElementById('ui-sync-btn').innerText = currentLang === 'zh' ? '同步至英文' : 'Sync to EN';
+            }
             
             const nav = document.getElementById('nav-container');
             nav.innerHTML = '';
@@ -1935,10 +1961,9 @@
                 const btn = document.createElement('button');
                 btn.className = `day-btn md:w-full text-left px-4 py-2 rounded-xl text-sm font-bold border mb-1 flex-shrink-0 ${i === activeDayIndex ? 'active-tab' : 'bg-white/70 backdrop-blur-sm'}`;
                 
-                const [y, m, d] = day.actualDate.split('-');
-                const displayDate = savedStartDate ? `${parseInt(m)}/${parseInt(d)}` : `D${i+1}`;
-                
-                btn.innerHTML = `<span class="${isToday ? 'text-red-500 animate-pulse' : ''}">${displayDate}</span> ${day.city[currentLang]}`; // Highlight date if today
+                const dayTitle = day[currentLang].title || day.city[currentLang];
+                const shortTitle = dayTitle.length > 10 ? dayTitle.substring(0, 10) + '...' : dayTitle;
+                btn.innerHTML = `<span class="${isToday ? 'text-red-500 animate-pulse' : ''}">${displayDate}</span> ${shortTitle}`;
                 btn.onclick = () => { activeDayIndex = i; updateUI(); };
                 nav.appendChild(btn);
             });
