@@ -138,6 +138,58 @@
             min-width: 124px; /* Prevent header layout shift when weather text updates */
             justify-content: center;
         }
+
+        /* Route Map Styles */
+        #route-map-container {
+            width: 100%;
+            height: 320px;
+            background: rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(12px);
+            border-radius: 2rem;
+            margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.07);
+        }
+        .map-path {
+            fill: none;
+            stroke: #475569;
+            stroke-width: 2;
+            stroke-dasharray: 6 4;
+            stroke-linecap: round;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+            animation: dash 30s linear infinite;
+        }
+        @keyframes dash {
+            to { stroke-dashoffset: -100; }
+        }
+        .map-node {
+            fill: white;
+            stroke: #3b82f6;
+            stroke-width: 2.5;
+            cursor: pointer;
+            transition: all 0.3s;
+            filter: drop-shadow(0 2px 4px rgba(59, 130, 246, 0.3));
+        }
+        .map-node:hover {
+            r: 7;
+            stroke-width: 4;
+            fill: #eff6ff;
+        }
+        .map-label {
+            font-size: 10px;
+            font-weight: 700;
+            fill: #1e293b;
+            text-shadow: 0 0 4px white;
+            pointer-events: none;
+            text-transform: uppercase;
+        }
+        .map-island-bg {
+            fill: rgba(71, 85, 105, 0.05);
+            stroke: rgba(71, 85, 105, 0.1);
+            stroke-width: 1;
+        }
         body.theme-dark .text-slate-800,
         body.theme-dark .text-slate-700,
         body.theme-dark .text-slate-900 {
@@ -1362,6 +1414,92 @@
             console.log("Simulating time:", d);
         }
 
+
+        // Route Map Logic
+        function renderRouteMap() {
+            const svgGroupLines = document.getElementById('map-lines');
+            const svgGroupNodes = document.getElementById('map-nodes');
+            const svgGroupLabels = document.getElementById('map-labels');
+            if(!svgGroupLines) return;
+
+            // Clear previous
+            svgGroupLines.innerHTML = '';
+            svgGroupNodes.innerHTML = '';
+            svgGroupLabels.innerHTML = '';
+
+            const COORDS = {
+                "Auckland": { lat: -36.8485, lon: 174.7633 },
+                "Queenstown": { lat: -45.0312, lon: 168.6626 },
+                "Glenorchy": { lat: -44.8510, lon: 168.3880 },
+                "Wanaka": { lat: -44.7032, lon: 169.1321 },
+                "Oamaru": { lat: -45.0975, lon: 170.9688 },
+                "Twizel": { lat: -44.2588, lon: 170.1030 },
+                "Mount Cook": { lat: -43.7333, lon: 170.0964 },
+                "Tekapo": { lat: -44.0047, lon: 170.4771 },
+                "Christchurch": { lat: -43.5321, lon: 172.6362 },
+                "Taipei": { lat: 25.0330, lon: 121.5654 }
+            };
+
+            // Map projection (South Island Zoom)
+            const mapW = 400;
+            const mapH = 320;
+            const project = (lat, lon) => {
+                const x = (lon - 167.3) * (mapW / 5.5); 
+                const y = (lat + 43.2) * (-mapH / 3.8) + (mapH / 4);
+                return { x, y };
+            };
+
+            const points = [];
+            const processedCities = new Set();
+
+            itinerary.forEach((day, idx) => {
+                const cityStr = day.city.en || "Queenstown";
+                const cityKey = Object.keys(COORDS).find(k => cityStr.toLowerCase().includes(k.toLowerCase()));
+                if (cityKey && cityKey !== 'Auckland' && cityKey !== 'Taipei') {
+                    const p = project(COORDS[cityKey].lat, COORDS[cityKey].lon);
+                    points.push({ ...p, label: cityKey, dayIdx: idx });
+                }
+            });
+
+            if (points.length < 2) return;
+
+            // Draw Paths
+            let d = `M ${points[0].x} ${points[0].y}`;
+            for (let i = 1; i < points.length; i++) {
+                d += ` L ${points[i].x} ${points[i].y}`;
+            }
+            const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+            path.setAttribute("d", d);
+            path.setAttribute("class", "map-path");
+            svgGroupLines.appendChild(path);
+
+            // Draw Nodes
+            points.forEach(p => {
+                if (processedCities.has(p.label)) return;
+                processedCities.add(p.label);
+
+                const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+                circle.setAttribute("cx", p.x);
+                circle.setAttribute("cy", p.y);
+                circle.setAttribute("r", 5);
+                circle.setAttribute("class", "map-node");
+                circle.onclick = () => {
+                    activeDayIndex = p.dayIdx;
+                    updateUI();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                };
+                svgGroupNodes.appendChild(circle);
+
+                const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                text.setAttribute("x", p.x);
+                text.setAttribute("y", p.y - 12);
+                text.setAttribute("text-anchor", "middle");
+                text.setAttribute("class", "map-label");
+                text.textContent = currentLang === 'zh' ? (translations['zh'].cities[p.label] || p.label) : p.label;
+                svgGroupLabels.appendChild(text);
+            });
+        }
+
         function getWeatherIcon(desc) {
             const d = desc.toLowerCase();
             if (d.includes("sun") || d.includes("clear")) return '<i class="fas fa-sun text-yellow-500 drop-shadow-[0_0_8px_rgba(234,179,8,0.5)]"></i>';
@@ -2132,6 +2270,7 @@
             const content = document.getElementById('content-display');
             if (activeDayIndex === -1) {
                 renderOverview(content, ui);
+                renderRouteMap();
                 fetchWeather("");
             } else if (activeDayIndex === -2) {
                 renderChecklist(content, ui);
@@ -2168,6 +2307,15 @@
                     <h2 class="text-3xl font-bold mb-6 flex items-center gap-3 relative z-10">
                         <i class="fas fa-route text-blue-600"></i> ${ui.overviewBtn}
                     </h2>
+
+                    <div id="route-map-container" class="animate-in fade-in slide-in-from-top-4 duration-700 relative z-10">
+                        <svg id="route-map-svg" viewBox="0 0 400 320" class="w-full h-full">
+                            <path class="map-island-bg" d="M120,40 C140,40 160,50 180,60 C220,80 260,110 280,150 C300,190 280,230 250,260 C220,290 180,300 140,290 C100,280 70,240 60,200 C50,160 70,110 90,70 C100,50 110,40 120,40 Z" />
+                            <g id="map-lines"></g>
+                            <g id="map-nodes"></g>
+                            <g id="map-labels"></g>
+                        </svg>
+                    </div>
                     
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-3 relative z-10">
                         ${itinerary.map((day, i) => {
