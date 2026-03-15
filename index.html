@@ -1397,6 +1397,7 @@
             if (!confirm(ui.resetConfirmMsg)) return;
             localStorage.removeItem('nz_trip_start_date');
             localStorage.removeItem('nz_travel_checklist');
+            localStorage.removeItem('itinerary_custom');
             if (db) {
                 const tx = db.transaction(['memories'], 'readwrite');
                 tx.objectStore('memories').clear();
