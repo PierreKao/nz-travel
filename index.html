@@ -402,7 +402,7 @@
                 </div>
 
                 <div class="mt-12 pt-8 border-t border-slate-100">
-                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider text-center">New Zealand 2025 · v1.0.4</p>
+                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider text-center">New Zealand 2025 · v1.0.5</p>
                 </div>
             </div>
         </div>
@@ -1418,12 +1418,10 @@
 
         function toggleMapMode() {
             isCuteMapMode = !isCuteMapMode;
-            const routeMap = document.getElementById('route-map-svg');
             const cuteMap = document.getElementById('cute-map-img');
             const toggleText = document.getElementById('map-toggle-text');
             
             if (isCuteMapMode) {
-                routeMap.classList.add('opacity-0');
                 cuteMap.classList.remove('hidden');
                 setTimeout(() => cuteMap.classList.replace('opacity-0', 'opacity-100'), 10);
                 toggleText.innerText = currentLang === 'zh' ? '路線模式' : 'Route Mode';
@@ -1431,10 +1429,10 @@
                 cuteMap.classList.replace('opacity-100', 'opacity-0');
                 setTimeout(() => {
                     cuteMap.classList.add('hidden');
-                    routeMap.classList.remove('opacity-0');
                 }, 300);
                 toggleText.innerText = currentLang === 'zh' ? '可愛模式' : 'Cute Mode';
             }
+            renderRouteMap(); // Re-render paths for the current mode
             if ("vibrate" in navigator) navigator.vibrate(10);
         }
 
@@ -1463,10 +1461,25 @@
                 "Taipei": { lat: 25.0330, lon: 121.5654 }
             };
 
-            // Map projection (South Island Zoom)
+            // Cute map visual anchors (relative to image pixels/aspect)
+            const CUTE_COORDS = {
+                "Queenstown": { x: 145, y: 300 },
+                "Wanaka": { x: 130, y: 250 },
+                "Twizel": { x: 180, y: 230 },
+                "Mount Cook": { x: 185, y: 195 },
+                "Tekapo": { x: 215, y: 215 },
+                "Oamaru": { x: 260, y: 295 },
+                "Christchurch": { x: 305, y: 190 },
+                "Glenorchy": { x: 110, y: 290 }
+            };
+
             const mapW = 400;
             const mapH = 320;
-            const project = (lat, lon) => {
+
+            const project = (lat, lon, cityKey) => {
+                if (isCuteMapMode && CUTE_COORDS[cityKey]) {
+                    return CUTE_COORDS[cityKey];
+                }
                 const x = (lon - 167.3) * (mapW / 5.5); 
                 const y = (lat + 43.2) * (-mapH / 3.8) + (mapH / 4);
                 return { x, y };
@@ -1479,7 +1492,7 @@
                 const cityStr = day.city.en || "Queenstown";
                 const cityKey = Object.keys(COORDS).find(k => cityStr.toLowerCase().includes(k.toLowerCase()));
                 if (cityKey && cityKey !== 'Auckland' && cityKey !== 'Taipei') {
-                    const p = project(COORDS[cityKey].lat, COORDS[cityKey].lon);
+                    const p = project(COORDS[cityKey].lat, COORDS[cityKey].lon, cityKey);
                     points.push({ ...p, label: cityKey, dayIdx: idx });
                 }
             });
@@ -1494,6 +1507,11 @@
             const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
             path.setAttribute("d", d);
             path.setAttribute("class", "map-path");
+            if (isCuteMapMode) {
+                path.style.stroke = "#f472b6"; // Pink for cute mode
+                path.style.strokeWidth = "3";
+                path.style.filter = "none";
+            }
             svgGroupLines.appendChild(path);
 
             // Draw Nodes
@@ -1504,8 +1522,12 @@
                 const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
                 circle.setAttribute("cx", p.x);
                 circle.setAttribute("cy", p.y);
-                circle.setAttribute("r", 5);
+                circle.setAttribute("r", isCuteMapMode ? 6 : 5);
                 circle.setAttribute("class", "map-node");
+                if (isCuteMapMode) {
+                   circle.style.fill = "#fff";
+                   circle.style.stroke = "#ec4899";
+                }
                 circle.onclick = () => {
                     activeDayIndex = p.dayIdx;
                     updateUI();
@@ -1515,9 +1537,13 @@
 
                 const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
                 text.setAttribute("x", p.x);
-                text.setAttribute("y", p.y - 12);
+                text.setAttribute("y", p.y - 14);
                 text.setAttribute("text-anchor", "middle");
                 text.setAttribute("class", "map-label");
+                if (isCuteMapMode) {
+                    text.style.fill = "#db2777";
+                    text.style.fontSize = "11px";
+                }
                 text.textContent = currentLang === 'zh' ? (translations['zh'].cities[p.label] || p.label) : p.label;
                 svgGroupLabels.appendChild(text);
             });
@@ -2342,7 +2368,7 @@
                             <g id="map-nodes"></g>
                             <g id="map-labels"></g>
                         </svg>
-                        <img id="cute-map-img" src="/Users/pierre.kao/.gemini/antigravity/brain/b8f8e4c9-fac2-4c3a-970d-0b3fcccc6cc4/cute_nz_south_island_map_1773574996130.png" class="absolute inset-0 w-full h-full object-cover hidden opacity-0 transition-opacity duration-300 pointer-events-none" />
+                        <img id="cute-map-img" src="assets/cute-map.png" class="absolute inset-0 w-full h-full object-cover hidden opacity-0 transition-opacity duration-300 pointer-events-none" />
                     </div>
                     
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-3 relative z-10">
