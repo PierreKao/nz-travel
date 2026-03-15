@@ -172,9 +172,17 @@
                 background: rgba(255, 255, 255, 0.7); 
                 backdrop-filter: blur(12px);
                 z-index: 100; display: flex; overflow-x: auto; 
-                padding: 8px; gap: 6px; border-top: 1px solid rgba(255,255,255,0.3);
+                padding: 10px 8px; gap: 8px; border-top: 1px solid rgba(255,255,255,0.3);
+                scrollbar-width: none; /* Hide scrollbar for cleaner look */
             }
-            main { padding-bottom: 24px; }
+            .mobile-nav::-webkit-scrollbar { display: none; }
+            .mobile-nav .day-btn {
+                flex-shrink: 0 !important;
+                white-space: nowrap !important;
+                width: auto !important;
+                margin-bottom: 0 !important;
+            }
+            main { padding-bottom: 80px; }
             /* Fix header right side distortion */
             header .flex.items-center.gap-3 {
                 gap: 0.5rem !important;
@@ -1941,14 +1949,14 @@
             
             // Overview Button
             const ovBtn = document.createElement('button');
-            ovBtn.className = `day-btn md:w-full text-left px-5 py-3 rounded-xl font-bold border mb-3 flex items-center gap-2 ${activeDayIndex === -1 ? 'active-tab' : 'bg-white'}`;
+            ovBtn.className = `day-btn md:w-full text-left px-4 py-2 rounded-xl text-sm font-bold border mb-1 flex-shrink-0 whitespace-nowrap flex items-center gap-2 ${activeDayIndex === -1 ? 'active-tab' : 'bg-white/70 backdrop-blur-sm'}`;
             ovBtn.innerHTML = `<i class="fas fa-map"></i> ${ui.overviewBtn}`;
             ovBtn.onclick = () => { activeDayIndex = -1; updateUI(); };
             nav.appendChild(ovBtn);
 
             // Checklist Button
             const chkBtn = document.createElement('button');
-            chkBtn.className = `day-btn md:w-full text-left px-5 py-3 rounded-xl font-bold border mb-3 flex items-center gap-2 ${activeDayIndex === -2 ? 'active-tab' : 'bg-white'}`;
+            chkBtn.className = `day-btn md:w-full text-left px-4 py-2 rounded-xl text-sm font-bold border mb-1 flex-shrink-0 whitespace-nowrap flex items-center gap-2 ${activeDayIndex === -2 ? 'active-tab' : 'bg-white/70 backdrop-blur-sm'}`;
             chkBtn.innerHTML = `<i class="fas fa-clipboard-list text-amber-600"></i> ${ui.checklistBtn}`;
             chkBtn.onclick = () => { activeDayIndex = -2; updateUI(); };
             nav.appendChild(chkBtn);
@@ -1959,8 +1967,10 @@
             itinerary.forEach((day, i) => {
                 const isToday = day.actualDate === todayStr;
                 const btn = document.createElement('button');
-                btn.className = `day-btn md:w-full text-left px-4 py-2 rounded-xl text-sm font-bold border mb-1 flex-shrink-0 ${i === activeDayIndex ? 'active-tab' : 'bg-white/70 backdrop-blur-sm'}`;
+                btn.className = `day-btn md:w-full text-left px-4 py-2 rounded-xl text-sm font-bold border mb-1 flex-shrink-0 whitespace-nowrap ${i === activeDayIndex ? 'active-tab' : 'bg-white/70 backdrop-blur-sm'}`;
                 
+                const [y, m, d] = day.actualDate.split('-');
+                const displayDate = savedStartDate ? `${parseInt(m)}/${parseInt(d)}` : `D${i+1}`;
                 const dayTitle = day[currentLang].title || day.city[currentLang];
                 const shortTitle = dayTitle.length > 10 ? dayTitle.substring(0, 10) + '...' : dayTitle;
                 btn.innerHTML = `<span class="${isToday ? 'text-red-500 animate-pulse' : ''}">${displayDate}</span> ${shortTitle}`;
