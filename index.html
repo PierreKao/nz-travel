@@ -134,6 +134,10 @@
             color: #f8fafc !important;
             backdrop-filter: blur(16px);
         }
+        #weather-box {
+            min-width: 124px; /* Prevent header layout shift when weather text updates */
+            justify-content: center;
+        }
         body.theme-dark .text-slate-800,
         body.theme-dark .text-slate-700,
         body.theme-dark .text-slate-900 {
@@ -562,6 +566,30 @@
         `;
         document.body.insertAdjacentHTML('beforeend', ioModalHTML);
 
+        const resetModalHTML = `
+        <div id="reset-modal" class="fixed inset-0 z-[120] hidden flex-col items-center justify-center p-4">
+            <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity opacity-0" id="reset-modal-backdrop" onclick="closeResetModal()"></div>
+            <div class="bg-white/95 backdrop-blur-xl rounded-[2.5rem] p-8 shadow-2xl w-full max-w-sm relative z-10 scale-95 opacity-0 transition-all duration-300" id="reset-modal-content">
+                <div class="text-center mb-8">
+                    <div class="w-16 h-16 bg-red-100 text-red-600 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-4 shadow-sm">
+                        <i class="fas fa-triangle-exclamation"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-800" id="reset-modal-title">重置所有資料</h3>
+                    <p class="text-[13px] text-slate-500 mt-3 leading-relaxed font-medium" id="reset-modal-desc">確定要重置嗎？這將會永久刪除所有出發日期、清單進度以及儲存的照片與變更。</p>
+                </div>
+                <div class="flex flex-col gap-3">
+                    <button onclick="executeReset()" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3.5 px-4 rounded-2xl shadow-lg shadow-red-600/20 hover:shadow-red-600/30 transition-all transform active:scale-95">
+                        確認重置
+                    </button>
+                    <button onclick="closeResetModal()" class="w-full text-slate-400 font-bold py-2 px-4 text-sm hover:text-slate-600 transition-colors">
+                        取消
+                    </button>
+                </div>
+            </div>
+        </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', resetModalHTML);
+
         const ENCRYPTED_HOTELS = "U2FsdGVkX1/5B7ukylTrcGjm0fKXPxOORKLwexAFiM7PQj0iJ4VSrYodK89sZYwKjzEZUjUQBOuWThstnVLG3OTtftpfc9JocyZssCpUontSb8YDsusQTyLLl3H4GyuxcwojvMxO6XVDTuDuiXUBHIqfNhhMC0eqK4Vw/eF09Spv7Nr7MgSd6z+wTMeo6aY9qe3X4ed0DpcU0Z/3EuV6caUFiQHgFGdB9pfPpr3P+K5BK06WnMRDowp7kEmMa/Fro0+CinlZEv6/lbRty8rRY5UlTJLIvHMerea6ASxqlc53xjeOrpHUHUQ1mmOpA7zy8SNb37O8vF3oDwOReu1hhkOAOQRY8pypdnxyIs+W1o+3Bcd4VTbTeAfM8HYyLff+gKvSOADGGiUAivL3BxFa1herFwTIW+wnFXpgKgSGwfTByLYju+Zmx4T3uNgTBM1bnFOwQoz+UaI/xbUNilO7/nuPeXoeIsE4rkKGActJ6gmOGUwgjZA9J7YiE2BD2aCfUZpuVVT/NripRq0nh9j/R7AmEvgA3yULLQQT3P7y1A75Bq3+f79EnVuYBsujubifHMFDinWRUUJkJRCKzQgqtg7sL8TXfLX1U1Y4NcGmCpms1TlEvg3APrpSlYLfAaOq3IdiZwHkmstNTtGw20jc51Jenjg1/hYEg+QXx5zGviw="; 
 
         let decryptedHotels = null; 
@@ -925,7 +953,19 @@
                     { icon: "fa-phone", title: "緊急", content: "報警急救撥打 111", desc: "在紐西蘭遇到任何紧急狀況（救護車、警察、消防），請直接撥打 111。如果是輕微報案或非緊急協助，可撥打 105。山區或偏遠地區收訊可能不佳，建議事先下載離線地圖。" },
                     { id: "flights", icon: "fa-plane", title: "國內線航班", content: "定期航班參考", desc: "查看 AKL-ZQN 及 CHC-AKL 定期航班時刻表與官網訂票連結。" },
                     { icon: "fa-mobile-screen-button", title: "安裝為 APP", content: "iOS 桌面快捷", desc: "您可以將此網頁存入 iOS 桌面：點擊瀏覽器底部的「分享」按鈕，選擇「加入主畫面」，即可像 App 一樣隨時開啟。" }
-                ]
+                ],
+                cities: {
+                    "Auckland": "奧克蘭",
+                    "Queenstown": "皇后鎮",
+                    "Glenorchy": "格萊諾基",
+                    "Wanaka": "瓦納卡",
+                    "Oamaru": "奧瑪魯",
+                    "Twizel": "特威澤爾",
+                    "Mount Cook": "庫克山",
+                    "Tekapo": "蒂卡波",
+                    "Christchurch": "基督城",
+                    "Taipei": "台北"
+                }
             },
             en: {
                 header: "NZ South Island Guide",
@@ -968,7 +1008,19 @@
                     { icon: "fa-phone", title: "SOS", content: "Dial 111", desc: "Dial 111 for all emergencies (Police, Fire, Ambulance). For non-urgent police reports, dial 105. Note that mobile coverage can be patchy in remote mountain areas like Milford Sound or parts of the West Coast." },
                     { id: "flights", icon: "fa-plane", title: "Flights", content: "Flight Schedule", desc: "View regular flight schedules for AKL-ZQN and CHC-AKL routes and official booking links." },
                     { icon: "fa-mobile-screen-button", title: "Install App", content: "iOS Home Screen", desc: "Install this guide on your iOS home screen: tap the 'Share' icon in Safari and select 'Add to Home Screen' to use it like a native app." }
-                ]
+                ],
+                cities: {
+                    "Auckland": "Auckland",
+                    "Queenstown": "Queenstown",
+                    "Glenorchy": "Glenorchy",
+                    "Wanaka": "Wanaka",
+                    "Oamaru": "Oamaru",
+                    "Twizel": "Twizel",
+                    "Mount Cook": "Mt Cook",
+                    "Tekapo": "Tekapo",
+                    "Christchurch": "Christchurch",
+                    "Taipei": "Taipei"
+                }
             }
         };
 
@@ -1432,12 +1484,44 @@
             }, 500);
         }
 
-        async function resetAllData() {
+        function resetAllData() {
+            const modal = document.getElementById('reset-modal');
+            const backdrop = document.getElementById('reset-modal-backdrop');
+            const content = document.getElementById('reset-modal-content');
             const ui = translations[currentLang];
-            if (!confirm(ui.resetConfirmMsg)) return;
+
+            // Set text
+            document.getElementById('reset-modal-title').innerText = ui.resetDataBtn;
+            document.getElementById('reset-modal-desc').innerText = ui.resetConfirmMsg;
+
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            
+            requestAnimationFrame(() => {
+                backdrop.classList.remove('opacity-0');
+                content.classList.remove('scale-95', 'opacity-0');
+            });
+        }
+
+        function closeResetModal() {
+            const modal = document.getElementById('reset-modal');
+            const backdrop = document.getElementById('reset-modal-backdrop');
+            const content = document.getElementById('reset-modal-content');
+            
+            backdrop.classList.add('opacity-0');
+            content.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }, 300);
+        }
+
+        async function executeReset() {
+            const ui = translations[currentLang];
             localStorage.removeItem('nz_trip_start_date');
             localStorage.removeItem('nz_travel_checklist');
             localStorage.removeItem('itinerary_custom');
+            
             if (db) {
                 const tx = db.transaction(['memories'], 'readwrite');
                 tx.objectStore('memories').clear();
@@ -1647,11 +1731,12 @@
                 "Taipei": { lat: 25.0330, lon: 121.5654 }
             };
 
-            const cityKey = Object.keys(COORDS).find(k => city.includes(k));
+            const cityKey = Object.keys(COORDS).find(k => city.toLowerCase().includes(k.toLowerCase()));
             const coord = cityKey ? COORDS[cityKey] : COORDS["Queenstown"];
 
-            box.href = `https://www.google.com/search?q=${city}+weather`;
-            document.getElementById('weather-city').innerText = cityKey || city;
+            box.href = `https://www.google.com/search?q=${cityKey || city}+weather`;
+            const displayCity = currentLang === 'zh' ? (cityKey ? translations['zh'].cities[cityKey] || cityKey : city) : (cityKey || city);
+            document.getElementById('weather-city').innerText = displayCity;
             document.getElementById('weather-temp').innerText = "...";
             
             try {
@@ -1985,39 +2070,56 @@
                 document.getElementById('ui-sync-btn').innerText = currentLang === 'zh' ? '同步至英文' : 'Sync to EN';
             }
             
+            // Optimization: Only clear and re-render nav if needed or if first load
             const nav = document.getElementById('nav-container');
-            nav.innerHTML = '';
-            
-            // Overview Button
-            const ovBtn = document.createElement('button');
-            ovBtn.className = `day-btn md:w-full text-left px-4 py-2 rounded-xl text-sm font-bold border mb-1 flex-shrink-0 whitespace-nowrap flex items-center gap-2 ${activeDayIndex === -1 ? 'active-tab' : 'bg-white/70 backdrop-blur-sm'}`;
-            ovBtn.innerHTML = `<i class="fas fa-map"></i> ${ui.overviewBtn}`;
-            ovBtn.onclick = () => { activeDayIndex = -1; updateUI(); };
-            nav.appendChild(ovBtn);
-
-            // Checklist Button
-            const chkBtn = document.createElement('button');
-            chkBtn.className = `day-btn md:w-full text-left px-4 py-2 rounded-xl text-sm font-bold border mb-1 flex-shrink-0 whitespace-nowrap flex items-center gap-2 ${activeDayIndex === -2 ? 'active-tab' : 'bg-white/70 backdrop-blur-sm'}`;
-            chkBtn.innerHTML = `<i class="fas fa-clipboard-list text-amber-600"></i> ${ui.checklistBtn}`;
-            chkBtn.onclick = () => { activeDayIndex = -2; updateUI(); };
-            nav.appendChild(chkBtn);
-
-            const now = window.simulatedTime || new Date();
-            const todayStr = now.toISOString().split('T')[0];
-
-            itinerary.forEach((day, i) => {
-                const isToday = day.actualDate === todayStr;
-                const btn = document.createElement('button');
-                btn.className = `day-btn md:w-full text-left px-4 py-2 rounded-xl text-sm font-bold border mb-1 flex-shrink-0 whitespace-nowrap ${i === activeDayIndex ? 'active-tab' : 'bg-white/70 backdrop-blur-sm'}`;
+            const navHash = `${activeDayIndex}-${currentLang}-${itinerary.length}-${savedStartDate}`;
+            if (nav.dataset.hash !== navHash) {
+                nav.innerHTML = '';
+                nav.dataset.hash = navHash;
                 
-                const [y, m, d] = day.actualDate.split('-');
-                const displayDate = savedStartDate ? `${parseInt(m)}/${parseInt(d)}` : `D${i+1}`;
-                const dayTitle = day[currentLang].title || day.city[currentLang];
-                const shortTitle = dayTitle.length > 10 ? dayTitle.substring(0, 10) + '...' : dayTitle;
-                btn.innerHTML = `<span class="${isToday ? 'text-red-500 animate-pulse' : ''}">${displayDate}</span> ${shortTitle}`;
-                btn.onclick = () => { activeDayIndex = i; updateUI(); };
-                nav.appendChild(btn);
-            });
+                // Overview Button
+                const ovBtn = document.createElement('button');
+                ovBtn.className = `day-btn md:w-full text-left px-4 py-2 rounded-xl text-sm font-bold border mb-1 flex-shrink-0 whitespace-nowrap flex items-center gap-2 ${activeDayIndex === -1 ? 'active-tab' : 'bg-white/70 backdrop-blur-sm'}`;
+                ovBtn.innerHTML = `<i class="fas fa-map"></i> ${ui.overviewBtn}`;
+                ovBtn.onclick = (e) => { e.stopPropagation(); activeDayIndex = -1; updateUI(); };
+                nav.appendChild(ovBtn);
+
+                // Checklist Button
+                const chkBtn = document.createElement('button');
+                chkBtn.className = `day-btn md:w-full text-left px-4 py-2 rounded-xl text-sm font-bold border mb-1 flex-shrink-0 whitespace-nowrap flex items-center gap-2 ${activeDayIndex === -2 ? 'active-tab' : 'bg-white/70 backdrop-blur-sm'}`;
+                chkBtn.innerHTML = `<i class="fas fa-clipboard-list text-amber-600"></i> ${ui.checklistBtn}`;
+                chkBtn.onclick = (e) => { e.stopPropagation(); activeDayIndex = -2; updateUI(); };
+                nav.appendChild(chkBtn);
+
+                const now = window.simulatedTime || new Date();
+                const todayStr = now.toISOString().split('T')[0];
+
+                itinerary.forEach((day, i) => {
+                    const isToday = day.actualDate === todayStr;
+                    const btn = document.createElement('button');
+                    btn.className = `day-btn md:w-full text-left px-4 py-2 rounded-xl text-sm font-bold border mb-1 flex-shrink-0 whitespace-nowrap ${i === activeDayIndex ? 'active-tab' : 'bg-white/70 backdrop-blur-sm'}`;
+                    
+                    const [y, m, d] = day.actualDate.split('-');
+                    const displayDate = savedStartDate ? `${parseInt(m)}/${parseInt(d)}` : `D${i+1}`;
+                    const dayTitle = day[currentLang].title || day.city[currentLang];
+                    const shortTitle = dayTitle.length > 10 ? dayTitle.substring(0, 10) + '...' : dayTitle;
+                    btn.innerHTML = `<span class="${isToday ? 'text-red-500 animate-pulse' : ''}">${displayDate}</span> ${shortTitle}`;
+                    btn.onclick = (e) => { e.stopPropagation(); activeDayIndex = i; updateUI(); };
+                    nav.appendChild(btn);
+                });
+            } else {
+                // Just update active classes if nav content didn't change
+                nav.querySelectorAll('.day-btn').forEach((btn, idx) => {
+                    const mappedIdx = idx - 2; // -2 for Overview, -1 for Checklist, then 0, 1...
+                    if (mappedIdx === activeDayIndex) {
+                        btn.classList.add('active-tab');
+                        btn.classList.remove('bg-white/70', 'backdrop-blur-sm');
+                    } else {
+                        btn.classList.remove('active-tab');
+                        btn.classList.add('bg-white/70', 'backdrop-blur-sm');
+                    }
+                });
+            }
 
 
 
