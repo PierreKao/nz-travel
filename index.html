@@ -402,7 +402,7 @@
                 </div>
 
                 <div class="mt-12 pt-8 border-t border-slate-100">
-                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider text-center">New Zealand 2025 · v1.0.3</p>
+                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider text-center">New Zealand 2025 · v1.0.4</p>
                 </div>
             </div>
         </div>
@@ -1414,6 +1414,29 @@
             console.log("Simulating time:", d);
         }
 
+        let isCuteMapMode = false;
+
+        function toggleMapMode() {
+            isCuteMapMode = !isCuteMapMode;
+            const routeMap = document.getElementById('route-map-svg');
+            const cuteMap = document.getElementById('cute-map-img');
+            const toggleText = document.getElementById('map-toggle-text');
+            
+            if (isCuteMapMode) {
+                routeMap.classList.add('opacity-0');
+                cuteMap.classList.remove('hidden');
+                setTimeout(() => cuteMap.classList.replace('opacity-0', 'opacity-100'), 10);
+                toggleText.innerText = currentLang === 'zh' ? '路線模式' : 'Route Mode';
+            } else {
+                cuteMap.classList.replace('opacity-100', 'opacity-0');
+                setTimeout(() => {
+                    cuteMap.classList.add('hidden');
+                    routeMap.classList.remove('opacity-0');
+                }, 300);
+                toggleText.innerText = currentLang === 'zh' ? '可愛模式' : 'Cute Mode';
+            }
+            if ("vibrate" in navigator) navigator.vibrate(10);
+        }
 
         // Route Map Logic
         function renderRouteMap() {
@@ -2308,13 +2331,18 @@
                         <i class="fas fa-route text-blue-600"></i> ${ui.overviewBtn}
                     </h2>
 
-                    <div id="route-map-container" class="animate-in fade-in slide-in-from-top-4 duration-700 relative z-10">
-                        <svg id="route-map-svg" viewBox="0 0 400 320" class="w-full h-full">
+                    <div id="route-map-container" class="animate-in fade-in slide-in-from-top-4 duration-700 relative z-10 group/map">
+                        <button onclick="toggleMapMode()" class="absolute top-4 right-4 z-20 bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-full text-[10px] font-black shadow-lg border border-white/50 hover:bg-white transition-all active:scale-95 flex items-center gap-1.5">
+                            <i class="fas fa-wand-magic-sparkles text-blue-500"></i>
+                            <span id="map-toggle-text">${currentLang === 'zh' ? '可愛模式' : 'Cute Mode'}</span>
+                        </button>
+                        <svg id="route-map-svg" viewBox="0 0 400 320" class="w-full h-full transition-opacity duration-300">
                             <path class="map-island-bg" d="M120,40 C140,40 160,50 180,60 C220,80 260,110 280,150 C300,190 280,230 250,260 C220,290 180,300 140,290 C100,280 70,240 60,200 C50,160 70,110 90,70 C100,50 110,40 120,40 Z" />
                             <g id="map-lines"></g>
                             <g id="map-nodes"></g>
                             <g id="map-labels"></g>
                         </svg>
+                        <img id="cute-map-img" src="/Users/pierre.kao/.gemini/antigravity/brain/b8f8e4c9-fac2-4c3a-970d-0b3fcccc6cc4/cute_nz_south_island_map_1773574996130.png" class="absolute inset-0 w-full h-full object-cover hidden opacity-0 transition-opacity duration-300 pointer-events-none" />
                     </div>
                     
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-3 relative z-10">
