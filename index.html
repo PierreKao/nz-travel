@@ -1015,19 +1015,59 @@
         let itinerary = JSON.parse(localStorage.getItem('itinerary_custom')) || DEFAULT_ITINERARY;
 
         function syncAllZhToEn() {
-            // Removed confirm to ensure compatibility with all browsers/automated tools
             itinerary.forEach((day, i) => {
-                day.en.title = day.zh.title;
-                // Sync city as well to ensure full correspondence
-                day.city.en = day.city.zh;
-                // Deep copy the timeline to avoid reference issues
-                day.en.timeline = JSON.parse(JSON.stringify(day.zh.timeline));
+                const defDay = DEFAULT_ITINERARY[i];
+                
+                // Case 1: New Day (not in default) - Always sync everything as base
+                if (!defDay) {
+                    day.en.title = day.zh.title;
+                    day.city.en = day.city.zh;
+                    day.en.timeline = JSON.parse(JSON.stringify(day.zh.timeline));
+                    return;
+                }
+
+                // Case 2: Existing Day - Granular sync
+                // Sync title only if changed from default
+                if (day.zh.title !== defDay.zh.title) {
+                    day.en.title = day.zh.title;
+                }
+                
+                // Sync city only if changed from default
+                if (day.city.zh !== defDay.city.zh) {
+                    day.city.en = day.city.zh;
+                }
+
+                // Granular timeline sync
+                day.zh.timeline.forEach((item, itemIdx) => {
+                    const defTimeline = defDay.zh.timeline[itemIdx];
+                    const enTimeline = day.en.timeline[itemIdx];
+                    
+                    if (!defTimeline || !enTimeline) {
+                        // New item added to this day, or en doesn't have it yet? Sync it.
+                        if (!enTimeline) {
+                            day.en.timeline[itemIdx] = JSON.parse(JSON.stringify(item));
+                        } else {
+                            // If zh item is new relative to default, sync to en
+                            day.en.timeline[itemIdx] = JSON.parse(JSON.stringify(item));
+                        }
+                    } else {
+                        // Compare each field of the timeline item [time, info, trans, ...]
+                        item.forEach((val, valIdx) => {
+                            if (val !== defTimeline[valIdx]) {
+                                day.en.timeline[itemIdx][valIdx] = val;
+                            }
+                        });
+                    }
+                });
+                
+                // If zh timeline is shorter than en, we might need to truncate en? 
+                // But usually sync is 1:1. For now keep simple.
             });
             
             saveItinerary();
             updateUI();
             if ("vibrate" in navigator) navigator.vibrate([10, 50]);
-            console.log("Language synchronization (ZH -> EN) completed.");
+            console.log("Granular differential language synchronization completed.");
         }
 
         function saveItinerary() {
