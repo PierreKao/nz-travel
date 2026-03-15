@@ -899,8 +899,11 @@
                 importExportBtn: "導入/導出行程",
                 ioModalTitle: "導入或導出行程資料",
                 ioModalDesc: "將代碼貼入下方空格即可導入行程內容，或複製內容作為備份。",
-                importDone: "導入成功！",
-                importError: "導入失敗，請檢查格式是否正確。",
+                importDone: "資料導入成功！",
+                importError: "導入失敗，請檢查 JSON 格式是否正確。",
+                moveUp: "上移",
+                moveDown: "下移",
+                insertHere: "在此插入",
                 editDescriptionPlaceholder: "點擊編輯詳細說明...",
                 notices: [
                     { icon: "fa-passport", title: "NZeTA", content: "簽證核准件", desc: "紐西蘭電子旅行授權 (NZeTA) 必須在出發前至少 72 小時完成申請。建議使用 NZeTA 官方手機 App 申請，費用較低且包含 IVL (國際旅客保育及旅遊稅)。申請完成後請將 PDF 核准件存入手機或列印。" },
@@ -939,8 +942,11 @@
                 importExportBtn: "Import/Export",
                 ioModalTitle: "Import/Export Data",
                 ioModalDesc: "Paste JSON code to import or copy content to backup.",
-                importDone: "Import Successful!",
-                importError: "Import Failed, please check format.",
+                importDone: "Data imported successfully!",
+                importError: "Import failed, please check JSON format.",
+                moveUp: "Move Up",
+                moveDown: "Move Down",
+                insertHere: "Insert Here",
                 editDescriptionPlaceholder: "Click to edit details...",
                 notices: [
                     { icon: "fa-passport", title: "Visa", content: "NZeTA Status", desc: "The NZeTA (New Zealand Electronic Travel Authority) is mandatory for visitors from visa-waiver countries. Apply at least 72 hours before departure via the official mobile app for a discount. The IVL levy is included in the fee." },
@@ -1061,10 +1067,35 @@
             });
         }
 
-        function addTimelineItem(dayIdx) {
+        function addTimelineItem(dayIdx, insertIdx) {
             const newItem = ["09:00", "New Activity", "1 hr drive", "", "", ""]; // [time, title, transition, mapQuery, customImg, description]
-            itinerary[dayIdx].zh.timeline.push([...newItem]);
-            itinerary[dayIdx].en.timeline.push([...newItem]);
+            
+            if (insertIdx !== undefined) {
+                itinerary[dayIdx].zh.timeline.splice(insertIdx, 0, [...newItem]);
+                itinerary[dayIdx].en.timeline.splice(insertIdx, 0, [...newItem]);
+            } else {
+                itinerary[dayIdx].zh.timeline.push([...newItem]);
+                itinerary[dayIdx].en.timeline.push([...newItem]);
+            }
+            saveItinerary();
+            updateUI();
+        }
+
+        function moveTimelineItem(dayIdx, itemIdx, direction) {
+            // direction: -1 (up), 1 (down)
+            const targetIdx = itemIdx + direction;
+            if (targetIdx < 0 || targetIdx >= itinerary[dayIdx].zh.timeline.length) return;
+            
+            // Swap in zh
+            const tempZh = itinerary[dayIdx].zh.timeline[itemIdx];
+            itinerary[dayIdx].zh.timeline[itemIdx] = itinerary[dayIdx].zh.timeline[targetIdx];
+            itinerary[dayIdx].zh.timeline[targetIdx] = tempZh;
+            
+            // Swap in en
+            const tempEn = itinerary[dayIdx].en.timeline[itemIdx];
+            itinerary[dayIdx].en.timeline[itemIdx] = itinerary[dayIdx].en.timeline[targetIdx];
+            itinerary[dayIdx].en.timeline[targetIdx] = tempEn;
+            
             saveItinerary();
             updateUI();
         }
@@ -2130,48 +2161,68 @@
                                 ${lang.timeline.map((t, index) => {
                                     const isActive = index === activeItemIndex;
                                     return `
-                                    <div class="flex gap-6 relative group ${isActive ? 'scale-105 origin-left transition-transform' : ''}">
-                                        <div class="w-4 h-4 rounded-full ${isActive ? 'bg-red-500 border-4 border-red-200 animate-pulse' : 'bg-white border-4 border-blue-600'} z-10 mt-1 transition-colors"></div>
-                                        <div class="flex-1 pb-4">
-                                            <p contenteditable="${isEditMode}" oninput="handleEdit(${activeDayIndex}, '${currentLang}', 'timeline', this.innerText, ${index}, 0)" class="text-[10px] font-bold ${isActive ? 'text-red-500' : 'text-blue-500'} uppercase outline-none">${t[0]}</p>
-                                            <div onclick="updateMapQuery('${t[3] || t[1]}', '${t[4] || ''}')" class="bg-white/60 flex-1 p-4 rounded-2xl shadow-sm border border-slate-100 hover:bg-white hover:shadow-md hover:border-blue-200 cursor-pointer transition-all relative mt-1 ${isActive ? 'border-red-200 ring-1 ring-red-100 shadow-md' : ''}">
-                                                <div class="flex items-start justify-between">
-                                                    <div class="flex-1">
-                                                        ${isActive ? '<span class="absolute -top-2 right-4 bg-red-500 text-white text-[9px] font-bold px-2 py-0.5 rounded uppercase shadow-sm">進行中 Now</span>' : ''}
-                                                        <p contenteditable="${isEditMode}" oninput="handleEdit(${activeDayIndex}, '${currentLang}', 'timeline', this.innerText, ${index}, 1)" class="text-[15px] font-bold ${isActive ? 'text-red-700' : 'text-slate-700'} outline-none focus:bg-blue-50 rounded px-1">${t[1]}</p>
-                                                        
-                                                        <!-- Extended Description Feat -->
-                                                        <div contenteditable="${isEditMode}" oninput="handleEdit(${activeDayIndex}, '${currentLang}', 'timeline', this.innerText, ${index}, 5)" class="text-[12px] text-slate-500 mt-2 outline-none focus:bg-blue-50 rounded px-1 min-h-[1em]" placeholder="${isEditMode ? ui.editDescriptionPlaceholder : ''}">
-                                                            ${t[5] || ''}
+                                    <div class="space-y-4">
+                                        <!-- Insert Point Before Item -->
+                                        ${isEditMode ? `
+                                        <div class="flex items-center gap-4 group/insert -mt-4 opacity-0 hover:opacity-100 transition-opacity">
+                                            <div class="w-4 h-[2px] bg-blue-200"></div>
+                                            <button onclick="addTimelineItem(${activeDayIndex}, ${index})" class="bg-blue-50 text-blue-500 text-[10px] font-bold px-3 py-1 rounded-full border border-blue-100 hover:bg-blue-500 hover:text-white transition-all">
+                                                <i class="fas fa-plus mr-1"></i> ${ui.insertHere}
+                                            </button>
+                                            <div class="flex-1 h-[2px] bg-blue-200"></div>
+                                        </div>` : ''}
+
+                                        <div class="flex gap-6 relative group ${isActive ? 'scale-105 origin-left transition-transform' : ''}">
+                                            <div class="w-4 h-4 rounded-full ${isActive ? 'bg-red-500 border-4 border-red-200 animate-pulse' : 'bg-white border-4 border-blue-600'} z-10 mt-1 transition-colors"></div>
+                                            <div class="flex-1 pb-4">
+                                                <p contenteditable="${isEditMode}" oninput="handleEdit(${activeDayIndex}, '${currentLang}', 'timeline', this.innerText, ${index}, 0)" class="text-[10px] font-bold ${isActive ? 'text-red-500' : 'text-blue-500'} uppercase outline-none">${t[0]}</p>
+                                                <div onclick="updateMapQuery('${t[3] || t[1]}', '${t[4] || ''}')" class="bg-white/60 flex-1 p-4 rounded-2xl shadow-sm border border-slate-100 hover:bg-white hover:shadow-md hover:border-blue-200 cursor-pointer transition-all relative mt-1 ${isActive ? 'border-red-200 ring-1 ring-red-100 shadow-md' : ''}">
+                                                    <div class="flex items-start justify-between">
+                                                        <div class="flex-1">
+                                                            ${isActive ? '<span class="absolute -top-2 right-4 bg-red-500 text-white text-[9px] font-bold px-2 py-0.5 rounded uppercase shadow-sm">進行中 Now</span>' : ''}
+                                                            <p contenteditable="${isEditMode}" oninput="handleEdit(${activeDayIndex}, '${currentLang}', 'timeline', this.innerText, ${index}, 1)" class="text-[15px] font-bold ${isActive ? 'text-red-700' : 'text-slate-700'} outline-none focus:bg-blue-50 rounded px-1">${t[1]}</p>
+                                                            
+                                                            <!-- Extended Description Feat -->
+                                                            <div contenteditable="${isEditMode}" oninput="handleEdit(${activeDayIndex}, '${currentLang}', 'timeline', this.innerText, ${index}, 5)" class="text-[12px] text-slate-500 mt-2 outline-none focus:bg-blue-50 rounded px-1 min-h-[1em]" placeholder="${isEditMode ? ui.editDescriptionPlaceholder : ''}">
+                                                                ${t[5] || ''}
+                                                            </div>
+                                                        </div>
+                                                        <div class="flex flex-col gap-1 items-end">
+                                                            <div class="flex gap-1">
+                                                                ${isEditMode ? `
+                                                                <button onclick="event.stopPropagation(); moveTimelineItem(${activeDayIndex}, ${index}, -1)" class="w-8 h-8 rounded-full bg-slate-50 text-slate-400 hover:bg-slate-100 flex items-center justify-center transition-all shrink-0 shadow-sm border border-slate-100" title="${ui.moveUp}">
+                                                                    <i class="fas fa-chevron-up"></i>
+                                                                </button>
+                                                                <button onclick="event.stopPropagation(); moveTimelineItem(${activeDayIndex}, ${index}, 1)" class="w-8 h-8 rounded-full bg-slate-50 text-slate-400 hover:bg-slate-100 flex items-center justify-center transition-all shrink-0 shadow-sm border border-slate-100" title="${ui.moveDown}">
+                                                                    <i class="fas fa-chevron-down"></i>
+                                                                </button>
+                                                                ` : ''}
+                                                                <button onclick="event.stopPropagation(); openMemoryUpload(${activeDayIndex}, ${index})" class="w-8 h-8 rounded-full bg-white/80 text-slate-400 hover:bg-blue-100 hover:text-blue-600 flex items-center justify-center transition-all shrink-0 shadow-sm border border-slate-100" title="Upload Photo">
+                                                                    <i class="fas fa-camera"></i>
+                                                                </button>
+                                                                ${isEditMode ? `
+                                                                <button onclick="event.stopPropagation(); editMapSettings(${activeDayIndex}, ${index})" class="w-8 h-8 rounded-full bg-amber-50 text-amber-500 hover:bg-amber-100 flex items-center justify-center transition-all shrink-0 shadow-sm border border-amber-100" title="Map & Image Settings">
+                                                                    <i class="fas fa-gear"></i>
+                                                                </button>
+                                                                <button onclick="event.stopPropagation(); removeTimelineItem(${activeDayIndex}, ${index})" class="w-8 h-8 rounded-full bg-red-50 text-red-400 hover:bg-red-100 hover:text-red-600 flex items-center justify-center transition-all shrink-0 shadow-sm border border-red-100" title="Delete">
+                                                                    <i class="fas fa-trash"></i>
+                                                                </button>` : ''}
+                                                            </div>
+                                                            ${isEditMode && (t[3] || t[4]) ? `<span class="text-[8px] font-black text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded uppercase tracking-tighter mt-1">Custom Link Active</span>` : ''}
                                                         </div>
                                                     </div>
-                                                    <div class="flex flex-col gap-1 items-end">
-                                                        <div class="flex gap-1">
-                                                            <button onclick="event.stopPropagation(); openMemoryUpload(${activeDayIndex}, ${index})" class="w-8 h-8 rounded-full bg-white/80 text-slate-400 hover:bg-blue-100 hover:text-blue-600 flex items-center justify-center transition-all shrink-0 shadow-sm border border-slate-100" title="Upload Photo">
-                                                                <i class="fas fa-camera"></i>
-                                                            </button>
-                                                            ${isEditMode ? `
-                                                            <button onclick="event.stopPropagation(); editMapSettings(${activeDayIndex}, ${index})" class="w-8 h-8 rounded-full bg-amber-50 text-amber-500 hover:bg-amber-100 flex items-center justify-center transition-all shrink-0 shadow-sm border border-amber-100" title="Map & Image Settings">
-                                                                <i class="fas fa-gear"></i>
-                                                            </button>
-                                                            <button onclick="event.stopPropagation(); removeTimelineItem(${activeDayIndex}, ${index})" class="w-8 h-8 rounded-full bg-red-50 text-red-400 hover:bg-red-100 hover:text-red-600 flex items-center justify-center transition-all shrink-0 shadow-sm border border-red-100" title="Delete">
-                                                                <i class="fas fa-trash"></i>
-                                                            </button>` : ''}
-                                                        </div>
-                                                        ${isEditMode && (t[3] || t[4]) ? `<span class="text-[8px] font-black text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded uppercase tracking-tighter mt-1">Custom Link Active</span>` : ''}
+                                                    <!-- Memory Container -->
+                                                    <div id="memory-container-${activeDayIndex}-${index}" class="mt-4 space-y-3"></div>
+                                                </div>
+                                                ${(t[2] || isEditMode) ? `
+                                                <div class="absolute left-1.5 top-6 bottom-[-20px] w-[2px] bg-slate-200 z-0 ${isEditMode && !t[2] ? 'opacity-30 border-dashed border-l-2 bg-transparent' : ''}">
+                                                    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-slate-100 text-slate-500 text-[9px] font-bold px-2 py-0.5 rounded border border-slate-200 shadow-sm flex items-center gap-1 whitespace-nowrap z-10 ${isEditMode && !t[2] ? 'bg-amber-50 border-amber-200 text-amber-500 cursor-text' : ''}">
+                                                        <i class="fas ${t[2] && (t[2].includes('飛') || t[2].includes('flight')) ? 'fa-plane' : t[2] && (t[2].includes('步行') || t[2].includes('walk')) ? 'fa-person-walking' : 'fa-car-side'}"></i> 
+                                                        <span contenteditable="${isEditMode}" oninput="handleEdit(${activeDayIndex}, '${currentLang}', 'timeline', this.innerText, ${index}, 2)" class="outline-none min-w-[20px]" placeholder="${isEditMode ? '...' : ''}">${t[2] || ''}</span>
                                                     </div>
                                                 </div>
-                                                <!-- Memory Container -->
-                                                <div id="memory-container-${activeDayIndex}-${index}" class="mt-4 space-y-3"></div>
+                                                ` : ''}
                                             </div>
-                                            ${(t[2] || isEditMode) ? `
-                                            <div class="absolute left-1.5 top-6 bottom-[-20px] w-[2px] bg-slate-200 z-0 ${isEditMode && !t[2] ? 'opacity-30 border-dashed border-l-2 bg-transparent' : ''}">
-                                                <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-slate-100 text-slate-500 text-[9px] font-bold px-2 py-0.5 rounded border border-slate-200 shadow-sm flex items-center gap-1 whitespace-nowrap z-10 ${isEditMode && !t[2] ? 'bg-amber-50 border-amber-200 text-amber-500 cursor-text' : ''}">
-                                                    <i class="fas ${t[2] && (t[2].includes('飛') || t[2].includes('flight')) ? 'fa-plane' : t[2] && (t[2].includes('步行') || t[2].includes('walk')) ? 'fa-person-walking' : 'fa-car-side'}"></i> 
-                                                    <span contenteditable="${isEditMode}" oninput="handleEdit(${activeDayIndex}, '${currentLang}', 'timeline', this.innerText, ${index}, 2)" class="outline-none min-w-[20px]" placeholder="${isEditMode ? '...' : ''}">${t[2] || ''}</span>
-                                                </div>
-                                            </div>
-                                            ` : ''}
                                         </div>
                                     </div>
                                     `;
