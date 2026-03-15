@@ -684,7 +684,7 @@
                 title_zh: "約翰山天文台", title_en: "Mt. John Observatory" 
             },
             { 
-                keywords: ["Christchurch", "基督城", "機場", "CHC"], 
+                keywords: ["Christchurch", "基督城", "CHC"], 
                 img: "https://images.unsplash.com/photo-1517032145880-99c968f447f5?auto=format&fit=crop&q=80&w=1200", 
                 title_zh: "基督城：花園城市", title_en: "Christchurch City" 
             },
@@ -723,7 +723,9 @@
                     } else {
                         const container = iframe.parentElement;
                         container.classList.add('opacity-50');
-                        const safeQuery = encodeURIComponent(query);
+                        // Replace '+' with space to avoid double encoding of '+' as '%2B'
+                        const cleanQuery = query.replace(/\+/g, ' ');
+                        const safeQuery = encodeURIComponent(cleanQuery);
                         iframe.src = `https://maps.google.com/maps?q=${safeQuery}&t=&z=14&ie=UTF8&iwloc=&output=embed`;
                         iframe.onload = () => container.classList.remove('opacity-50');
                     }
@@ -982,10 +984,31 @@
                 itinerary[dayIdx][field] = value;
             }
             saveItinerary();
+            
+            // Proactively update sidebar if city or title changed
+            if (field === 'city' || field === 'zh' || field === 'en') {
+                updateSidebarTitles();
+            }
+        }
+
+        function updateSidebarTitles() {
+            const btns = document.querySelectorAll('.day-btn');
+            btns.forEach((btn, i) => {
+                // Skip overview (-1) and checklist (-2) buttons which are first two
+                const dayIdx = i - 2;
+                if (dayIdx >= 0 && dayIdx < itinerary.length) {
+                    const day = itinerary[dayIdx];
+                    const [y, m, d] = day.actualDate.split('-');
+                    const displayDate = savedStartDate ? `${parseInt(m)}/${parseInt(d)}` : `D${dayIdx+1}`;
+                    const isToday = day.actualDate === (window.simulatedTime || new Date()).toISOString().split('T')[0];
+                    
+                    btn.innerHTML = `<span class="${isToday ? 'text-red-500 animate-pulse' : ''}">${displayDate}</span> ${day.city[currentLang]}`;
+                }
+            });
         }
 
         function addTimelineItem(dayIdx) {
-            const newItem = ["09:00", "New Activity", "1 hr drive"];
+            const newItem = ["09:00", "New Activity", "1 hr drive", "", "", ""]; // [time, title, transition, mapQuery, customImg, description]
             itinerary[dayIdx].zh.timeline.push([...newItem]);
             itinerary[dayIdx].en.timeline.push([...newItem]);
             saveItinerary();
@@ -1844,10 +1867,10 @@
                                     <span class="text-[8px] font-bold opacity-80 uppercase mt-0.5">${weekdayStr}</span>
                                 </div>
                                 <div class="flex-1">
-                                    <h4 contenteditable="${isEditMode}" oninput="handleEdit(${i}, '${currentLang}', 'title', this.innerText)" class="font-bold text-slate-800 text-sm mb-0.5 outline-none focus:bg-white/80 rounded px-1">${day[currentLang].title}</h4>
+                                    <h4 contenteditable="${isEditMode}" oninput="handleEdit(${i}, '${currentLang}', 'title', this.innerText)" onclick="event.stopPropagation()" class="font-bold text-slate-800 text-sm mb-0.5 outline-none focus:bg-white/80 rounded px-1">${day[currentLang].title}</h4>
                                     <p class="text-[10px] text-slate-400 uppercase font-extrabold tracking-wider italic flex items-center gap-1">
-                                        <span contenteditable="${isEditMode}" oninput="handleEdit(${i}, 'city', '${currentLang}', this.innerText)" class="outline-none focus:bg-white/80 rounded px-1">${day.city[currentLang]}</span>
-                                        <span contenteditable="${isEditMode}" oninput="handleEdit(${i}, 'drive', undefined, this.innerText)" class="outline-none focus:bg-white/80 rounded px-1">${day.drive ? `· ${day.drive}` : ''}</span>
+                                        <span contenteditable="${isEditMode}" oninput="handleEdit(${i}, 'city', '${currentLang}', this.innerText)" onclick="event.stopPropagation()" class="outline-none focus:bg-white/80 rounded px-1">${day.city[currentLang]}</span>
+                                        <span contenteditable="${isEditMode}" oninput="handleEdit(${i}, 'drive', undefined, this.innerText)" onclick="event.stopPropagation()" class="outline-none focus:bg-white/80 rounded px-1 ${isEditMode && !day.drive ? 'bg-indigo-100 text-indigo-400 min-w-[30px] inline-block' : ''}">${day.drive ? `· ${day.drive}` : (isEditMode ? '· ...' : '')}</span>
                                     </p>
                                 </div>
                             </div>
@@ -1982,7 +2005,7 @@
                         <div class="glass-card rounded-[2.5rem] p-8 shadow-2xl relative border-t border-white/60">
                             <div class="mb-8">
                                 <span class="${isToday ? 'bg-red-500 animate-pulse' : (new Date(day.actualDate).getDay() === 0 || new Date(day.actualDate).getDay() === 6 ? 'bg-amber-500' : 'bg-blue-600')} text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase mb-2 inline-block transition-colors">Day ${activeDayIndex + 1}</span>
-                                ${day.drive ? `<span class="bg-indigo-500 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase mb-2 ml-1 inline-block"><i class="fas fa-car mr-1"></i> ${ui.driveTimeLabel}: <span contenteditable="${isEditMode}" oninput="handleEdit(${activeDayIndex}, 'drive', undefined, this.innerText)" class="outline-none">${day.drive}</span></span>` : ''}
+                                ${(day.drive || isEditMode) ? `<span class="bg-indigo-500 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase mb-2 ml-1 inline-block ${isEditMode && !day.drive ? 'bg-indigo-400/50' : ''}"><i class="fas fa-car mr-1"></i> ${ui.driveTimeLabel}: <span contenteditable="${isEditMode}" oninput="handleEdit(${activeDayIndex}, 'drive', undefined, this.innerText)" class="outline-none min-w-[30px] inline-block" placeholder="..."> ${day.drive || ''}</span></span>` : ''}
                                 ${(new Date(day.actualDate).getDay() === 0 || new Date(day.actualDate).getDay() === 6) ? `<span class="bg-amber-100 text-amber-700 text-[10px] font-black px-3 py-1 rounded-full uppercase mb-2 ml-1 inline-block border border-amber-200"><i class="fas fa-calendar-star mr-1"></i> ${currentLang === 'zh' ? '週末假期' : 'WEEKEND'}</span>` : ''}
                                 <h2 contenteditable="${isEditMode}" oninput="handleEdit(${activeDayIndex}, '${currentLang}', 'title', this.innerText)" class="text-4xl font-extrabold text-slate-800 outline-none focus:bg-white/50 rounded px-2">${lang.title}</h2>
                                 <p class="text-slate-500 font-bold mt-1 text-sm flex items-center gap-1.5"><i class="fas fa-calendar-day"></i> ${new Date(day.actualDate).toLocaleDateString(currentLang === 'zh' ? 'zh-TW' : 'en-US', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' })} · <span contenteditable="${isEditMode}" oninput="handleEdit(${activeDayIndex}, 'city', '${currentLang}', this.innerText)" class="outline-none focus:bg-white/50 rounded px-1">${day.city[currentLang]}</span></p>
@@ -2001,6 +2024,11 @@
                                                     <div class="flex-1">
                                                         ${isActive ? '<span class="absolute -top-2 right-4 bg-red-500 text-white text-[9px] font-bold px-2 py-0.5 rounded uppercase shadow-sm">進行中 Now</span>' : ''}
                                                         <p contenteditable="${isEditMode}" oninput="handleEdit(${activeDayIndex}, '${currentLang}', 'timeline', this.innerText, ${index}, 1)" class="text-[15px] font-bold ${isActive ? 'text-red-700' : 'text-slate-700'} outline-none focus:bg-blue-50 rounded px-1">${t[1]}</p>
+                                                        
+                                                        <!-- Extended Description Feat -->
+                                                        <div contenteditable="${isEditMode}" oninput="handleEdit(${activeDayIndex}, '${currentLang}', 'timeline', this.innerText, ${index}, 5)" class="text-[12px] text-slate-500 mt-2 outline-none focus:bg-blue-50 rounded px-1 min-h-[1em]" placeholder="${isEditMode ? (currentLang === 'zh' ? '點擊編輯詳細說明...' : 'Click to edit details...') : ''}">
+                                                            ${t[5] || ''}
+                                                        </div>
                                                     </div>
                                                     <div class="flex flex-col gap-1 items-end">
                                                         <div class="flex gap-1">
@@ -2021,10 +2049,11 @@
                                                 <!-- Memory Container -->
                                                 <div id="memory-container-${activeDayIndex}-${index}" class="mt-4 space-y-3"></div>
                                             </div>
-                                            ${t[2] ? `
-                                            <div class="absolute left-1.5 top-6 bottom-[-20px] w-[2px] bg-slate-200 z-0">
-                                                <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-slate-100 text-slate-500 text-[9px] font-bold px-2 py-0.5 rounded border border-slate-200 shadow-sm flex items-center gap-1 whitespace-nowrap z-10">
-                                                    <i class="fas ${t[2].includes('飛') || t[2].includes('flight') ? 'fa-plane' : t[2].includes('步行') || t[2].includes('walk') ? 'fa-person-walking' : 'fa-car-side'}"></i> <span contenteditable="${isEditMode}" oninput="handleEdit(${activeDayIndex}, '${currentLang}', 'timeline', this.innerText, ${index}, 2)" class="outline-none">${t[2]}</span>
+                                            ${(t[2] || isEditMode) ? `
+                                            <div class="absolute left-1.5 top-6 bottom-[-20px] w-[2px] bg-slate-200 z-0 ${isEditMode && !t[2] ? 'opacity-30 border-dashed border-l-2 bg-transparent' : ''}">
+                                                <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-slate-100 text-slate-500 text-[9px] font-bold px-2 py-0.5 rounded border border-slate-200 shadow-sm flex items-center gap-1 whitespace-nowrap z-10 ${isEditMode && !t[2] ? 'bg-amber-50 border-amber-200 text-amber-500 cursor-text' : ''}">
+                                                    <i class="fas ${t[2] && (t[2].includes('飛') || t[2].includes('flight')) ? 'fa-plane' : t[2] && (t[2].includes('步行') || t[2].includes('walk')) ? 'fa-person-walking' : 'fa-car-side'}"></i> 
+                                                    <span contenteditable="${isEditMode}" oninput="handleEdit(${activeDayIndex}, '${currentLang}', 'timeline', this.innerText, ${index}, 2)" class="outline-none min-w-[20px]" placeholder="${isEditMode ? '...' : ''}">${t[2] || ''}</span>
                                                 </div>
                                             </div>
                                             ` : ''}
