@@ -283,6 +283,9 @@
                 <button onclick="toggleEditMode()" id="edit-mode-btn" class="bg-amber-500 hover:bg-amber-600 text-white px-3 py-1.5 rounded-full text-[12px] font-bold transition-all shadow-sm flex items-center gap-1 group">
                     <i class="fas fa-edit group-hover:scale-110 transition-transform"></i> <span id="ui-edit-btn">編輯</span>
                 </button>
+                <button onclick="openIOModal()" id="import-export-btn" class="bg-indigo-500 hover:bg-indigo-600 text-white px-3 py-1.5 rounded-full text-[12px] font-bold transition-all shadow-sm flex items-center gap-1 group hidden">
+                    <i class="fas fa-file-import group-hover:scale-110 transition-transform"></i> <span id="ui-io-btn">導入/導出</span>
+                </button>
                 <button onclick="exportUpdatedHTML()" id="export-btn" class="bg-gray-700 hover:bg-gray-800 text-white px-3 py-1.5 rounded-full text-[12px] font-bold transition-all shadow-sm flex items-center gap-1 group hidden">
                     <i class="fas fa-download group-hover:scale-110 transition-transform"></i> <span id="ui-export-btn">匯出</span>
                 </button>
@@ -517,6 +520,36 @@
         </div>
         `;
         document.body.insertAdjacentHTML('beforeend', flightModalHTML);
+
+        const ioModalHTML = `
+        <div id="io-modal" class="fixed inset-0 z-[120] hidden flex-col items-center justify-center p-4 sm:p-0">
+            <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity opacity-0" id="io-backdrop" onclick="closeIOModal()"></div>
+            <div class="bg-white/95 backdrop-blur-xl rounded-[2.5rem] p-8 shadow-2xl w-full max-w-lg relative z-10 scale-95 opacity-0 transition-all duration-300" id="io-content">
+                <button onclick="closeIOModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100 transition-colors">
+                    <i class="fas fa-times"></i>
+                </button>
+                <div class="text-center mb-6">
+                    <div class="w-14 h-14 bg-indigo-100 text-indigo-600 rounded-2xl flex items-center justify-center text-2xl mx-auto mb-4 shadow-sm">
+                        <i class="fas fa-file-import"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-800" id="io-title">導入/導出行程</h3>
+                    <p class="text-[11px] text-slate-500 mt-2 font-medium" id="io-desc">複製或貼入下方代碼以備份或更新行程。</p>
+                </div>
+                <div class="space-y-4">
+                    <textarea id="io-textarea" class="w-full h-64 bg-slate-50 border border-slate-200 p-4 rounded-2xl text-[10px] font-mono text-slate-700 focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all shadow-inner resize-none"></textarea>
+                    <div class="flex gap-3">
+                        <button onclick="copyIOText()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3 px-4 rounded-xl transition-all flex items-center justify-center gap-2">
+                            <i class="fas fa-copy"></i> 複製內容
+                        </button>
+                        <button onclick="importItinerary()" class="flex-[2] bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-xl shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2">
+                            <i class="fas fa-check-circle"></i> 確認導入
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', ioModalHTML);
 
         const ENCRYPTED_HOTELS = "U2FsdGVkX1/5B7ukylTrcGjm0fKXPxOORKLwexAFiM7PQj0iJ4VSrYodK89sZYwKjzEZUjUQBOuWThstnVLG3OTtftpfc9JocyZssCpUontSb8YDsusQTyLLl3H4GyuxcwojvMxO6XVDTuDuiXUBHIqfNhhMC0eqK4Vw/eF09Spv7Nr7MgSd6z+wTMeo6aY9qe3X4ed0DpcU0Z/3EuV6caUFiQHgFGdB9pfPpr3P+K5BK06WnMRDowp7kEmMa/Fro0+CinlZEv6/lbRty8rRY5UlTJLIvHMerea6ASxqlc53xjeOrpHUHUQ1mmOpA7zy8SNb37O8vF3oDwOReu1hhkOAOQRY8pypdnxyIs+W1o+3Bcd4VTbTeAfM8HYyLff+gKvSOADGGiUAivL3BxFa1herFwTIW+wnFXpgKgSGwfTByLYju+Zmx4T3uNgTBM1bnFOwQoz+UaI/xbUNilO7/nuPeXoeIsE4rkKGActJ6gmOGUwgjZA9J7YiE2BD2aCfUZpuVVT/NripRq0nh9j/R7AmEvgA3yULLQQT3P7y1A75Bq3+f79EnVuYBsujubifHMFDinWRUUJkJRCKzQgqtg7sL8TXfLX1U1Y4NcGmCpms1TlEvg3APrpSlYLfAaOq3IdiZwHkmstNTtGw20jc51Jenjg1/hYEg+QXx5zGviw="; 
 
@@ -863,6 +896,12 @@
                 resetConfirmMsg: "確定要重置所有資料嗎？這將會永久刪除所有出發日期、清單進度以及儲存的照片與筆記。",
                 resetSuccessMsg: "資料已成功重置。",
                 flightSearchBtn: "查詢紐航班次",
+                importExportBtn: "導入/導出行程",
+                ioModalTitle: "導入或導出行程資料",
+                ioModalDesc: "將代碼貼入下方空格即可導入行程內容，或複製內容作為備份。",
+                importDone: "導入成功！",
+                importError: "導入失敗，請檢查格式是否正確。",
+                editDescriptionPlaceholder: "點擊編輯詳細說明...",
                 notices: [
                     { icon: "fa-passport", title: "NZeTA", content: "簽證核准件", desc: "紐西蘭電子旅行授權 (NZeTA) 必須在出發前至少 72 小時完成申請。建議使用 NZeTA 官方手機 App 申請，費用較低且包含 IVL (國際旅客保育及旅遊稅)。申請完成後請將 PDF 核准件存入手機或列印。" },
                     { icon: "fa-car", title: "冬季自駕", content: "慎防黑冰、備妥雪鏈", desc: "紐西蘭南島冬季路面常有黑冰 (Black Ice)，這是一種極難察覺的透明冰層。開車時請保持冷靜，避免急煞與大角度轉彎。清晨與深夜、背陰處路段應減速。租車時務必確認備有雪鏈並練習安裝。" },
@@ -897,6 +936,12 @@
                 resetConfirmMsg: "Are you sure you want to reset all data? This will permanently delete your start date, checklist progress, and all saved photos/notes.",
                 resetSuccessMsg: "Data has been successfully reset.",
                 flightSearchBtn: "Search Air NZ Flights",
+                importExportBtn: "Import/Export",
+                ioModalTitle: "Import/Export Data",
+                ioModalDesc: "Paste JSON code to import or copy content to backup.",
+                importDone: "Import Successful!",
+                importError: "Import Failed, please check format.",
+                editDescriptionPlaceholder: "Click to edit details...",
                 notices: [
                     { icon: "fa-passport", title: "Visa", content: "NZeTA Status", desc: "The NZeTA (New Zealand Electronic Travel Authority) is mandatory for visitors from visa-waiver countries. Apply at least 72 hours before departure via the official mobile app for a discount. The IVL levy is included in the fee." },
                     { icon: "fa-car", title: "Winter Drive", content: "Watch for black ice", desc: "Winter roads in the South Island can have 'Black Ice'—thin, transparent ice that is extremely slippery. Drive carefully during sunrise, sunset, and in shaded areas. Always carry snow chains and know how to fit them." },
@@ -961,13 +1006,16 @@
             updateUI();
             const btn = document.getElementById('edit-mode-btn');
             const exportBtn = document.getElementById('export-btn');
+            const ioBtn = document.getElementById('import-export-btn');
             if (isEditMode) {
                 btn.classList.add('ring-4', 'ring-amber-300');
-                exportBtn.classList.remove('hidden');
+                if (exportBtn) exportBtn.classList.remove('hidden');
+                if (ioBtn) ioBtn.classList.remove('hidden');
                 if ("vibrate" in navigator) navigator.vibrate(15);
             } else {
                 btn.classList.remove('ring-4', 'ring-amber-300');
-                exportBtn.classList.add('hidden');
+                if (exportBtn) exportBtn.classList.add('hidden');
+                if (ioBtn) ioBtn.classList.add('hidden');
             }
         }
 
@@ -975,6 +1023,12 @@
             if (itemIdx !== undefined) {
                 if (subItemIdx !== undefined) {
                     itinerary[dayIdx][field][subfield][itemIdx][subItemIdx] = value;
+                    
+                    // Auto-sync Time (subItemIdx 0) across languages
+                    if (subItemIdx === 0) {
+                        const otherLang = (field === 'zh') ? 'en' : 'zh';
+                        itinerary[dayIdx][otherLang][subfield][itemIdx][0] = value;
+                    }
                 } else {
                     itinerary[dayIdx][field][subfield][itemIdx] = value;
                 }
@@ -1671,12 +1725,12 @@
                     <i class="fas fa-chevron-right text-emerald-200 group-hover:translate-x-1 transition-transform"></i>
                 </button>
 
-                <button onclick="printItinerary(); toggleDrawer(false);" class="w-full flex items-center justify-between p-4 bg-indigo-50 rounded-2xl hover:bg-indigo-100 transition-all group">
+                <button onclick="openIOModal(); toggleDrawer(false);" class="w-full flex items-center justify-between p-4 bg-indigo-50 rounded-2xl hover:bg-indigo-100 transition-all group">
                     <div class="flex items-center gap-3">
                         <div class="w-10 h-10 bg-white shadow-sm rounded-xl flex items-center justify-center text-indigo-600">
-                            <i class="fas fa-print"></i>
+                            <i class="fas fa-file-import"></i>
                         </div>
-                        <span class="font-bold text-indigo-900">${translations[currentLang].printBtn}</span>
+                        <span class="font-bold text-indigo-900">${translations[currentLang].importExportBtn}</span>
                     </div>
                     <i class="fas fa-chevron-right text-indigo-200 group-hover:translate-x-1 transition-transform"></i>
                 </button>
@@ -1747,8 +1801,64 @@
             if(activeDayIndex === -2) updateUI();
         }
 
+        function openIOModal() {
+            const ui = translations[currentLang];
+            document.getElementById('io-title').innerText = ui.ioModalTitle;
+            document.getElementById('io-desc').innerText = ui.ioModalDesc;
+            document.getElementById('io-textarea').value = JSON.stringify(itinerary, null, 2);
+            
+            const modal = document.getElementById('io-modal');
+            const backdrop = document.getElementById('io-backdrop');
+            const content = document.getElementById('io-content');
+            
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            setTimeout(() => {
+                backdrop.classList.replace('opacity-0', 'opacity-100');
+                content.classList.replace('opacity-0', 'opacity-100');
+                content.classList.replace('scale-95', 'scale-100');
+            }, 10);
+        }
+
+        function closeIOModal() {
+            const modal = document.getElementById('io-modal');
+            const backdrop = document.getElementById('io-backdrop');
+            const content = document.getElementById('io-content');
+            
+            backdrop.classList.replace('opacity-100', 'opacity-0');
+            content.classList.replace('opacity-100', 'opacity-0');
+            content.classList.replace('scale-100', 'scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }, 300);
+        }
+
+        function copyIOText() {
+            const textarea = document.getElementById('io-textarea');
+            textarea.select();
+            document.execCommand('copy');
+            alert(currentLang === 'zh' ? '已複製到剪貼簿！' : 'Copied to clipboard!');
+        }
+
+        function importItinerary() {
+            try {
+                const data = JSON.parse(document.getElementById('io-textarea').value);
+                if (!Array.isArray(data)) throw new Error("Invalid format");
+                itinerary = data;
+                saveItinerary();
+                alert(translations[currentLang].importDone);
+                closeIOModal();
+                updateUI();
+            } catch (e) {
+                alert(translations[currentLang].importError);
+            }
+        }
+
+
         function updateUI() {
             const ui = translations[currentLang];
+            // ... (rest of function will be updated in next chunk if needed)
             document.getElementById('ui-header-title').innerText = ui.header;
             document.getElementById('ui-unlock-text').innerText = decryptedHotels ? ui.unlockDone : ui.unlockBtn;
             if (document.getElementById('ui-print-btn')) {
@@ -1764,6 +1874,9 @@
             }
             if (document.getElementById('ui-flight-btn')) {
                 document.getElementById('ui-flight-btn').innerText = currentLang === 'zh' ? '航班' : 'Flights';
+            }
+            if (document.getElementById('ui-io-btn')) {
+                document.getElementById('ui-io-btn').innerText = ui.importExportBtn;
             }
             
             const nav = document.getElementById('nav-container');
@@ -2007,7 +2120,9 @@
                                 <span class="${isToday ? 'bg-red-500 animate-pulse' : (new Date(day.actualDate).getDay() === 0 || new Date(day.actualDate).getDay() === 6 ? 'bg-amber-500' : 'bg-blue-600')} text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase mb-2 inline-block transition-colors">Day ${activeDayIndex + 1}</span>
                                 ${(day.drive || isEditMode) ? `<span class="bg-indigo-500 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase mb-2 ml-1 inline-block ${isEditMode && !day.drive ? 'bg-indigo-400/50' : ''}"><i class="fas fa-car mr-1"></i> ${ui.driveTimeLabel}: <span contenteditable="${isEditMode}" oninput="handleEdit(${activeDayIndex}, 'drive', undefined, this.innerText)" class="outline-none min-w-[30px] inline-block" placeholder="..."> ${day.drive || ''}</span></span>` : ''}
                                 ${(new Date(day.actualDate).getDay() === 0 || new Date(day.actualDate).getDay() === 6) ? `<span class="bg-amber-100 text-amber-700 text-[10px] font-black px-3 py-1 rounded-full uppercase mb-2 ml-1 inline-block border border-amber-200"><i class="fas fa-calendar-star mr-1"></i> ${currentLang === 'zh' ? '週末假期' : 'WEEKEND'}</span>` : ''}
-                                <h2 contenteditable="${isEditMode}" oninput="handleEdit(${activeDayIndex}, '${currentLang}', 'title', this.innerText)" class="text-4xl font-extrabold text-slate-800 outline-none focus:bg-white/50 rounded px-2">${lang.title}</h2>
+                                <div class="flex items-center justify-between gap-4">
+                                    <h2 contenteditable="${isEditMode}" oninput="handleEdit(${activeDayIndex}, '${currentLang}', 'title', this.innerText)" class="text-4xl font-extrabold text-slate-800 outline-none focus:bg-white/50 rounded px-2 flex-1">${lang.title}</h2>
+                                </div>
                                 <p class="text-slate-500 font-bold mt-1 text-sm flex items-center gap-1.5"><i class="fas fa-calendar-day"></i> ${new Date(day.actualDate).toLocaleDateString(currentLang === 'zh' ? 'zh-TW' : 'en-US', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' })} · <span contenteditable="${isEditMode}" oninput="handleEdit(${activeDayIndex}, 'city', '${currentLang}', this.innerText)" class="outline-none focus:bg-white/50 rounded px-1">${day.city[currentLang]}</span></p>
                             </div>
 
@@ -2026,7 +2141,7 @@
                                                         <p contenteditable="${isEditMode}" oninput="handleEdit(${activeDayIndex}, '${currentLang}', 'timeline', this.innerText, ${index}, 1)" class="text-[15px] font-bold ${isActive ? 'text-red-700' : 'text-slate-700'} outline-none focus:bg-blue-50 rounded px-1">${t[1]}</p>
                                                         
                                                         <!-- Extended Description Feat -->
-                                                        <div contenteditable="${isEditMode}" oninput="handleEdit(${activeDayIndex}, '${currentLang}', 'timeline', this.innerText, ${index}, 5)" class="text-[12px] text-slate-500 mt-2 outline-none focus:bg-blue-50 rounded px-1 min-h-[1em]" placeholder="${isEditMode ? (currentLang === 'zh' ? '點擊編輯詳細說明...' : 'Click to edit details...') : ''}">
+                                                        <div contenteditable="${isEditMode}" oninput="handleEdit(${activeDayIndex}, '${currentLang}', 'timeline', this.innerText, ${index}, 5)" class="text-[12px] text-slate-500 mt-2 outline-none focus:bg-blue-50 rounded px-1 min-h-[1em]" placeholder="${isEditMode ? ui.editDescriptionPlaceholder : ''}">
                                                             ${t[5] || ''}
                                                         </div>
                                                     </div>
