@@ -13,9 +13,14 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="NZ 2025">
     <meta name="theme-color" content="#0f172a">
+    
+    <!-- Leaflet for Real Maps -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;700&family=Inter:wght@400;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;700&family=Inter:wght@400;700&family=Caveat:wght@700&display=swap');
         
         body { 
             font-family: 'Inter', 'Noto Sans TC', sans-serif; 
@@ -142,7 +147,7 @@
         /* Route Map Styles */
         #route-map-container {
             width: 100%;
-            height: 320px;
+            height: 350px;
             background: rgba(255, 255, 255, 0.4);
             backdrop-filter: blur(12px);
             border-radius: 2rem;
@@ -152,13 +157,38 @@
             border: 1px solid rgba(255, 255, 255, 0.3);
             box-shadow: 0 8px 32px rgba(31, 38, 135, 0.07);
         }
+        #leaflet-map-root {
+            width: 100%;
+            height: 100%;
+            background: #f1f5f9;
+        }
+        .cute-map-overlay {
+            position: absolute;
+            inset: 0;
+            z-index: 15;
+            background-image: 
+                radial-gradient(rgba(0,0,0,0) 0%, rgba(255,255,255,0.05) 100%),
+                url('https://www.transparenttextures.com/patterns/handmade-paper.png');
+            pointer-events: none;
+            mix-blend-mode: multiply;
+            opacity: 0.4;
+        }
+        #cute-map-img {
+            object-fit: contain; /* Ensure full image visibility */
+            background: #fff9f0;
+        }
+        .map-cute-label {
+            font-family: 'Caveat', cursive !important;
+            font-size: 16px !important;
+            letter-spacing: 1px;
+        }
         .map-path {
             fill: none;
-            stroke: #475569;
-            stroke-width: 2;
-            stroke-dasharray: 6 4;
+            stroke: #3b82f6;
+            stroke-width: 3;
+            stroke-dasharray: 8 6;
             stroke-linecap: round;
-            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
             animation: dash 30s linear infinite;
         }
         @keyframes dash {
@@ -307,7 +337,7 @@
     <header class="bg-white/70 backdrop-blur-md border-b sticky top-0 z-50 px-3 py-2 sm:px-6 sm:py-3 flex justify-between items-center shadow-sm">
         <div onclick="activeDayIndex = -1; updateUI();" class="cursor-pointer shrink-0">
                 <span id="ui-header-title">紐西蘭南島 · 冬季自駕</span>
-            <p class="text-[10px] text-blue-600 font-bold uppercase tracking-widest">Winter Adventure · v1.0.1</p>
+            <p class="text-[10px] text-blue-600 font-bold uppercase tracking-widest">Winter Adventure · v1.0.6</p>
         </div>
         
         <div class="flex items-center gap-1 sm:gap-3">
@@ -402,7 +432,7 @@
                 </div>
 
                 <div class="mt-12 pt-8 border-t border-slate-100">
-                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider text-center">New Zealand 2025 · v1.0.5</p>
+                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider text-center">New Zealand 2025 · v1.0.6</p>
                 </div>
             </div>
         </div>
@@ -414,6 +444,30 @@
         
         <!-- Main Content -->
         <main class="flex-1 p-3 sm:p-4 md:p-8 lg:p-12">
+            <div id="global-map-area" class="hidden mb-6">
+                <div id="route-map-container" class="animate-in fade-in slide-in-from-top-4 duration-700 relative z-10 group/map">
+                    <button id="map-control-btn" onclick="toggleMapMode()" class="absolute top-4 right-4 z-[100] bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-full text-[10px] font-black shadow-lg border border-white/50 hover:bg-white transition-all active:scale-95 flex items-center gap-1.5">
+                        <i class="fas fa-wand-magic-sparkles text-blue-500" id="map-icon"></i>
+                        <span id="map-toggle-text">可愛模式</span>
+                    </button>
+                    
+                    <!-- Real Map Layer (Leaflet) -->
+                    <div id="leaflet-map-root" class="absolute inset-0 z-10 opacity-100 transition-opacity duration-500"></div>
+                    
+                    <!-- Cute Map Layer -->
+                    <div id="cute-map-layer" class="absolute inset-0 z-20 opacity-0 pointer-events-none transition-opacity duration-500">
+                        <img id="cute-map-img" src="assets/cute-map.png" class="w-full h-full" />
+                        <div class="cute-map-overlay"></div>
+                        <!-- Dynamic Path Layer on Illustration -->
+                        <svg id="route-map-svg" viewBox="0 0 400 320" class="absolute inset-0 z-30 w-full h-full" style="pointer-events: none;">
+                            <g id="map-lines"></g>
+                            <g id="map-nodes"></g>
+                            <g id="map-labels"></g>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
             <div id="content-display" class="animate-in fade-in zoom-in-95 duration-500"></div>
 
             <div class="mt-6 md:mt-8 glass-card rounded-[2.5rem] p-8 shadow-xl">
@@ -646,7 +700,7 @@
 
         let decryptedHotels = null; 
         let currentLang = 'zh';
-        let activeDayIndex = -1; // 預設顯示大綱
+        let activeDayIndex = -1;
         let isAurora = false;
         let isEditMode = false;
         let currentNZDRate = 19.5; // Default fallback
@@ -1104,10 +1158,10 @@
             { date: "Day 01", city: { zh: "台北/奧克蘭", en: "TPE/AKL" }, mapUrl: "Auckland+Airport", zh: { title: "✈️ 啟程：台北 → 奧克蘭", timeline: [["18:35", "桃園機場出發 (NZ 78)", "11 hr 飛航"], ["晚上", "機上休息"]] }, en: { title: "✈️ Departure: TPE to AKL", timeline: [["18:35", "Depart TPE (NZ 78)", "11 hr flight"], ["Night", "Rest on board"]] } },
             { date: "Day 02", city: { zh: "皇鎮", en: "Queenstown" }, mapUrl: "Queenstown,New+Zealand", zh: { title: "🏔️ 抵達：皇后鎮", timeline: [["09:15", "抵達奧克蘭機場", "2 hr 轉機"], ["12:25", "國內線飛往皇后鎮", "2 hr 飛航"], ["14:20", "抵達、取車、超市採買"]] }, en: { title: "🏔️ Arrival: Queenstown", timeline: [["09:15", "Arrive AKL", "2 hr layover"], ["12:25", "Flight to ZQN", "2 hr flight"], ["14:20", "Pick up car & Groceries"]] } },
             { date: "Day 03", city: { zh: "皇后鎮", en: "Queenstown" }, mapUrl: "Skyline+Queenstown", zh: { title: "🚠 皇后鎮：Skyline", timeline: [["早上", "市中心湖畔散步", "15 min 步行"], ["中午", "Skyline Gondola 纜車", "2 hr 停留"], ["下午", "Luge 溜溜車挑戰", "15 min 步行"], ["晚上", "皇后鎮美食漢堡"]] }, en: { title: "🚠 Queenstown: Skyline", timeline: [["Morning", "Lakefront Stroll", "15 min walk"], ["Noon", "Gondola ride", "2 hr stay"], ["Afternoon", "Luge runs", "15 min walk"], ["Evening", "Town Dinner"]] } },
-            { date: "Day 04", city: { zh: "格萊諾基", en: "Glenorchy" }, mapUrl: "Glenorchy+New+Zealand", zh: { title: "⛴️ 蒸汽船與格萊諾基", timeline: [["早上", "前往 Glenorchy 魔戒小鎮", "45 min 車程"], ["中午", "小鎮景點拍照", "45 min 車程"], ["下午", "回市區搭乘 TSS 蒸汽船"]] }, en: { title: "⛴️ Steamboat & Glenorchy", timeline: [["Morning", "Drive to Glenorchy (LoTR Town)", "45 min drive"], ["Noon", "Sightseeing & Photos", "45 min drive"], ["Afternoon", "Back to town for TSS Earnslaw"]] } },
+            { date: "Day 04", city: { zh: "格萊諾基", en: "Glenorchy" }, mapUrl: "Glenorchy+New+Zealand", zh: { title: "⛴️ 蒸汽船與格萊諾基", timeline: [["早上", "前往 Arrowtown 箭鎮", "45 min 車程"], ["中午", "小鎮景點拍照", "45 min 車程"], ["下午", "回市區搭乘 TSS 蒸汽船"]] }, en: { title: "⛴️ Steamboat & Glenorchy", timeline: [["Morning", "Drive to Glenorchy (LoTR Town)", "45 min drive"], ["Noon", "Sightseeing & Photos", "45 min drive"], ["Afternoon", "Back to town for TSS Earnslaw"]] } },
             { date: "Day 05", city: { zh: "瓦納卡", en: "Wanaka" }, mapUrl: "That+Wanaka+Tree", drive: "1.5 hr", zh: { title: "📷 箭鎮與瓦納卡", timeline: [["09:00", "前往 Arrowtown 箭鎮", "1 hr 車程"], ["中午", "箭鎮午餐", "1 hr 車程"], ["14:00", "抵達 Wanaka", "10 min 車程"], ["傍晚", "尋找孤獨的樹"]] }, en: { title: "📷 Arrowtown & Wanaka", timeline: [["09:00", "Drive to Arrowtown", "1 hr drive"], ["12:00", "Lunch at Arrowtown", "1 hr drive"], ["14:00", "Wanaka Arrival", "10 min drive"], ["Sunset", "The Wanaka Tree"]] } },
             { date: "Day 06", city: { zh: "瓦納卡", en: "Wanaka" }, mapUrl: "Puzzling+World", zh: { title: "🪾 瓦納卡：悠閒全日", timeline: [["上午", "Puzzling World 奇幻世界", "10 min 車程"], ["下午", "瓦納卡湖邊漫步", "10 min 車程"], ["晚上", "瓦納卡特色餐廳"]] }, en: { title: "🪾 Wanaka: Relax Day", timeline: [["AM", "Puzzling World", "10 min drive"], ["PM", "Wanaka Lakefront", "10 min drive"], ["Night", "Wanaka Dinner"]] } },
-            { date: "Day 07", city: { zh: "奧瑪魯", en: "Oamaru" }, mapUrl: "Oamaru+Blue+Penguin+Colony", drive: "3.5 hr", zh: { title: "🐧 奧瑪魯：企鵝歸巢", timeline: [["09:00", "離開瓦納卡", "1.5 hr 車程"], ["中午", "沿途景點休息", "2 hr 車程"], ["16:00", "奧瑪魯老城區", "10 min 車程"], ["傍晚", "藍企鵝歸巢觀賞"]] }, en: { title: "🐧 Oamaru: Penguins", timeline: [["09:00", "Leave Wanaka", "1.5 hr drive"], ["12:00", "Stop by Lindis Pass", "2 hr drive"], ["16:00", "Oamaru Old Town", "10 min drive"], ["Sunset", "Blue Penguin Colony"]] } },
+            { date: "Day 07", city: { zh: "奧瑪魯", en: "Oamaru" }, mapUrl: "Oamaru+Blue+Penguin+Colony", drive: "3.5 hr", zh: { title: "🐧 奧瑪魯：企鵝歸巢", timeline: [["早上", "奧瑪魯海景散步", "1.5 hr 車程"], ["11:00", "前往 Twizel", "15 min 車程"], ["中午", "鮭魚農場新鮮午餐", "10 min 車程"], ["下午", "奧瑪魯老城區", "10 min 車程"], ["傍晚", "藍企鵝歸巢觀賞"]] }, en: { title: "🐧 Oamaru: Penguins", timeline: [["09:00", "Leave Wanaka", "1.5 hr drive"], ["12:00", "Stop by Lindis Pass", "2 hr drive"], ["16:00", "Oamaru Old Town", "10 min drive"], ["Sunset", "Blue Penguin Colony"]] } },
             { date: "Day 08", city: { zh: "特威澤爾", en: "Twizel" }, mapUrl: "High+Country+Salmon", drive: "2 hr", zh: { title: "🐟 特威澤爾：鮭魚餐", timeline: [["早上", "奧瑪魯海景散步", "1.5 hr 車程"], ["11:00", "前往 Twizel", "15 min 車程"], ["中午", "鮭魚農場新鮮午餐", "10 min 車程"], ["下午", "Twizel 市區補給"]] }, en: { title: "🐟 Twizel: Salmon Farm", timeline: [["AM", "Oamaru Coastline", "1.5 hr drive"], ["11:00", "Drive to Twizel", "15 min drive"], ["13:00", "Salmon Farm Sashimi", "10 min drive"], ["PM", "Twizel Supply Run"]] } },
             { date: "Day 09", city: { zh: "庫克山", en: "Mount Cook" }, mapUrl: "Hooker+Valley+Track", drive: "1 hr", zh: { title: "⛰️ 庫克山：冰川健行", timeline: [["09:00", "前往庫克山", "1 hr 車程"], ["10:30", "Hooker Valley 健行", "15 min 車程"], ["下午", "塔斯曼冰河景觀", "1 hr 車程"], ["傍晚", "回 Twizel 休息"]] }, en: { title: "⛰️ Mt. Cook: Glacier Trek", timeline: [["09:00", "To Mt. Cook", "1 hr drive"], ["10:30", "Hooker Valley Track", "15 min drive"], ["PM", "Tasman Glacier Point"], ["1 hr drive", "Back to Twizel"]] } },
             { date: "Day 10", city: { zh: "蒂卡波", en: "Tekapo" }, mapUrl: "Church+of+the+Good+Shepherd,Lake+Tekapo", drive: "1.5 hr", zh: { title: "⭐ 蒂卡波：觀星之夜", timeline: [["10:00", "前往 Tekapo", "1 hr 車程"], ["中午", "湖畔教堂午餐", "5 min 步行"], ["下午", "牧羊人教堂拍照", "5 min 車程"], ["18:20", "星空窗觀星"]] }, en: { title: "⭐ Tekapo: Stargazing", timeline: [["10:00", "To Tekapo", "1 hr drive"], ["12:00", "Lakeview Lunch", "5 min walk"], ["PM", "Church of Good Shepherd", "5 min drive"], ["18:20", "Stargazing Window"]] } },
@@ -1224,24 +1278,6 @@
             }
         }
 
-        function updateSidebarTitles() {
-            const btns = document.querySelectorAll('.day-btn');
-            btns.forEach((btn, i) => {
-                // Skip overview (-1) and checklist (-2) buttons which are first two
-                const dayIdx = i - 2;
-                if (dayIdx >= 0 && dayIdx < itinerary.length) {
-                    const day = itinerary[dayIdx];
-                    const [y, m, d] = day.actualDate.split('-');
-                    const displayDate = savedStartDate ? `${parseInt(m)}/${parseInt(d)}` : `D${dayIdx+1}`;
-                    const isToday = day.actualDate === (window.simulatedTime || new Date()).toISOString().split('T')[0];
-                    
-                    const title = day[currentLang].title || day.city[currentLang];
-                    const shortTitle = title.length > 10 ? title.substring(0, 10) + '...' : title;
-                    btn.innerHTML = `<span class="${isToday ? 'text-red-500 animate-pulse' : ''}">${displayDate}</span> ${shortTitle}`;
-                }
-            });
-        }
-
         function addTimelineItem(dayIdx, insertIdx) {
             const newItem = ["09:00", "New Activity", "1 hr drive", "", "", ""]; // [time, title, transition, mapQuery, customImg, description]
             
@@ -1351,6 +1387,24 @@
         let startDate = savedStartDate ? new Date(savedStartDate) : new Date();
         updateItineraryDates(startDate);
 
+        function updateSidebarTitles() {
+            const btns = document.querySelectorAll('.day-btn');
+            btns.forEach((btn, i) => {
+                // Skip overview (-1) and checklist (-2) buttons which are first two
+                const dayIdx = i - 2;
+                if (dayIdx >= 0 && dayIdx < itinerary.length) {
+                    const day = itinerary[dayIdx];
+                    const [y, m, d] = day.actualDate.split('-');
+                    const displayDate = savedStartDate ? `${parseInt(m)}/${parseInt(d)}` : `D${dayIdx+1}`;
+                    const isToday = day.actualDate === (window.simulatedTime || new Date()).toISOString().split('T')[0];
+                    
+                    const title = day[currentLang].title || day.city[currentLang];
+                    const shortTitle = title.length > 10 ? title.substring(0, 10) + '...' : title;
+                    btn.innerHTML = `<span class="${isToday ? 'text-red-500 animate-pulse' : ''}">${displayDate}</span> ${shortTitle}`;
+                }
+            });
+        }
+
         function openDateModal() {
             const modal = document.getElementById('date-modal');
             const backdrop = document.getElementById('date-modal-backdrop');
@@ -1415,25 +1469,77 @@
         }
 
         let isCuteMapMode = false;
+        let leafletMap = null;
+        let leafletMarkers = [];
+        let leafletOuterLine = null;
+
+        const COORDS = {
+            "Auckland": { lat: -36.8485, lon: 174.7633 },
+            "Queenstown": { lat: -45.0312, lon: 168.6626 },
+            "Glenorchy": { lat: -44.8510, lon: 168.3880 },
+            "Wanaka": { lat: -44.7032, lon: 169.1321 },
+            "Oamaru": { lat: -45.0975, lon: 170.9688 },
+            "Twizel": { lat: -44.2588, lon: 170.1030 },
+            "Mount Cook": { lat: -43.7333, lon: 170.0964 },
+            "Tekapo": { lat: -44.0047, lon: 170.4771 },
+            "Christchurch": { lat: -43.5321, lon: 172.6362 },
+            "Taipei": { lat: 25.0330, lon: 121.5654 }
+        };
+
+        const CUTE_COORDS = {
+            "Queenstown": { x: 145, y: 300 },
+            "Wanaka": { x: 130, y: 250 },
+            "Twizel": { x: 180, y: 230 },
+            "Mount Cook": { x: 185, y: 195 },
+            "Tekapo": { x: 215, y: 215 },
+            "Oamaru": { x: 260, y: 295 },
+            "Christchurch": { x: 305, y: 190 },
+            "Glenorchy": { x: 110, y: 290 }
+        };
 
         function toggleMapMode() {
             isCuteMapMode = !isCuteMapMode;
-            const cuteMap = document.getElementById('cute-map-img');
+            const cuteLayer = document.getElementById('cute-map-layer');
+            const leafletRoot = document.getElementById('leaflet-map-root');
             const toggleText = document.getElementById('map-toggle-text');
+            const mapIcon = document.getElementById('map-icon');
             
             if (isCuteMapMode) {
-                cuteMap.classList.remove('hidden');
-                setTimeout(() => cuteMap.classList.replace('opacity-0', 'opacity-100'), 10);
-                toggleText.innerText = currentLang === 'zh' ? '路線模式' : 'Route Mode';
+                cuteLayer.classList.replace('opacity-0', 'opacity-100');
+                cuteLayer.classList.remove('pointer-events-none');
+                leafletRoot.classList.replace('opacity-100', 'opacity-0');
+                leafletRoot.classList.add('pointer-events-none');
+                mapIcon.classList.replace('fa-wand-magic-sparkles', 'fa-map-location-dot');
             } else {
-                cuteMap.classList.replace('opacity-100', 'opacity-0');
-                setTimeout(() => {
-                    cuteMap.classList.add('hidden');
-                }, 300);
-                toggleText.innerText = currentLang === 'zh' ? '可愛模式' : 'Cute Mode';
+                cuteLayer.classList.replace('opacity-100', 'opacity-0');
+                cuteLayer.classList.add('pointer-events-none');
+                leafletRoot.classList.replace('opacity-0', 'opacity-100');
+                leafletRoot.classList.remove('pointer-events-none');
+                mapIcon.classList.replace('fa-map-location-dot', 'fa-wand-magic-sparkles');
+                
+                // Initialize or refresh Leaflet
+                if (!leafletMap) initLeafletMap();
+                setTimeout(() => leafletMap.invalidateSize(), 100);
             }
-            renderRouteMap(); // Re-render paths for the current mode
+            if (toggleText) {
+                toggleText.innerText = isCuteMapMode ? (currentLang === 'zh' ? '路線模式' : 'Route Mode') : (currentLang === 'zh' ? '可愛模式' : 'Cute Mode');
+            }
+            renderRouteMap();
             if ("vibrate" in navigator) navigator.vibrate(10);
+        }
+
+        function initLeafletMap() {
+            if (leafletMap) return;
+            leafletMap = L.map('leaflet-map-root', {
+                zoomControl: false,
+                attributionControl: false
+            }).setView([-44.0, 170.0], 7);
+
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+                maxZoom: 18
+            }).addTo(leafletMap);
+            // Ensure map is rendered correctly after initialization
+            setTimeout(() => leafletMap.invalidateSize(), 100);
         }
 
         // Route Map Logic
@@ -1448,43 +1554,6 @@
             svgGroupNodes.innerHTML = '';
             svgGroupLabels.innerHTML = '';
 
-            const COORDS = {
-                "Auckland": { lat: -36.8485, lon: 174.7633 },
-                "Queenstown": { lat: -45.0312, lon: 168.6626 },
-                "Glenorchy": { lat: -44.8510, lon: 168.3880 },
-                "Wanaka": { lat: -44.7032, lon: 169.1321 },
-                "Oamaru": { lat: -45.0975, lon: 170.9688 },
-                "Twizel": { lat: -44.2588, lon: 170.1030 },
-                "Mount Cook": { lat: -43.7333, lon: 170.0964 },
-                "Tekapo": { lat: -44.0047, lon: 170.4771 },
-                "Christchurch": { lat: -43.5321, lon: 172.6362 },
-                "Taipei": { lat: 25.0330, lon: 121.5654 }
-            };
-
-            // Cute map visual anchors (relative to image pixels/aspect)
-            const CUTE_COORDS = {
-                "Queenstown": { x: 145, y: 300 },
-                "Wanaka": { x: 130, y: 250 },
-                "Twizel": { x: 180, y: 230 },
-                "Mount Cook": { x: 185, y: 195 },
-                "Tekapo": { x: 215, y: 215 },
-                "Oamaru": { x: 260, y: 295 },
-                "Christchurch": { x: 305, y: 190 },
-                "Glenorchy": { x: 110, y: 290 }
-            };
-
-            const mapW = 400;
-            const mapH = 320;
-
-            const project = (lat, lon, cityKey) => {
-                if (isCuteMapMode && CUTE_COORDS[cityKey]) {
-                    return CUTE_COORDS[cityKey];
-                }
-                const x = (lon - 167.3) * (mapW / 5.5); 
-                const y = (lat + 43.2) * (-mapH / 3.8) + (mapH / 4);
-                return { x, y };
-            };
-
             const points = [];
             const processedCities = new Set();
 
@@ -1492,61 +1561,83 @@
                 const cityStr = day.city.en || "Queenstown";
                 const cityKey = Object.keys(COORDS).find(k => cityStr.toLowerCase().includes(k.toLowerCase()));
                 if (cityKey && cityKey !== 'Auckland' && cityKey !== 'Taipei') {
-                    const p = project(COORDS[cityKey].lat, COORDS[cityKey].lon, cityKey);
-                    points.push({ ...p, label: cityKey, dayIdx: idx });
+                    if (isCuteMapMode) {
+                        if (CUTE_COORDS[cityKey]) points.push({ ...CUTE_COORDS[cityKey], label: cityKey, dayIdx: idx });
+                    } else {
+                        points.push({ lat: COORDS[cityKey].lat, lon: COORDS[cityKey].lon, label: cityKey, dayIdx: idx });
+                    }
                 }
             });
 
             if (points.length < 2) return;
+            if (isCuteMapMode) return; // Pure Illustration: No SVG overlays
 
-            // Draw Paths
-            let d = `M ${points[0].x} ${points[0].y}`;
-            for (let i = 1; i < points.length; i++) {
-                d += ` L ${points[i].x} ${points[i].y}`;
+            if (leafletMap) {
+                // Leaflet Rendering
+                leafletMarkers.forEach(m => leafletMap.removeLayer(m));
+                if (leafletOuterLine) leafletMap.removeLayer(leafletOuterLine);
+                leafletMarkers = [];
+
+                const latLons = points.map(p => [p.lat, p.lon]);
+                leafletOuterLine = L.polyline(latLons, {
+                    color: '#2563eb',
+                    weight: 4,
+                    dashArray: '10, 10',
+                    lineCap: 'round'
+                }).addTo(leafletMap);
+
+                points.forEach(p => {
+                    if (processedCities.has(p.label)) return;
+                    processedCities.add(p.label);
+
+                    const marker = L.circleMarker([p.lat, p.lon], {
+                        radius: 6,
+                        fillColor: "#fff",
+                        color: "#2563eb",
+                        weight: 3,
+                        opacity: 1,
+                        fillOpacity: 1
+                    }).addTo(leafletMap);
+
+                    marker.bindTooltip(currentLang === 'zh' ? (translations['zh'].cities[p.label] || p.label) : p.label, {
+                        permanent: true,
+                        direction: 'top',
+                        className: 'font-bold text-xs ring-0 shadow-none border-none bg-white/90 backdrop-blur-sm px-2 py-0.5 rounded-full text-blue-800'
+                    });
+
+                    marker.on('click', () => {
+                        activeDayIndex = p.dayIdx;
+                        updateUI();
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    });
+                    leafletMarkers.push(marker);
+                });
+
+                // Auto Focus on current day
+                focusMapOnDay(activeDayIndex);
             }
-            const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-            path.setAttribute("d", d);
-            path.setAttribute("class", "map-path");
-            if (isCuteMapMode) {
-                path.style.stroke = "#f472b6"; // Pink for cute mode
-                path.style.strokeWidth = "3";
-                path.style.filter = "none";
+        }
+
+        function focusMapOnDay(dayIdx) {
+            if (!leafletMap || isCuteMapMode) return;
+            
+            if (dayIdx === -1) {
+                // Overview: fit all
+                const latLons = [];
+                Object.values(COORDS).forEach(c => {
+                    if (c.lat < -40) latLons.push([c.lat, c.lon]);
+                });
+                leafletMap.fitBounds(latLons, { padding: [30, 30] });
+            } else if (itinerary[dayIdx]) {
+                const cityStr = itinerary[dayIdx].city.en;
+                const cityKey = Object.keys(COORDS).find(k => cityStr.toLowerCase().includes(k.toLowerCase()));
+                if (cityKey && COORDS[cityKey]) {
+                    leafletMap.flyTo([COORDS[cityKey].lat, COORDS[cityKey].lon], 9, {
+                        animate: true,
+                        duration: 1.5
+                    });
+                }
             }
-            svgGroupLines.appendChild(path);
-
-            // Draw Nodes
-            points.forEach(p => {
-                if (processedCities.has(p.label)) return;
-                processedCities.add(p.label);
-
-                const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-                circle.setAttribute("cx", p.x);
-                circle.setAttribute("cy", p.y);
-                circle.setAttribute("r", isCuteMapMode ? 6 : 5);
-                circle.setAttribute("class", "map-node");
-                if (isCuteMapMode) {
-                   circle.style.fill = "#fff";
-                   circle.style.stroke = "#ec4899";
-                }
-                circle.onclick = () => {
-                    activeDayIndex = p.dayIdx;
-                    updateUI();
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                };
-                svgGroupNodes.appendChild(circle);
-
-                const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
-                text.setAttribute("x", p.x);
-                text.setAttribute("y", p.y - 14);
-                text.setAttribute("text-anchor", "middle");
-                text.setAttribute("class", "map-label");
-                if (isCuteMapMode) {
-                    text.style.fill = "#db2777";
-                    text.style.fontSize = "11px";
-                }
-                text.textContent = currentLang === 'zh' ? (translations['zh'].cities[p.label] || p.label) : p.label;
-                svgGroupLabels.appendChild(text);
-            });
         }
 
         function getWeatherIcon(desc) {
@@ -2295,9 +2386,13 @@
                     nav.appendChild(btn);
                 });
             } else {
-                // Just update active classes if nav content didn't change
+                // Just update active classes
                 nav.querySelectorAll('.day-btn').forEach((btn, idx) => {
-                    const mappedIdx = idx - 2; // -2 for Overview, -1 for Checklist, then 0, 1...
+                    let mappedIdx;
+                    if (idx === 0) mappedIdx = -1;      // Overview
+                    else if (idx === 1) mappedIdx = -2; // Checklist
+                    else mappedIdx = idx - 2;           // Days
+                    
                     if (mappedIdx === activeDayIndex) {
                         btn.classList.add('active-tab');
                         btn.classList.remove('bg-white/70', 'backdrop-blur-sm');
@@ -2308,18 +2403,9 @@
                 });
             }
 
-
-
-            // Update Language Toggle Desktop text
-            const desktopLangBtn = document.getElementById('lang-toggle-desktop');
-            if (desktopLangBtn) {
-                desktopLangBtn.innerText = currentLang === 'zh' ? 'English' : '中文';
-            }
-
             const content = document.getElementById('content-display');
             if (activeDayIndex === -1) {
                 renderOverview(content, ui);
-                renderRouteMap();
                 fetchWeather("");
             } else if (activeDayIndex === -2) {
                 renderChecklist(content, ui);
@@ -2327,6 +2413,27 @@
             } else {
                 renderDay(content, ui);
                 fetchWeather(itinerary[activeDayIndex].city['en']);
+            }
+
+            // Map Logic Global - Only show on Overview
+            const globalMapArea = document.getElementById('global-map-area');
+            const mapToggleText = document.getElementById('map-toggle-text');
+            if (activeDayIndex === -1) {
+                globalMapArea.classList.remove('hidden');
+                if (mapToggleText) {
+                    mapToggleText.innerText = isCuteMapMode ? (currentLang === 'zh' ? '路線模式' : 'Route Mode') : (currentLang === 'zh' ? '可愛模式' : 'Cute Mode');
+                }
+                if (!leafletMap) initLeafletMap();
+                renderRouteMap();
+                if (leafletMap) {
+                    // Force refresh layout to prevent grey/blank map
+                    setTimeout(() => {
+                        leafletMap.invalidateSize();
+                        if (!isCuteMapMode) focusMapOnDay(activeDayIndex);
+                    }, 50);
+                }
+            } else {
+                globalMapArea.classList.add('hidden');
             }
 
             // Notices
@@ -2357,19 +2464,6 @@
                         <i class="fas fa-route text-blue-600"></i> ${ui.overviewBtn}
                     </h2>
 
-                    <div id="route-map-container" class="animate-in fade-in slide-in-from-top-4 duration-700 relative z-10 group/map">
-                        <button onclick="toggleMapMode()" class="absolute top-4 right-4 z-20 bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-full text-[10px] font-black shadow-lg border border-white/50 hover:bg-white transition-all active:scale-95 flex items-center gap-1.5">
-                            <i class="fas fa-wand-magic-sparkles text-blue-500"></i>
-                            <span id="map-toggle-text">${currentLang === 'zh' ? '可愛模式' : 'Cute Mode'}</span>
-                        </button>
-                        <svg id="route-map-svg" viewBox="0 0 400 320" class="w-full h-full transition-opacity duration-300">
-                            <path class="map-island-bg" d="M120,40 C140,40 160,50 180,60 C220,80 260,110 280,150 C300,190 280,230 250,260 C220,290 180,300 140,290 C100,280 70,240 60,200 C50,160 70,110 90,70 C100,50 110,40 120,40 Z" />
-                            <g id="map-lines"></g>
-                            <g id="map-nodes"></g>
-                            <g id="map-labels"></g>
-                        </svg>
-                        <img id="cute-map-img" src="assets/cute-map.png" class="absolute inset-0 w-full h-full object-cover hidden opacity-0 transition-opacity duration-300 pointer-events-none" />
-                    </div>
                     
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-3 relative z-10">
                         ${itinerary.map((day, i) => {
