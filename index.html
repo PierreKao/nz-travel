@@ -1161,7 +1161,6 @@
                 skyConditionsSummaryPrefix: "極光",
                 skyConditionsMilkyWayPrefix: "銀河",
                 skyConditionsSelectorLabel: "觀測日期",
-                skyConditionsSelectorHint: "在總覽內直接切換城市與日期，不會跳頁。",
                 skyConditionsBasedOn: "目前以 {label} 夜間條件估算",
                 auroraLoading: "正在計算今晚的極光條件...",
                 auroraUnavailable: "目前無法取得極光資料",
@@ -1286,7 +1285,6 @@
                 skyConditionsSummaryPrefix: "Aurora",
                 skyConditionsMilkyWayPrefix: "Milky Way",
                 skyConditionsSelectorLabel: "Viewing Date",
-                skyConditionsSelectorHint: "Switch city and date right here without leaving the overview.",
                 skyConditionsBasedOn: "Currently based on {label} night conditions",
                 auroraLoading: "Calculating the next aurora window...",
                 auroraUnavailable: "Aurora data is currently unavailable",
@@ -4204,7 +4202,6 @@
                                 <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
                                     <div>
                                         <p class="text-xs uppercase tracking-[0.28em] text-white/45">${ui.skyConditionsSelectorLabel}</p>
-                                        <p class="text-sm text-white/60 mt-2">${ui.skyConditionsSelectorHint}</p>
                                     </div>
                                     ${selectedStop ? `<p class="text-xs text-white/45">${getSkyConditionsBasedOnText(ui, selectedStop)}</p>` : ''}
                                 </div>
