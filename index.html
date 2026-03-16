@@ -251,6 +251,15 @@
         body.theme-dark #drawer-links button i { color: #38bdf8 !important; }
         body.theme-dark .active-tab { background-color: #8b5cf6 !important; border-color: #a78bfa !important; box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4); }
         body.theme-dark .clock-container { background-color: rgba(255, 255, 255, 0.05) !important; border-color: rgba(255, 255, 255, 0.1) !important; }
+        .aurora-city-chip-active {
+            background-color: rgba(255, 255, 255, 0.96);
+            color: #0f172a;
+            border-color: rgba(255, 255, 255, 0.96);
+            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.22);
+        }
+        body.theme-dark .aurora-city-chip-active {
+            color: #0f172a !important;
+        }
 
         @media (max-width: 768px) {
             .mobile-nav { 
@@ -704,6 +713,11 @@
         let isAurora = false;
         let isEditMode = false;
         let currentNZDRate = 19.5; // Default fallback
+        const AURORA_CACHE_TTL = 30 * 60 * 1000;
+        const AURORA_CITY_PRIORITY = ["Tekapo", "Mount Cook", "Twizel", "Queenstown", "Wanaka", "Glenorchy", "Oamaru", "Christchurch"];
+        let auroraSelectedCity = "Tekapo";
+        let auroraState = { status: "idle", city: "Tekapo", data: null, error: "" };
+        const auroraCache = new Map();
 
         // --- Memory Anchors (IndexedDB) ---
         const DB_NAME = 'NZTravelMemories';
@@ -1071,7 +1085,27 @@
                     "Tekapo": "蒂卡波",
                     "Christchurch": "基督城",
                     "Taipei": "台北"
-                }
+                },
+                auroraTitle: "極光可見指標",
+                auroraSubtitle: "用 NOAA 與 Open-Meteo 估算下一波追光條件",
+                auroraLoading: "正在計算今晚的極光條件...",
+                auroraUnavailable: "目前無法取得極光資料",
+                auroraBestHours: "最佳時段",
+                auroraUpdated: "更新",
+                auroraScore: "可見指標",
+                auroraCloud: "雲量",
+                auroraRain: "降雨",
+                auroraGeomagnetic: "地磁",
+                auroraBestSpot: "推薦觀測點",
+                auroraRefresh: "重新整理",
+                auroraSource: "資料源",
+                auroraActivity: "極光活躍度（不含天氣）",
+                auroraScoreHint: "可見指標 = 極光活躍度再扣除雲量與降雨，不代表保證看得到。",
+                auroraActivityHint: "極光活躍度只看 NOAA 極光預報與 Kp 指數，不含雲量或降雨。",
+                auroraLow: "低",
+                auroraModerate: "中",
+                auroraHigh: "高",
+                auroraExcellent: "極佳"
             },
             en: {
                 header: "NZ South Island Guide",
@@ -1126,7 +1160,27 @@
                     "Tekapo": "Tekapo",
                     "Christchurch": "Christchurch",
                     "Taipei": "Taipei"
-                }
+                },
+                auroraTitle: "Aurora Visibility",
+                auroraSubtitle: "Estimated with NOAA and Open-Meteo for the next viewing window",
+                auroraLoading: "Calculating the next aurora window...",
+                auroraUnavailable: "Aurora data is currently unavailable",
+                auroraBestHours: "Best Hours",
+                auroraUpdated: "Updated",
+                auroraScore: "Visibility",
+                auroraCloud: "Cloud",
+                auroraRain: "Rain",
+                auroraGeomagnetic: "Geomagnetic",
+                auroraBestSpot: "Best Spot",
+                auroraRefresh: "Refresh",
+                auroraSource: "Source",
+                auroraActivity: "Aurora Activity Only",
+                auroraScoreHint: "Visibility score = aurora activity minus cloud and rain penalties. It is not a guarantee.",
+                auroraActivityHint: "Aurora activity uses NOAA aurora forecast and Kp only. It does not include cloud or rain.",
+                auroraLow: "Low",
+                auroraModerate: "Moderate",
+                auroraHigh: "High",
+                auroraExcellent: "Excellent"
             }
         };
 
@@ -1486,6 +1540,37 @@
             "Taipei": { lat: 25.0330, lon: 121.5654 }
         };
 
+        function getCityKeyFromName(city = "") {
+            if (!city) return "";
+            return Object.keys(COORDS).find(k => city.toLowerCase().includes(k.toLowerCase())) || "";
+        }
+
+        function getDisplayCityName(cityKey, lang = currentLang) {
+            if (!cityKey) return "";
+            return lang === 'zh' ? (translations.zh.cities[cityKey] || cityKey) : cityKey;
+        }
+
+        function getAuroraCandidateCities() {
+            const found = new Set();
+            itinerary.forEach((day) => {
+                const cityKey = getCityKeyFromName(day.city.en || day.city.zh || "");
+                if (cityKey && !["Auckland", "Taipei"].includes(cityKey)) found.add(cityKey);
+            });
+            const ordered = AURORA_CITY_PRIORITY.filter(city => found.has(city));
+            return ordered.length ? ordered : ["Tekapo"];
+        }
+
+        function ensureAuroraSelection() {
+            const availableCities = getAuroraCandidateCities();
+            if (!availableCities.includes(auroraSelectedCity)) {
+                auroraSelectedCity = availableCities[0];
+            }
+            if (auroraState.city !== auroraSelectedCity && auroraState.status !== "loading") {
+                auroraState = { status: "idle", city: auroraSelectedCity, data: null, error: "" };
+            }
+            return availableCities;
+        }
+
         const CUTE_COORDS = {
             "Queenstown": { x: 145, y: 300 },
             "Wanaka": { x: 130, y: 250 },
@@ -1647,6 +1732,327 @@
             if (d.includes("rain") || d.includes("shower")) return '<i class="fas fa-cloud-showers-heavy text-blue-500 drop-shadow-[0_0_6px_rgba(59,130,246,0.5)]"></i>';
             if (d.includes("cloud")) return '<i class="fas fa-cloud text-slate-400 drop-shadow-[0_0_6px_rgba(148,163,184,0.5)]"></i>';
             return '<i class="fas fa-cloud-sun text-orange-400 drop-shadow-[0_0_8px_rgba(251,146,60,0.5)]"></i>';
+        }
+
+        function clamp(value, min, max) {
+            return Math.min(Math.max(value, min), max);
+        }
+
+        function toNumber(value) {
+            const num = Number(value);
+            return Number.isFinite(num) ? num : null;
+        }
+
+        function getAuroraLevel(score) {
+            if (score >= 75) return 'excellent';
+            if (score >= 50) return 'high';
+            if (score >= 25) return 'moderate';
+            return 'low';
+        }
+
+        function getAuroraLevelLabel(level) {
+            const ui = translations[currentLang];
+            if (level === 'excellent') return ui.auroraExcellent;
+            if (level === 'high') return ui.auroraHigh;
+            if (level === 'moderate') return ui.auroraModerate;
+            return ui.auroraLow;
+        }
+
+        function getAuroraLevelStyles(level) {
+            if (level === 'excellent') {
+                return {
+                    badge: 'bg-emerald-300/20 text-emerald-100 border border-emerald-200/30',
+                    ring: 'from-emerald-300 via-sky-300 to-cyan-200'
+                };
+            }
+            if (level === 'high') {
+                return {
+                    badge: 'bg-sky-300/20 text-sky-100 border border-sky-200/30',
+                    ring: 'from-sky-300 via-cyan-300 to-teal-200'
+                };
+            }
+            if (level === 'moderate') {
+                return {
+                    badge: 'bg-amber-300/20 text-amber-100 border border-amber-200/30',
+                    ring: 'from-amber-200 via-orange-200 to-yellow-100'
+                };
+            }
+            return {
+                badge: 'bg-slate-300/20 text-slate-100 border border-slate-200/20',
+                ring: 'from-slate-200 via-slate-300 to-slate-100'
+            };
+        }
+
+        function getKpScore(kp) {
+            if (kp == null) return 20;
+            if (kp < 3) return 20;
+            if (kp < 4) return 40;
+            if (kp < 5) return 60;
+            if (kp < 6) return 80;
+            return 100;
+        }
+
+        function getCloudPenalty(cloudCover) {
+            if (cloudCover < 20) return 0;
+            if (cloudCover < 40) return 10;
+            if (cloudCover < 60) return 25;
+            if (cloudCover < 80) return 45;
+            return 60;
+        }
+
+        function getRainPenalty(rainProbability) {
+            if (rainProbability < 20) return 0;
+            if (rainProbability < 40) return 5;
+            if (rainProbability < 60) return 10;
+            if (rainProbability < 80) return 20;
+            return 30;
+        }
+
+        function formatAuroraUpdatedAt(value) {
+            if (!value) return '--';
+            const date = new Date(value);
+            if (Number.isNaN(date.getTime())) return String(value);
+            return date.toLocaleString(currentLang === 'zh' ? 'zh-TW' : 'en-US', {
+                month: 'numeric',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        function getLongitudeDistance(a, b) {
+            const diff = Math.abs(a - b);
+            return Math.min(diff, 360 - diff);
+        }
+
+        function parseOvationPoints(payload) {
+            const rawPoints = Array.isArray(payload?.coordinates)
+                ? payload.coordinates
+                : Array.isArray(payload?.data)
+                    ? payload.data
+                    : Array.isArray(payload)
+                        ? payload
+                        : [];
+
+            return rawPoints.map((point) => {
+                if (Array.isArray(point)) {
+                    const numeric = point.map(toNumber).filter(v => v != null);
+                    if (numeric.length < 3) return null;
+                    const [a, b, value] = numeric;
+                    if (Math.abs(a) <= 90 && Math.abs(b) <= 180) return { lat: a, lon: b, value };
+                    if (Math.abs(a) <= 180 && Math.abs(b) <= 90) return { lat: b, lon: a, value };
+                    return null;
+                }
+
+                if (point && typeof point === 'object') {
+                    const lat = toNumber(point.lat ?? point.latitude);
+                    const lon = toNumber(point.lon ?? point.longitude ?? point.lng);
+                    const value = toNumber(point.value ?? point.probability ?? point.intensity ?? point.aurora);
+                    if (lat != null && lon != null && value != null) return { lat, lon, value };
+                }
+
+                return null;
+            }).filter(Boolean);
+        }
+
+        function parseLatestKp(payload) {
+            const rows = Array.isArray(payload?.data) ? payload.data : (Array.isArray(payload) ? payload : []);
+            for (let i = rows.length - 1; i >= 0; i--) {
+                const row = rows[i];
+                if (typeof row === 'number') return row;
+                if (Array.isArray(row)) {
+                    for (let j = row.length - 1; j >= 0; j--) {
+                        const value = toNumber(row[j]);
+                        if (value != null) return value;
+                    }
+                }
+                if (row && typeof row === 'object') {
+                    const known = toNumber(row.kp_index ?? row.kp ?? row.kpIndex ?? row.planetary_k_index);
+                    if (known != null) return known;
+                    const dynamicKey = Object.keys(row).find(key => /kp/i.test(key) && toNumber(row[key]) != null);
+                    if (dynamicKey) return toNumber(row[dynamicKey]);
+                }
+            }
+            return null;
+        }
+
+        function getNearestOvationPoint(points, coord) {
+            let nearest = null;
+            let bestDistance = Number.POSITIVE_INFINITY;
+
+            points.forEach((point) => {
+                const latDiff = point.lat - coord.lat;
+                const lonDiff = getLongitudeDistance(point.lon, coord.lon);
+                const distance = latDiff * latDiff + lonDiff * lonDiff;
+                if (distance < bestDistance) {
+                    bestDistance = distance;
+                    nearest = point;
+                }
+            });
+
+            return nearest;
+        }
+
+        function getUpcomingNightWindows(times = []) {
+            const windows = [];
+            const targetHours = new Set([21, 0, 3]);
+            times.forEach((iso, index) => {
+                const hour = Number(String(iso).slice(11, 13));
+                if (targetHours.has(hour)) {
+                    windows.push({ index, label: String(iso).slice(11, 16), time: iso });
+                }
+            });
+            return windows.slice(0, 3);
+        }
+
+        function getAuroraSummary(level, details) {
+            const { cloudCover, kp, auroraActivityScore } = details;
+            if (currentLang === 'zh') {
+                if (level === 'excellent') return `地磁活動很強，雲量也壓得住，今晚很值得追光。`;
+                if (level === 'high') return `地磁活動不錯，若雲量維持在 ${cloudCover}% 左右，今晚有機會看到極光。`;
+                if (level === 'moderate') return `極光活躍度約 ${auroraActivityScore} 分，建議挑雲量更低的時段再出門。`;
+                return `目前 Kp 約 ${kp ?? '--'}，加上天空條件普通，今晚看到極光的機會偏低。`;
+            }
+
+            if (level === 'excellent') return `Strong geomagnetic activity and relatively clear skies make tonight worth chasing.`;
+            if (level === 'high') return `Aurora activity looks healthy. If cloud cover stays near ${cloudCover}%, viewing chances are good.`;
+            if (level === 'moderate') return `Moderate aurora potential. A clearer time window would improve your odds.`;
+            return `Weak geomagnetic activity and patchy sky conditions make viewing less likely tonight.`;
+        }
+
+        function calculateAuroraVisibility(cityKey, ovationPayload, kpPayload, weatherPayload) {
+            const coord = COORDS[cityKey];
+            if (!coord) throw new Error('Unknown aurora city');
+
+            const points = parseOvationPoints(ovationPayload);
+            if (!points.length) throw new Error('No aurora forecast grid');
+
+            const nearestPoint = getNearestOvationPoint(points, coord);
+            if (!nearestPoint) throw new Error('No nearby aurora grid point');
+
+            const maxOvationValue = points.reduce((max, point) => Math.max(max, point.value), 0);
+            const ovationScore = maxOvationValue > 100
+                ? clamp(Math.round((nearestPoint.value / maxOvationValue) * 100), 0, 100)
+                : clamp(Math.round(nearestPoint.value), 0, 100);
+
+            const kp = parseLatestKp(kpPayload);
+            const kpScore = getKpScore(kp);
+            const auroraActivityScore = clamp(Math.round((ovationScore * 0.7) + (kpScore * 0.3)), 0, 100);
+
+            const hourly = weatherPayload?.hourly || {};
+            const windows = getUpcomingNightWindows(hourly.time || []);
+            if (!windows.length) throw new Error('No night weather windows');
+
+            const evaluatedWindows = windows.map((windowInfo) => {
+                const cloudCover = Math.round(toNumber(hourly.cloud_cover?.[windowInfo.index]) ?? 100);
+                const rainProbability = Math.round(toNumber(hourly.precipitation_probability?.[windowInfo.index]) ?? 0);
+                const weatherPenalty = Math.min(getCloudPenalty(cloudCover) + getRainPenalty(rainProbability), 70);
+                const score = clamp(Math.round(auroraActivityScore - weatherPenalty), 0, 100);
+
+                return {
+                    ...windowInfo,
+                    cloudCover,
+                    rainProbability,
+                    weatherPenalty,
+                    score
+                };
+            }).sort((a, b) => b.score - a.score);
+
+            const bestWindow = evaluatedWindows[0];
+            const level = getAuroraLevel(bestWindow.score);
+            const forecastTime = ovationPayload?.["Forecast Time"]
+                || ovationPayload?.forecast_time
+                || ovationPayload?.Forecast_Time
+                || weatherPayload?.current_weather?.time
+                || weatherPayload?.hourly?.time?.[0];
+
+            return {
+                cityKey,
+                score: bestWindow.score,
+                level,
+                kp,
+                updatedAt: forecastTime,
+                bestViewingHours: evaluatedWindows.map(windowInfo => windowInfo.label),
+                summary: getAuroraSummary(level, {
+                    cloudCover: bestWindow.cloudCover,
+                    kp,
+                    auroraActivityScore
+                }),
+                components: {
+                    auroraActivityScore,
+                    ovationScore,
+                    kpScore,
+                    cloudCover: bestWindow.cloudCover,
+                    precipitationProbability: bestWindow.rainProbability,
+                    weatherPenalty: bestWindow.weatherPenalty,
+                    nearestOvationValue: Math.round(nearestPoint.value)
+                },
+                source: 'NOAA SWPC + Open-Meteo'
+            };
+        }
+
+        async function fetchAuroraVisibility(cityKey, options = {}) {
+            const { force = false } = options;
+            if (!cityKey || !COORDS[cityKey]) return null;
+
+            const cached = auroraCache.get(cityKey);
+            if (!force && cached && (Date.now() - cached.timestamp) < AURORA_CACHE_TTL) {
+                auroraState = { status: 'success', city: cityKey, data: cached.data, error: '' };
+                if (activeDayIndex === -1) renderOverview(document.getElementById('content-display'), translations[currentLang]);
+                return cached.data;
+            }
+
+            if (!force && auroraState.status === 'loading' && auroraState.city === cityKey) {
+                return null;
+            }
+
+            auroraState = { status: 'loading', city: cityKey, data: null, error: '' };
+            if (activeDayIndex === -1) renderOverview(document.getElementById('content-display'), translations[currentLang]);
+
+            try {
+                const coord = COORDS[cityKey];
+                const [ovationRes, kpRes, weatherRes] = await Promise.all([
+                    fetch('https://services.swpc.noaa.gov/json/ovation_aurora_latest.json'),
+                    fetch('https://services.swpc.noaa.gov/json/planetary_k_index_1m.json'),
+                    fetch(`https://api.open-meteo.com/v1/forecast?latitude=${coord.lat}&longitude=${coord.lon}&hourly=cloud_cover,precipitation_probability&forecast_days=2&timezone=auto`)
+                ]);
+
+                if (!ovationRes.ok || !kpRes.ok || !weatherRes.ok) {
+                    throw new Error('Aurora upstream response failed');
+                }
+
+                const [ovationPayload, kpPayload, weatherPayload] = await Promise.all([
+                    ovationRes.json(),
+                    kpRes.json(),
+                    weatherRes.json()
+                ]);
+
+                const data = calculateAuroraVisibility(cityKey, ovationPayload, kpPayload, weatherPayload);
+                auroraCache.set(cityKey, { timestamp: Date.now(), data });
+                auroraState = { status: 'success', city: cityKey, data, error: '' };
+                if (activeDayIndex === -1) renderOverview(document.getElementById('content-display'), translations[currentLang]);
+                return data;
+            } catch (error) {
+                console.warn('Aurora fetch failed', error);
+                auroraState = { status: 'error', city: cityKey, data: null, error: String(error.message || error) };
+                if (activeDayIndex === -1) renderOverview(document.getElementById('content-display'), translations[currentLang]);
+                return null;
+            }
+        }
+
+        function refreshAuroraVisibility(force = false) {
+            const availableCities = ensureAuroraSelection();
+            const cityKey = availableCities.includes(auroraSelectedCity) ? auroraSelectedCity : availableCities[0];
+            if (!cityKey) return;
+            fetchAuroraVisibility(cityKey, { force });
+        }
+
+        function setAuroraCity(cityKey) {
+            if (!cityKey || !COORDS[cityKey]) return;
+            auroraSelectedCity = cityKey;
+            auroraState = { status: 'idle', city: cityKey, data: null, error: '' };
+            if (activeDayIndex === -1) renderOverview(document.getElementById('content-display'), translations[currentLang]);
+            refreshAuroraVisibility(false);
         }
 
         async function printItinerary() {
@@ -1994,26 +2400,11 @@
             }
             box.classList.remove('hidden');
             box.classList.remove('pointer-events-none');
-            
-            // Coordinates mapping for major NZ spots
-            const COORDS = {
-                "Auckland": { lat: -36.8485, lon: 174.7633 },
-                "Queenstown": { lat: -45.0312, lon: 168.6626 },
-                "Glenorchy": { lat: -44.8510, lon: 168.3880 },
-                "Wanaka": { lat: -44.7032, lon: 169.1321 },
-                "Oamaru": { lat: -45.0975, lon: 170.9688 },
-                "Twizel": { lat: -44.2588, lon: 170.1030 },
-                "Mount Cook": { lat: -43.7333, lon: 170.0964 },
-                "Tekapo": { lat: -44.0047, lon: 170.4771 },
-                "Christchurch": { lat: -43.5321, lon: 172.6362 },
-                "Taipei": { lat: 25.0330, lon: 121.5654 }
-            };
-
-            const cityKey = Object.keys(COORDS).find(k => city.toLowerCase().includes(k.toLowerCase()));
+            const cityKey = getCityKeyFromName(city);
             const coord = cityKey ? COORDS[cityKey] : COORDS["Queenstown"];
 
             box.href = `https://www.google.com/search?q=${cityKey || city}+weather`;
-            const displayCity = currentLang === 'zh' ? (cityKey ? translations['zh'].cities[cityKey] || cityKey : city) : (cityKey || city);
+            const displayCity = cityKey ? getDisplayCityName(cityKey, currentLang) : city;
             document.getElementById('weather-city').innerText = displayCity;
             document.getElementById('weather-temp').innerText = "...";
             
@@ -2405,8 +2796,14 @@
 
             const content = document.getElementById('content-display');
             if (activeDayIndex === -1) {
+                ensureAuroraSelection();
+                const cachedAurora = auroraCache.get(auroraSelectedCity);
+                if (cachedAurora && (Date.now() - cachedAurora.timestamp) < AURORA_CACHE_TTL) {
+                    auroraState = { status: 'success', city: auroraSelectedCity, data: cachedAurora.data, error: '' };
+                }
                 renderOverview(content, ui);
                 fetchWeather("");
+                refreshAuroraVisibility(false);
             } else if (activeDayIndex === -2) {
                 renderChecklist(content, ui);
                 fetchWeather("");
@@ -2457,12 +2854,150 @@
             if (cancelBtn) cancelBtn.innerText = ui.printCancel;
         }
 
+        function renderAuroraOverviewCard(ui) {
+            const availableCities = ensureAuroraSelection();
+            const selectedState = auroraState.city === auroraSelectedCity
+                ? auroraState
+                : { status: 'idle', city: auroraSelectedCity, data: null, error: '' };
+            const data = selectedState.data;
+            const level = data ? data.level : 'low';
+            const styles = getAuroraLevelStyles(level);
+
+            let bodyMarkup = `
+                <div class="lg:col-span-2 bg-white/5 border border-white/10 rounded-[1.75rem] p-5 backdrop-blur-sm">
+                    <div class="flex items-center gap-3 text-white/80">
+                        <i class="fas fa-spinner animate-spin text-sky-200"></i>
+                        <p class="text-sm font-medium">${ui.auroraLoading}</p>
+                    </div>
+                </div>
+            `;
+
+            if (selectedState.status === 'error') {
+                bodyMarkup = `
+                    <div class="lg:col-span-2 bg-white/5 border border-rose-200/20 rounded-[1.75rem] p-5 backdrop-blur-sm">
+                        <div class="flex items-start justify-between gap-4">
+                            <div>
+                                <p class="text-sm font-bold text-rose-100">${ui.auroraUnavailable}</p>
+                                <p class="text-xs text-white/60 mt-2">${currentLang === 'zh' ? '可能是 NOAA 或 Open-Meteo 暫時沒有回應。' : 'NOAA or Open-Meteo may be temporarily unavailable.'}</p>
+                            </div>
+                            <button onclick="refreshAuroraVisibility(true)" class="shrink-0 px-3 py-2 rounded-full bg-white/10 hover:bg-white/15 text-xs font-bold transition-colors">
+                                <i class="fas fa-rotate-right mr-1"></i>${ui.auroraRefresh}
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
+
+            if (selectedState.status === 'success' && data) {
+                bodyMarkup = `
+                    <div class="grid lg:grid-cols-[220px,1fr] gap-5 lg:gap-6 items-center">
+                        <div class="rounded-[1.75rem] bg-white/5 border border-white/10 p-5 flex flex-col items-center text-center">
+                            <div class="w-32 h-32 rounded-full bg-gradient-to-br ${styles.ring} p-[1px] shadow-[0_0_40px_rgba(56,189,248,0.18)]">
+                                <div class="w-full h-full rounded-full bg-slate-950/90 flex flex-col items-center justify-center">
+                                    <span class="text-4xl font-black tracking-tight">${data.score}</span>
+                                    <span class="text-[11px] uppercase tracking-[0.35em] text-white/50 mt-1">${ui.auroraScore}</span>
+                                </div>
+                            </div>
+                            <span class="mt-4 px-4 py-1.5 rounded-full text-sm font-bold ${styles.badge}">
+                                ${getAuroraLevelLabel(data.level)}
+                            </span>
+                            <p class="text-xs text-white/55 mt-3">${ui.auroraUpdated}: ${formatAuroraUpdatedAt(data.updatedAt)}</p>
+                        </div>
+
+                        <div class="space-y-4">
+                            <div class="flex items-start justify-between gap-4">
+                                <div>
+                                    <p class="text-xs uppercase tracking-[0.3em] text-white/45">${ui.auroraBestSpot}</p>
+                                    <h3 class="text-2xl sm:text-3xl font-black mt-2">${getDisplayCityName(data.cityKey, currentLang)}</h3>
+                                    <p class="text-sm text-white/75 mt-3 leading-relaxed">${getAuroraSummary(data.level, { cloudCover: data.components.cloudCover, kp: data.kp, auroraActivityScore: data.components.auroraActivityScore })}</p>
+                                </div>
+                                <button onclick="refreshAuroraVisibility(true)" class="shrink-0 px-3 py-2 rounded-full bg-white/10 hover:bg-white/15 text-xs font-bold transition-colors">
+                                    <i class="fas fa-rotate-right mr-1"></i>${ui.auroraRefresh}
+                                </button>
+                            </div>
+
+                            <div class="bg-white/5 border border-white/10 rounded-[1.5rem] p-4">
+                                <p class="text-xs uppercase tracking-[0.28em] text-white/45 mb-3">${ui.auroraBestHours}</p>
+                                <div class="flex flex-wrap gap-2">
+                                    ${data.bestViewingHours.map(hour => `
+                                        <span class="px-3 py-1.5 rounded-full bg-sky-300/15 border border-sky-200/20 text-sm font-bold text-sky-100">${hour}</span>
+                                    `).join('')}
+                                </div>
+                            </div>
+
+                            <div class="rounded-[1.5rem] bg-white/5 border border-white/10 p-4 space-y-2">
+                                <p class="text-sm text-white/80">${ui.auroraScoreHint}</p>
+                                <p class="text-sm text-white/60">${ui.auroraActivityHint}</p>
+                            </div>
+
+                            <div class="grid grid-cols-2 xl:grid-cols-4 gap-3">
+                                <div class="rounded-2xl bg-white/5 border border-white/10 p-4">
+                                    <p class="text-[11px] uppercase tracking-[0.28em] text-white/45">${ui.auroraActivity}</p>
+                                    <p class="text-2xl font-black mt-2">${data.components.auroraActivityScore}</p>
+                                </div>
+                                <div class="rounded-2xl bg-white/5 border border-white/10 p-4">
+                                    <p class="text-[11px] uppercase tracking-[0.28em] text-white/45">${ui.auroraGeomagnetic}</p>
+                                    <p class="text-2xl font-black mt-2">Kp ${data.kp != null ? data.kp.toFixed(1) : '--'}</p>
+                                </div>
+                                <div class="rounded-2xl bg-white/5 border border-white/10 p-4">
+                                    <p class="text-[11px] uppercase tracking-[0.28em] text-white/45">${ui.auroraCloud}</p>
+                                    <p class="text-2xl font-black mt-2">${data.components.cloudCover}%</p>
+                                </div>
+                                <div class="rounded-2xl bg-white/5 border border-white/10 p-4">
+                                    <p class="text-[11px] uppercase tracking-[0.28em] text-white/45">${ui.auroraRain}</p>
+                                    <p class="text-2xl font-black mt-2">${data.components.precipitationProbability}%</p>
+                                </div>
+                            </div>
+
+                            <p class="text-xs text-white/45">${ui.auroraSource}: ${data.source}</p>
+                        </div>
+                    </div>
+                `;
+            }
+
+            return `
+                <div class="mb-6 sm:mb-8 rounded-[2rem] p-6 sm:p-7 shadow-2xl relative overflow-hidden border border-white/10 text-white"
+                    style="background:
+                        radial-gradient(circle at 12% 18%, rgba(52, 211, 153, 0.28), transparent 30%),
+                        radial-gradient(circle at 88% 22%, rgba(56, 189, 248, 0.22), transparent 28%),
+                        radial-gradient(circle at 80% 82%, rgba(196, 181, 253, 0.18), transparent 30%),
+                        linear-gradient(135deg, rgba(2, 6, 23, 0.96), rgba(15, 23, 42, 0.92));">
+                    <div class="absolute inset-0 opacity-40 pointer-events-none"
+                        style="background-image:
+                            radial-gradient(1px 1px at 20px 30px, rgba(255,255,255,0.9), transparent),
+                            radial-gradient(1.5px 1.5px at 80px 90px, rgba(255,255,255,0.8), transparent),
+                            radial-gradient(1px 1px at 170px 60px, rgba(255,255,255,0.6), transparent);"></div>
+                    <div class="relative z-10">
+                        <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-5 mb-5">
+                            <div>
+                                <p class="text-xs uppercase tracking-[0.35em] text-emerald-100/60 mb-3">${ui.auroraTitle}</p>
+                                <h2 class="text-3xl font-black flex items-center gap-3">
+                                    <i class="fas fa-sparkles text-emerald-200"></i>${getDisplayCityName(auroraSelectedCity, currentLang)}
+                                </h2>
+                                <p class="text-sm text-white/70 mt-3 max-w-2xl">${ui.auroraSubtitle}</p>
+                            </div>
+                            <div class="flex flex-wrap gap-2">
+                                ${availableCities.map((cityKey) => `
+                                    <button onclick="setAuroraCity('${cityKey}')" class="px-3.5 py-2 rounded-full text-sm font-bold transition-all border ${cityKey === auroraSelectedCity ? 'aurora-city-chip-active' : 'bg-white/10 text-white/80 border-white/10 hover:bg-white/15'}">
+                                        ${getDisplayCityName(cityKey, currentLang)}
+                                    </button>
+                                `).join('')}
+                            </div>
+                        </div>
+                        ${bodyMarkup}
+                    </div>
+                </div>
+            `;
+        }
+
         function renderOverview(container, ui) {
             container.innerHTML = `
                 <div class="glass-card rounded-[2rem] p-8 shadow-2xl animate-in fade-in relative overflow-hidden">
                     <h2 class="text-3xl font-bold mb-6 flex items-center gap-3 relative z-10">
                         <i class="fas fa-route text-blue-600"></i> ${ui.overviewBtn}
                     </h2>
+
+                    ${renderAuroraOverviewCard(ui)}
 
                     
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-3 relative z-10">
