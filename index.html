@@ -356,7 +356,7 @@
     <div id="app" class="pb-24 lg:pb-0">
     <!-- Header -->
     <header class="bg-white/70 backdrop-blur-md border-b sticky top-0 z-50 px-3 py-2 sm:px-6 sm:py-3 flex justify-between items-center shadow-sm">
-        <div onclick="activeDayIndex = -1; updateUI();" class="cursor-pointer shrink-0">
+        <div data-ui-action="go-overview" class="cursor-pointer shrink-0">
                 <span id="ui-header-title">紐西蘭南島 · 冬季自駕</span>
             <p class="text-[10px] text-blue-600 font-bold uppercase tracking-widest">Winter Adventure · v1.2.1</p>
         </div>
@@ -385,29 +385,29 @@
 
             <!-- Secondary Actions (Desktop Only) -->
             <div class="hidden lg:flex items-center gap-2">
-                <button onclick="openConverter()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-full text-[12px] font-bold transition-all shadow-sm items-center gap-1 group">
+                <button type="button" data-ui-action="open-converter" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-full text-[12px] font-bold transition-all shadow-sm items-center gap-1 group">
                     <i class="fas fa-calculator group-hover:scale-110 transition-transform"></i> <span id="ui-calc-btn">換算</span>
                 </button>
-                <button onclick="printItinerary()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-full text-[12px] font-bold transition-all shadow-sm items-center gap-1 group">
+                <button type="button" data-ui-action="print-itinerary" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-full text-[12px] font-bold transition-all shadow-sm items-center gap-1 group">
                     <i class="fas fa-print group-hover:scale-110 transition-transform"></i> <span id="ui-print-btn">列印</span>
                 </button>
-                <button onclick="toggleAurora()" class="bg-slate-800 hover:bg-slate-900 text-purple-300 px-3 py-1.5 rounded-full text-[12px] font-bold transition-all shadow-sm flex items-center justify-center relative overflow-hidden group">
+                <button type="button" data-ui-action="toggle-aurora" class="bg-slate-800 hover:bg-slate-900 text-purple-300 px-3 py-1.5 rounded-full text-[12px] font-bold transition-all shadow-sm flex items-center justify-center relative overflow-hidden group">
                     <div class="absolute inset-0 bg-gradient-to-r from-purple-500/30 to-emerald-500/30 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                     <i class="fas fa-moon relative z-10"></i>
                 </button>
-                <button onclick="toggleEditMode()" id="edit-mode-btn" class="bg-amber-500 hover:bg-amber-600 text-white px-3 py-1.5 rounded-full text-[12px] font-bold transition-all shadow-sm flex items-center gap-1 group">
+                <button type="button" data-ui-action="toggle-edit-mode" id="edit-mode-btn" class="bg-amber-500 hover:bg-amber-600 text-white px-3 py-1.5 rounded-full text-[12px] font-bold transition-all shadow-sm flex items-center gap-1 group">
                     <i class="fas fa-edit group-hover:scale-110 transition-transform"></i> <span id="ui-edit-btn">編輯</span>
                 </button>
-                <button onclick="openIOModal()" id="import-export-btn" class="bg-indigo-500 hover:bg-indigo-600 text-white px-3 py-1.5 rounded-full text-[12px] font-bold transition-all shadow-sm flex items-center gap-1 group hidden">
+                <button type="button" data-ui-action="open-io-modal" id="import-export-btn" class="bg-indigo-500 hover:bg-indigo-600 text-white px-3 py-1.5 rounded-full text-[12px] font-bold transition-all shadow-sm flex items-center gap-1 group hidden">
                     <i class="fas fa-file-import group-hover:scale-110 transition-transform"></i> <span id="ui-io-btn">導入/導出</span>
                 </button>
-                <button onclick="syncAllZhToEn()" id="sync-btn" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1.5 rounded-full text-[12px] font-bold transition-all shadow-sm flex items-center gap-1 group hidden">
+                <button type="button" data-ui-action="sync-zh-en" id="sync-btn" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1.5 rounded-full text-[12px] font-bold transition-all shadow-sm flex items-center gap-1 group hidden">
                     <i class="fas fa-arrows-rotate group-hover:rotate-180 transition-transform duration-500"></i> <span id="ui-sync-btn">同步至英文</span>
                 </button>
-                <button onclick="exportUpdatedHTML()" id="export-btn" class="bg-gray-700 hover:bg-gray-800 text-white px-3 py-1.5 rounded-full text-[12px] font-bold transition-all shadow-sm flex items-center gap-1 group hidden">
+                <button type="button" data-ui-action="export-html" id="export-btn" class="bg-gray-700 hover:bg-gray-800 text-white px-3 py-1.5 rounded-full text-[12px] font-bold transition-all shadow-sm flex items-center gap-1 group hidden">
                     <i class="fas fa-download group-hover:scale-110 transition-transform"></i> <span id="ui-export-btn">匯出</span>
                 </button>
-                <button onclick="resetAllData()" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 rounded-full text-[12px] font-bold transition-all shadow-sm flex items-center gap-1 group">
+                <button type="button" data-ui-action="reset-all-data" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 rounded-full text-[12px] font-bold transition-all shadow-sm flex items-center gap-1 group">
                     <i class="fas fa-trash-can group-hover:scale-110 transition-transform"></i> <span id="ui-reset-btn">清除</span>
                 </button>
 
@@ -416,21 +416,21 @@
             </div>
 
             <!-- Primary Actions (Restored) -->
-            <button id="unlock-btn" onclick="askPassword()" class="bg-blue-600 hover:bg-blue-700 text-white px-2.5 py-1 sm:px-4 sm:py-1.5 rounded-full text-[11px] sm:text-[12px] font-bold transition-all shadow-sm">
+            <button type="button" id="unlock-btn" data-ui-action="unlock-hotels" class="bg-blue-600 hover:bg-blue-700 text-white px-2.5 py-1 sm:px-4 sm:py-1.5 rounded-full text-[11px] sm:text-[12px] font-bold transition-all shadow-sm">
                 <i class="fas fa-key sm:mr-1"></i> <span id="ui-unlock-text" class="hidden sm:inline">解鎖住宿</span>
             </button>
             
-            <button onclick="openDateModal()" class="hidden sm:flex bg-amber-100 hover:bg-amber-200 text-amber-700 px-3 py-1.5 rounded-full text-[12px] font-bold transition-all shadow-sm">
+            <button type="button" data-ui-action="open-date-modal" class="hidden sm:flex bg-amber-100 hover:bg-amber-200 text-amber-700 px-3 py-1.5 rounded-full text-[12px] font-bold transition-all shadow-sm">
                 <i class="fas fa-calendar-days"></i>
             </button>
 
             <!-- Mobile Menu Toggle -->
-            <button onclick="toggleDrawer(true)" class="lg:hidden w-8 h-8 flex items-center justify-center text-slate-600 hover:bg-slate-100 rounded-full transition-all">
+            <button type="button" data-ui-action="open-drawer" class="lg:hidden w-8 h-8 flex items-center justify-center text-slate-600 hover:bg-slate-100 rounded-full transition-all">
                 <i class="fas fa-bars text-lg"></i>
             </button>
 
             <!-- Language Toggle (Desktop Only) -->
-            <button id="lang-toggle-desktop" onclick="toggleLang()" class="hidden lg:flex bg-slate-200 hover:bg-slate-300 text-slate-700 px-3 py-1.5 rounded-full text-[12px] font-bold transition-all shadow-sm">
+            <button type="button" id="lang-toggle-desktop" data-ui-action="toggle-lang" class="hidden lg:flex bg-slate-200 hover:bg-slate-300 text-slate-700 px-3 py-1.5 rounded-full text-[12px] font-bold transition-all shadow-sm">
                 English
             </button>
         </div>
@@ -438,12 +438,12 @@
 
     <!-- Mobile Drawer Menu -->
     <div id="drawer-container" class="fixed inset-0 z-[110] hidden">
-        <div id="drawer-overlay" class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm opacity-0" onclick="toggleDrawer(false)"></div>
+        <div id="drawer-overlay" data-ui-action="close-drawer" class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm opacity-0"></div>
         <div id="drawer-menu" class="absolute top-0 right-0 bottom-0 w-[280px] bg-white translate-x-full shadow-2xl overflow-y-auto">
             <div class="p-6">
                 <div class="flex justify-between items-center mb-10">
                     <h3 class="font-black text-slate-400 uppercase tracking-widest text-xs">Menu</h3>
-                    <button onclick="toggleDrawer(false)" class="w-8 h-8 flex items-center justify-center text-slate-400 hover:bg-slate-100 rounded-full transition-all">
+                    <button type="button" data-ui-action="close-drawer" class="w-8 h-8 flex items-center justify-center text-slate-400 hover:bg-slate-100 rounded-full transition-all">
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
@@ -467,7 +467,7 @@
         <main class="flex-1 p-3 sm:p-4 md:p-8 lg:p-12">
             <div id="global-map-area" class="hidden mb-6">
                 <div id="route-map-container" class="animate-in fade-in slide-in-from-top-4 duration-700 relative z-10 group/map">
-                    <button id="map-control-btn" onclick="toggleMapMode()" class="absolute top-4 right-4 z-[100] bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-full text-[10px] font-black shadow-lg border border-white/50 hover:bg-white transition-all active:scale-95 flex items-center gap-1.5">
+                    <button type="button" id="map-control-btn" data-ui-action="toggle-map-mode" class="absolute top-4 right-4 z-[100] bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-full text-[10px] font-black shadow-lg border border-white/50 hover:bg-white transition-all active:scale-95 flex items-center gap-1.5">
                         <i class="fas fa-wand-magic-sparkles text-blue-500" id="map-icon"></i>
                         <span id="map-toggle-text">可愛模式</span>
                     </button>
@@ -509,9 +509,9 @@
         // Password Modal Logic and HTML Injection Setup
         const modalHTML = `
         <div id="password-modal" class="fixed inset-0 z-[100] hidden flex-col items-center justify-center p-4 sm:p-0">
-            <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity opacity-0" id="modal-backdrop" onclick="closeModal()"></div>
+            <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity opacity-0" id="modal-backdrop" data-ui-action="close-password-modal"></div>
             <div class="bg-white/90 backdrop-blur-md rounded-[2rem] p-8 sm:p-10 shadow-2xl w-full max-w-sm relative z-10 scale-95 opacity-0 transition-all duration-300" id="modal-content">
-                <button onclick="closeModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100 transition-colors">
+                <button type="button" data-ui-action="close-password-modal" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100 transition-colors">
                     <i class="fas fa-times"></i>
                 </button>
                 <div class="text-center mb-6">
@@ -522,9 +522,9 @@
                     <p class="text-sm text-slate-500 mt-2" id="modal-desc">請輸入安全密碼以檢視詳細住宿資訊。</p>
                 </div>
                 <div class="space-y-4">
-                    <input type="password" id="modal-password-input" class="w-full bg-white border border-slate-200 px-4 py-3 rounded-xl text-center text-lg tracking-widest focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all shadow-inner" placeholder="••••••" onkeydown="if(event.key === 'Enter') submitPassword()">
+                    <input type="password" id="modal-password-input" class="w-full bg-white border border-slate-200 px-4 py-3 rounded-xl text-center text-lg tracking-widest focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all shadow-inner" placeholder="••••••">
                     <p id="modal-error" class="text-red-500 text-xs font-bold text-center h-4 opacity-0 transition-opacity">密碼錯誤，請重試</p>
-                    <button onclick="submitPassword()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-xl shadow-md hover:shadow-lg transition-all transform active:scale-95">
+                    <button type="button" data-ui-action="submit-password" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-xl shadow-md hover:shadow-lg transition-all transform active:scale-95">
                         確認解鎖
                     </button>
                 </div>
@@ -535,7 +535,7 @@
 
         const printChoiceModalHTML = `
         <div id="print-choice-modal" class="fixed inset-0 z-[100] hidden flex-col items-center justify-center p-4 sm:p-0">
-            <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity opacity-0" id="print-modal-backdrop" onclick="closePrintModal()"></div>
+            <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity opacity-0" id="print-modal-backdrop" data-ui-action="close-print-modal"></div>
             <div class="bg-white/90 backdrop-blur-md rounded-[2rem] p-8 sm:p-10 shadow-2xl w-full max-w-sm relative z-10 scale-95 opacity-0 transition-all duration-300" id="print-modal-content">
                 <div class="text-center mb-8">
                     <div class="w-16 h-16 bg-indigo-100 text-indigo-600 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-4 shadow-sm">
@@ -545,13 +545,13 @@
                     <p class="text-sm text-slate-500 mt-2" id="print-modal-desc">行程中包含旅行照片與回憶，請問要如何列印？</p>
                 </div>
                 <div class="space-y-3">
-                    <button onclick="executePrint(true)" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 px-4 rounded-xl shadow-md hover:shadow-lg transition-all transform active:scale-95 flex items-center justify-center gap-2">
+                    <button type="button" data-ui-action="execute-print-with-photos" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 px-4 rounded-xl shadow-md hover:shadow-lg transition-all transform active:scale-95 flex items-center justify-center gap-2">
                         <i class="fas fa-images"></i> <span id="print-btn-photos">包含回憶照片</span>
                     </button>
-                    <button onclick="executePrint(false)" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3 px-4 rounded-xl transition-all transform active:scale-95 flex items-center justify-center gap-2">
+                    <button type="button" data-ui-action="execute-print-only" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3 px-4 rounded-xl transition-all transform active:scale-95 flex items-center justify-center gap-2">
                         <i class="fas fa-file-lines"></i> <span id="print-btn-only">僅列印行程</span>
                     </button>
-                    <button onclick="closePrintModal()" class="w-full text-slate-400 font-bold py-2 px-4 text-sm hover:text-slate-600 transition-colors">
+                    <button type="button" data-ui-action="close-print-modal" class="w-full text-slate-400 font-bold py-2 px-4 text-sm hover:text-slate-600 transition-colors">
                         取消
                     </button>
                 </div>
@@ -562,7 +562,7 @@
 
         const dateModalHTML = `
         <div id="date-modal" class="fixed inset-0 z-[100] hidden flex-col items-center justify-center p-4">
-            <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity opacity-0" id="date-modal-backdrop" onclick="closeDateModal()"></div>
+            <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity opacity-0" id="date-modal-backdrop" data-ui-action="close-date-modal"></div>
             <div class="bg-white/95 backdrop-blur-xl rounded-[2.5rem] p-6 sm:p-10 shadow-2xl w-[92%] max-w-[340px] relative z-10 scale-95 opacity-0 transition-all duration-300" id="date-modal-content">
                 <div class="text-center mb-6">
                     <div class="w-14 h-14 bg-amber-100 text-amber-600 rounded-2xl flex items-center justify-center text-2xl mx-auto mb-4 shadow-sm">
@@ -573,7 +573,7 @@
                 </div>
                 <div class="space-y-4 px-1">
                     <input type="date" id="start-date-input" class="block w-full bg-slate-50 border border-slate-200 px-3 py-3 rounded-2xl text-center focus:outline-none focus:border-amber-500 focus:ring-4 focus:ring-amber-500/10 transition-all shadow-inner font-bold text-slate-700 appearance-none m-0">
-                    <button onclick="submitStartDate()" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold py-3.5 px-4 rounded-2xl shadow-lg shadow-amber-600/20 hover:shadow-amber-600/30 transition-all transform active:scale-95">
+                    <button type="button" data-ui-action="submit-start-date" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold py-3.5 px-4 rounded-2xl shadow-lg shadow-amber-600/20 hover:shadow-amber-600/30 transition-all transform active:scale-95">
                         確認設定
                     </button>
                 </div>
@@ -584,9 +584,9 @@
 
         const noticeModalHTML = `
         <div id="notice-modal" class="fixed inset-0 z-[100] hidden flex-col items-center justify-center p-4">
-            <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-md transition-opacity opacity-0" id="notice-modal-backdrop" onclick="closeNoticeModal()"></div>
+            <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-md transition-opacity opacity-0" id="notice-modal-backdrop" data-ui-action="close-notice-modal"></div>
             <div class="bg-white rounded-[2.5rem] p-8 sm:p-12 shadow-2xl w-full max-w-lg relative z-10 scale-95 opacity-0 transition-all duration-300" id="notice-modal-content">
-                <button onclick="closeNoticeModal()" class="absolute top-6 right-6 text-slate-400 hover:text-slate-600 w-10 h-10 flex items-center justify-center rounded-full hover:bg-slate-100 transition-all">
+                <button type="button" data-ui-action="close-notice-modal" class="absolute top-6 right-6 text-slate-400 hover:text-slate-600 w-10 h-10 flex items-center justify-center rounded-full hover:bg-slate-100 transition-all">
                     <i class="fas fa-times"></i>
                 </button>
                 <div id="notice-detail-content"></div>
@@ -597,9 +597,9 @@
 
         const converterModalHTML = `
         <div id="converter-modal" class="fixed inset-0 z-[120] hidden flex-col items-center justify-center p-4 sm:p-0">
-            <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity opacity-0" id="converter-backdrop" onclick="closeConverter()"></div>
+            <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity opacity-0" id="converter-backdrop" data-ui-action="close-converter-modal"></div>
             <div class="bg-white/95 backdrop-blur-xl rounded-[2.5rem] p-8 shadow-2xl w-full max-w-sm relative z-10 scale-95 opacity-0 transition-all duration-300" id="converter-content">
-                <button onclick="closeConverter()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100 transition-colors">
+                <button type="button" data-ui-action="close-converter-modal" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100 transition-colors">
                     <i class="fas fa-times"></i>
                 </button>
                 <div class="text-center mb-8">
@@ -612,7 +612,7 @@
                 <div class="space-y-5">
                     <div class="relative">
                         <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">NZD (紐幣)</label>
-                        <input type="number" id="nzd-input" value="1" step="0.01" class="w-full bg-slate-50 border border-slate-200 px-4 py-3 rounded-2xl text-lg font-black text-slate-700 focus:outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition-all shadow-inner" oninput="convertCurrency('nzd')">
+                        <input type="number" id="nzd-input" data-currency-source="nzd" value="1" step="0.01" class="w-full bg-slate-50 border border-slate-200 px-4 py-3 rounded-2xl text-lg font-black text-slate-700 focus:outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition-all shadow-inner">
                         <div class="absolute right-4 bottom-3.5 text-slate-300 font-bold text-xs">$</div>
                     </div>
                     <div class="flex justify-center -my-2 relative z-10">
@@ -620,7 +620,7 @@
                     </div>
                     <div class="relative">
                         <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">TWD (台幣)</label>
-                        <input type="number" id="twd-input" class="w-full bg-slate-50 border border-slate-200 px-4 py-3 rounded-2xl text-lg font-black text-emerald-600 focus:outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition-all shadow-inner" oninput="convertCurrency('twd')">
+                        <input type="number" id="twd-input" data-currency-source="twd" class="w-full bg-slate-50 border border-slate-200 px-4 py-3 rounded-2xl text-lg font-black text-emerald-600 focus:outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition-all shadow-inner">
                         <div class="absolute right-4 bottom-3.5 text-slate-300 font-bold text-xs">$</div>
                     </div>
                 </div>
@@ -635,9 +635,9 @@
 
         const flightModalHTML = `
         <div id="flight-modal" class="fixed inset-0 z-[120] hidden flex-col items-center justify-center p-4 sm:p-0">
-            <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity opacity-0" id="flight-modal-backdrop" onclick="closeFlightModal()"></div>
+            <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity opacity-0" id="flight-modal-backdrop" data-ui-action="close-flight-modal"></div>
             <div class="bg-white/95 backdrop-blur-xl rounded-[2.5rem] p-8 shadow-2xl w-full max-w-lg relative z-10 scale-95 opacity-0 transition-all duration-300" id="flight-modal-content">
-                <button onclick="closeFlightModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100 transition-colors">
+                <button type="button" data-ui-action="close-flight-modal" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100 transition-colors">
                     <i class="fas fa-times"></i>
                 </button>
                 <div class="text-center mb-6">
@@ -653,7 +653,7 @@
                 </div>
 
                 <div class="mt-8">
-                    <button onclick="window.open('https://www.airnewzealand.co.nz/book/flights', '_blank')" class="w-full bg-sky-600 hover:bg-sky-700 text-white font-bold py-4 px-4 rounded-2xl shadow-lg shadow-sky-600/20 hover:shadow-sky-600/30 transition-all transform active:scale-95 flex items-center justify-center gap-2">
+                    <button type="button" data-ui-action="open-airnz-booking" class="w-full bg-sky-600 hover:bg-sky-700 text-white font-bold py-4 px-4 rounded-2xl shadow-lg shadow-sky-600/20 hover:shadow-sky-600/30 transition-all transform active:scale-95 flex items-center justify-center gap-2">
                         <i class="fas fa-external-link-alt text-sm"></i> <span id="flight-search-btn-text">前往紐航官網訂票</span>
                     </button>
                     <p class="text-[10px] text-slate-400 text-center mt-3 font-bold uppercase tracking-tighter">Official Air New Zealand Booking Site</p>
@@ -665,9 +665,9 @@
 
         const ioModalHTML = `
         <div id="io-modal" class="fixed inset-0 z-[120] hidden flex-col items-center justify-center p-4 sm:p-0">
-            <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity opacity-0" id="io-backdrop" onclick="closeIOModal()"></div>
+            <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity opacity-0" id="io-backdrop" data-ui-action="close-io-modal"></div>
             <div class="bg-white/95 backdrop-blur-xl rounded-[2.5rem] p-8 shadow-2xl w-full max-w-lg relative z-10 scale-95 opacity-0 transition-all duration-300" id="io-content">
-                <button onclick="closeIOModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100 transition-colors">
+                <button type="button" data-ui-action="close-io-modal" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100 transition-colors">
                     <i class="fas fa-times"></i>
                 </button>
                 <div class="text-center mb-6">
@@ -680,10 +680,10 @@
                 <div class="space-y-4">
                     <textarea id="io-textarea" class="w-full h-64 bg-slate-50 border border-slate-200 p-4 rounded-2xl text-[10px] font-mono text-slate-700 focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all shadow-inner resize-none"></textarea>
                     <div class="flex gap-3">
-                        <button onclick="copyIOText()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3 px-4 rounded-xl transition-all flex items-center justify-center gap-2">
+                        <button type="button" data-ui-action="copy-io-text" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3 px-4 rounded-xl transition-all flex items-center justify-center gap-2">
                             <i class="fas fa-copy"></i> 複製內容
                         </button>
-                        <button onclick="importItinerary()" class="flex-[2] bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-xl shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2">
+                        <button type="button" data-ui-action="import-itinerary" class="flex-[2] bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-xl shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2">
                             <i class="fas fa-check-circle"></i> 確認導入
                         </button>
                     </div>
@@ -695,7 +695,7 @@
 
         const resetModalHTML = `
         <div id="reset-modal" class="fixed inset-0 z-[120] hidden flex-col items-center justify-center p-4">
-            <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity opacity-0" id="reset-modal-backdrop" onclick="closeResetModal()"></div>
+            <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity opacity-0" id="reset-modal-backdrop" data-ui-action="close-reset-modal"></div>
             <div class="bg-white/95 backdrop-blur-xl rounded-[2.5rem] p-8 shadow-2xl w-full max-w-sm relative z-10 scale-95 opacity-0 transition-all duration-300" id="reset-modal-content">
                 <div class="text-center mb-8">
                     <div class="w-16 h-16 bg-red-100 text-red-600 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-4 shadow-sm">
@@ -705,10 +705,10 @@
                     <p class="text-[13px] text-slate-500 mt-3 leading-relaxed font-medium" id="reset-modal-desc">確定要重置嗎？這將會永久刪除所有出發日期、清單進度以及儲存的照片與變更。</p>
                 </div>
                 <div class="flex flex-col gap-3">
-                    <button onclick="executeReset()" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3.5 px-4 rounded-2xl shadow-lg shadow-red-600/20 hover:shadow-red-600/30 transition-all transform active:scale-95">
+                    <button type="button" data-ui-action="execute-reset" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3.5 px-4 rounded-2xl shadow-lg shadow-red-600/20 hover:shadow-red-600/30 transition-all transform active:scale-95">
                         確認重置
                     </button>
-                    <button onclick="closeResetModal()" class="w-full text-slate-400 font-bold py-2 px-4 text-sm hover:text-slate-600 transition-colors">
+                    <button type="button" data-ui-action="close-reset-modal" class="w-full text-slate-400 font-bold py-2 px-4 text-sm hover:text-slate-600 transition-colors">
                         取消
                     </button>
                 </div>
@@ -719,9 +719,9 @@
 
         const milkyWayWindowModalHTML = `
         <div id="milky-way-window-modal" class="fixed inset-0 z-[130] hidden flex-col items-center justify-center p-4 sm:p-0">
-            <div class="absolute inset-0 bg-slate-950/55 backdrop-blur-md transition-opacity opacity-0" id="milky-way-window-backdrop" onclick="closeMilkyWayWindowModal()"></div>
+            <div class="absolute inset-0 bg-slate-950/55 backdrop-blur-md transition-opacity opacity-0" id="milky-way-window-backdrop" data-ui-action="close-milkyway-modal"></div>
             <div class="bg-white/95 backdrop-blur-xl rounded-[2.5rem] p-6 sm:p-8 shadow-2xl w-full max-w-2xl relative z-10 scale-95 opacity-0 transition-all duration-300" id="milky-way-window-content">
-                <button onclick="closeMilkyWayWindowModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100 transition-colors">
+                <button type="button" data-ui-action="close-milkyway-modal" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100 transition-colors">
                     <i class="fas fa-times"></i>
                 </button>
                 <div id="milky-way-window-detail"></div>
@@ -815,11 +815,24 @@
         async function handleMemoryUpload(event, dayIdx, spotIdx) {
             const file = event.target.files[0];
             if (!file) return;
+            if (!file.type.startsWith('image/')) {
+                alert(currentLang === 'zh' ? '僅支援圖片檔案。' : 'Image files only.');
+                return;
+            }
+            if (file.type === 'image/svg+xml') {
+                alert(currentLang === 'zh' ? 'SVG 檔案不支援，請改用 PNG/JPG/WebP。' : 'SVG is not supported. Use PNG/JPG/WebP instead.');
+                return;
+            }
 
             const reader = new FileReader();
             reader.onload = async (e) => {
-                const photoData = e.target.result;
-                const note = prompt(currentLang === 'zh' ? '為這張照片加點描述吧？' : 'Add a description for this photo?') || '';
+                const photoData = sanitizeMemoryImageSource(e.target.result);
+                if (!photoData) {
+                    alert(currentLang === 'zh' ? '圖片格式不符合安全限制。' : 'Unsupported image format.');
+                    return;
+                }
+                const noteRaw = prompt(currentLang === 'zh' ? '為這張照片加點描述吧？' : 'Add a description for this photo?') || '';
+                const note = sanitizeTextInput(noteRaw, { maxLength: 300, allowLineBreaks: true });
                 const spotKey = `d${dayIdx}_s${spotIdx}`;
                 await saveMemory(spotKey, photoData, note);
                 if ("vibrate" in navigator) navigator.vibrate(10);
@@ -833,20 +846,37 @@
             const memories = await getMemories(spotKey);
             const container = document.getElementById(`memory-container-${dayIdx}-${spotIdx}`);
             if (!container) return;
-            if (memories.length === 0) {
-                container.innerHTML = '';
-                return;
-            }
+            container.innerHTML = '';
+            if (memories.length === 0) return;
 
-            container.innerHTML = memories.map(m => `
-                <div class="group relative bg-white/80 rounded-2xl p-2 shadow-sm border border-slate-100 animate-in fade-in slide-in-from-bottom-2 duration-500">
-                    <img src="${m.photoData}" class="w-full h-auto rounded-xl shadow-inner border border-slate-50">
-                    ${m.note ? `<p class="text-[11px] text-slate-600 mt-2 px-2 pb-1 italic font-medium">"${m.note}"</p>` : ''}
-                    <button onclick="confirmDeleteMemory(${m.id})" class="absolute top-4 right-4 w-7 h-7 bg-red-500/80 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center shadow-lg backdrop-blur-sm hover:bg-red-600">
-                        <i class="fas fa-times text-[10px]"></i>
-                    </button>
-                </div>
-            `).join('');
+            memories.forEach((memory) => {
+                const safeSrc = sanitizeMemoryImageSource(memory.photoData);
+                if (!safeSrc) return;
+
+                const card = document.createElement('div');
+                card.className = 'group relative bg-white/80 rounded-2xl p-2 shadow-sm border border-slate-100 animate-in fade-in slide-in-from-bottom-2 duration-500';
+
+                const img = document.createElement('img');
+                img.src = safeSrc;
+                img.className = 'w-full h-auto rounded-xl shadow-inner border border-slate-50';
+                card.appendChild(img);
+
+                const safeNote = sanitizeTextInput(memory.note, { maxLength: 300, allowLineBreaks: true });
+                if (safeNote) {
+                    const note = document.createElement('p');
+                    note.className = 'text-[11px] text-slate-600 mt-2 px-2 pb-1 italic font-medium';
+                    note.textContent = `"${safeNote}"`;
+                    card.appendChild(note);
+                }
+
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'absolute top-4 right-4 w-7 h-7 bg-red-500/80 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center shadow-lg backdrop-blur-sm hover:bg-red-600';
+                deleteBtn.innerHTML = '<i class="fas fa-times text-[10px]"></i>';
+                deleteBtn.addEventListener('click', () => confirmDeleteMemory(Number(memory.id)));
+                card.appendChild(deleteBtn);
+
+                container.appendChild(card);
+            });
         }
 
         async function confirmDeleteMemory(id) {
@@ -924,18 +954,20 @@
             const iframe = document.getElementById('day-map-iframe');
             if (iframe) {
                 if (!query) return;
+                const safeQuery = normalizeMapQuery(query);
+                const safeCustomImage = sanitizeImageUrl(customImg);
 
                 // Reset state
                 hideSpotVisual();
                 iframe.style.opacity = '1';
                 
                 // If custom image is provided, show it directly
-                if (customImg) {
-                    showSpotVisual({ img: customImg, title_zh: query, title_en: query }, query);
+                if (safeCustomImage) {
+                    showSpotVisual({ img: safeCustomImage, title_zh: safeQuery, title_en: safeQuery }, safeQuery);
                 } else {
                     // Check for immersive spot visual from keywords
                     let spotMatch = null;
-                    const lowerQuery = query.toLowerCase();
+                    const lowerQuery = safeQuery.toLowerCase();
                     for (const item of SPOT_VISUALS) {
                         if (item.keywords.some(kw => lowerQuery.includes(kw.toLowerCase()))) {
                             spotMatch = item;
@@ -944,14 +976,11 @@
                     }
 
                     if (spotMatch) {
-                        showSpotVisual(spotMatch, query);
+                        showSpotVisual(spotMatch, safeQuery);
                     } else {
                         const container = iframe.parentElement;
                         container.classList.add('opacity-50');
-                        // Replace '+' with space to avoid double encoding of '+' as '%2B'
-                        const cleanQuery = query.replace(/\+/g, ' ');
-                        const safeQuery = encodeURIComponent(cleanQuery);
-                        iframe.src = `https://maps.google.com/maps?q=${safeQuery}&t=&z=14&ie=UTF8&iwloc=&output=embed`;
+                        iframe.src = buildGoogleMapsEmbedUrl(safeQuery, 14);
                         iframe.onload = () => container.classList.remove('opacity-50');
                     }
                 }
@@ -972,7 +1001,7 @@
                         <div class="absolute bottom-0 left-0 right-0 p-8 text-white z-30">
                             <h3 id="spot-visual-title" class="text-2xl font-bold mb-2"></h3>
                             <div class="flex gap-3">
-                                <button onclick="hideSpotVisual()" class="bg-white/20 hover:bg-white/30 border border-white/30 backdrop-blur-md text-white px-4 py-2 rounded-full text-xs font-bold transition-all flex items-center gap-2">
+                                <button type="button" data-ui-action="hide-spot-visual" class="bg-white/20 hover:bg-white/30 border border-white/30 backdrop-blur-md text-white px-4 py-2 rounded-full text-xs font-bold transition-all flex items-center gap-2">
                                     <i class="fas fa-map-location-dot"></i> ${currentLang === 'zh' ? '查看地圖' : 'View Map'}
                                 </button>
                             </div>
@@ -993,7 +1022,7 @@
             document.getElementById('spot-visual-title').innerText = currentLang === 'zh' ? spot.title_zh : spot.title_en;
             
             const iframe = document.getElementById('day-map-iframe');
-            iframe.src = `https://maps.google.com/maps?q=${encodeURIComponent(query)}&t=&z=14&ie=UTF8&iwloc=&output=embed`;
+            iframe.src = buildGoogleMapsEmbedUrl(query, 14);
         }
 
         function hideSpotVisual() {
@@ -1030,7 +1059,7 @@
                     <p class="text-slate-600 leading-relaxed text-lg font-medium">${notice.desc}</p>
                 </div>
                 <div class="mt-8 pt-6 border-t border-slate-100 flex justify-end">
-                    <button onclick="closeNoticeModal()" class="bg-slate-900 text-white px-6 py-3 rounded-2xl font-bold hover:bg-slate-800 transition-all active:scale-95 shadow-lg">
+                    <button type="button" data-ui-action="close-notice-modal" class="bg-slate-900 text-white px-6 py-3 rounded-2xl font-bold hover:bg-slate-800 transition-all active:scale-95 shadow-lg">
                         ${currentLang === 'zh' ? '我知道了' : 'Got it'}
                     </button>
                 </div>
@@ -1349,7 +1378,91 @@
             { date: "Day 13", city: { zh: "台北", en: "Taipei" }, mapUrl: "Taipei+101", zh: { title: "✈️ 回家：奧克蘭 → 台北", timeline: [["07:30", "前往機場", "11 hr 飛航"], ["09:40", "起飛回台", "搭車"], ["17:05", "抵達台北"]] }, en: { title: "✈️ Homebound: AKL to TPE", timeline: [["07:30", "To AKL Airport", "11 hr flight"], ["09:40", "Depart for Taiwan", "Drive"], ["17:05", "Arrive in Taipei"]] } }
         ];
 
-        let itinerary = JSON.parse(localStorage.getItem('itinerary_custom')) || DEFAULT_ITINERARY;
+        const MAX_ITINERARY_DAYS = 40;
+        const MAX_TIMELINE_ITEMS = 40;
+
+        function normalizeTimelineItem(item, fallbackItem = []) {
+            const source = Array.isArray(item) ? item : [];
+            const fallback = Array.isArray(fallbackItem) ? fallbackItem : [];
+            return [
+                sanitizeTextInput(source[0] ?? fallback[0] ?? "", { maxLength: 24 }),
+                sanitizeTextInput(source[1] ?? fallback[1] ?? "", { maxLength: 140 }),
+                sanitizeTextInput(source[2] ?? fallback[2] ?? "", { maxLength: 80 }),
+                sanitizeMapQuery(source[3] ?? fallback[3] ?? ""),
+                sanitizeImageUrl(source[4] ?? fallback[4] ?? ""),
+                sanitizeTextInput(source[5] ?? fallback[5] ?? "", { maxLength: 300, allowLineBreaks: true })
+            ];
+        }
+
+        function normalizeLangSection(langSection, fallbackSection = {}) {
+            const fallbackTimeline = Array.isArray(fallbackSection.timeline) ? fallbackSection.timeline : [];
+            const sourceTimeline = Array.isArray(langSection?.timeline) ? langSection.timeline : fallbackTimeline;
+            const normalizedTimeline = sourceTimeline
+                .slice(0, MAX_TIMELINE_ITEMS)
+                .map((item, idx) => normalizeTimelineItem(item, fallbackTimeline[idx] || []));
+
+            return {
+                title: sanitizeTextInput(langSection?.title ?? fallbackSection?.title ?? "", { maxLength: 100 }),
+                timeline: normalizedTimeline
+            };
+        }
+
+        function normalizeItineraryDay(day, fallbackDay = {}, index = 0) {
+            const safeMapUrl = sanitizeMapQuery(day?.mapUrl ?? fallbackDay?.mapUrl ?? "");
+            const safeZh = normalizeLangSection(day?.zh, fallbackDay?.zh || {});
+            const safeEn = normalizeLangSection(day?.en, fallbackDay?.en || {});
+            const fallbackTimeline = safeZh.timeline.length ? safeZh.timeline : safeEn.timeline;
+
+            if (!safeZh.timeline.length && fallbackTimeline.length) safeZh.timeline = fallbackTimeline.map(item => [...item]);
+            if (!safeEn.timeline.length && fallbackTimeline.length) safeEn.timeline = fallbackTimeline.map(item => [...item]);
+
+            return {
+                date: sanitizeTextInput(day?.date ?? fallbackDay?.date ?? `Day ${String(index + 1).padStart(2, "0")}`, { maxLength: 24 }),
+                actualDate: /^\d{4}-\d{2}-\d{2}$/.test(day?.actualDate || "")
+                    ? day.actualDate
+                    : (/^\d{4}-\d{2}-\d{2}$/.test(fallbackDay?.actualDate || "") ? fallbackDay.actualDate : undefined),
+                city: {
+                    zh: sanitizeTextInput(day?.city?.zh ?? fallbackDay?.city?.zh ?? "", { maxLength: 40 }),
+                    en: sanitizeTextInput(day?.city?.en ?? fallbackDay?.city?.en ?? "", { maxLength: 40 })
+                },
+                mapUrl: safeMapUrl,
+                mapQuery: sanitizeMapQuery(day?.mapQuery ?? fallbackDay?.mapQuery ?? safeMapUrl),
+                customImg: sanitizeImageUrl(day?.customImg ?? fallbackDay?.customImg ?? ""),
+                drive: sanitizeTextInput(day?.drive ?? fallbackDay?.drive ?? "", { maxLength: 40 }),
+                zh: safeZh,
+                en: safeEn
+            };
+        }
+
+        function normalizeItineraryPayload(payload, fallback = DEFAULT_ITINERARY) {
+            if (!Array.isArray(payload) || payload.length === 0) return null;
+            const fallbackArray = Array.isArray(fallback) ? fallback : [];
+            const normalized = payload
+                .slice(0, MAX_ITINERARY_DAYS)
+                .map((day, index) => normalizeItineraryDay(day, fallbackArray[index] || {}, index));
+            return normalized.length ? normalized : null;
+        }
+
+        function cloneDefaultItinerary() {
+            return JSON.parse(JSON.stringify(DEFAULT_ITINERARY));
+        }
+
+        function loadInitialItinerary() {
+            const fallback = cloneDefaultItinerary();
+            const stored = localStorage.getItem('itinerary_custom');
+            if (!stored) return fallback;
+
+            try {
+                const parsed = JSON.parse(stored);
+                const normalized = normalizeItineraryPayload(parsed, fallback);
+                return normalized || fallback;
+            } catch (error) {
+                console.warn('Failed to parse itinerary_custom, fallback to default itinerary.', error);
+                return fallback;
+            }
+        }
+
+        let itinerary = loadInitialItinerary();
 
         function syncAllZhToEn() {
             itinerary.forEach((day, i) => {
@@ -1408,6 +1521,9 @@
         }
 
         function saveItinerary() {
+            const normalized = normalizeItineraryPayload(itinerary, DEFAULT_ITINERARY);
+            if (!normalized) return;
+            itinerary = normalized;
             localStorage.setItem('itinerary_custom', JSON.stringify(itinerary));
         }
 
@@ -1432,22 +1548,41 @@
         }
 
         function handleEdit(dayIdx, field, subfield, value, itemIdx, subItemIdx) {
+            let safeValue = sanitizeTextInput(value, { maxLength: 140, allowLineBreaks: true });
+            if (field === 'drive') {
+                safeValue = sanitizeTextInput(value, { maxLength: 40 });
+            } else if (subfield === 'title') {
+                safeValue = sanitizeTextInput(value, { maxLength: 100 });
+            } else if (field === 'city') {
+                safeValue = sanitizeTextInput(value, { maxLength: 40 });
+            } else if (subfield === 'timeline' && subItemIdx === 0) {
+                safeValue = sanitizeTextInput(value, { maxLength: 24 });
+            } else if (subfield === 'timeline' && subItemIdx === 2) {
+                safeValue = sanitizeTextInput(value, { maxLength: 80 });
+            } else if (subfield === 'timeline' && subItemIdx === 3) {
+                safeValue = sanitizeMapQuery(value);
+            } else if (subfield === 'timeline' && subItemIdx === 4) {
+                safeValue = sanitizeImageUrl(value);
+            } else if (subfield === 'timeline' && subItemIdx === 5) {
+                safeValue = sanitizeTextInput(value, { maxLength: 300, allowLineBreaks: true });
+            }
+
             if (itemIdx !== undefined) {
                 if (subItemIdx !== undefined) {
-                    itinerary[dayIdx][field][subfield][itemIdx][subItemIdx] = value;
+                    itinerary[dayIdx][field][subfield][itemIdx][subItemIdx] = safeValue;
                     
                     // Auto-sync Time (subItemIdx 0) across languages
                     if (subItemIdx === 0) {
                         const otherLang = (field === 'zh') ? 'en' : 'zh';
-                        itinerary[dayIdx][otherLang][subfield][itemIdx][0] = value;
+                        itinerary[dayIdx][otherLang][subfield][itemIdx][0] = safeValue;
                     }
                 } else {
-                    itinerary[dayIdx][field][subfield][itemIdx] = value;
+                    itinerary[dayIdx][field][subfield][itemIdx] = safeValue;
                 }
             } else if (subfield) {
-                itinerary[dayIdx][field][subfield] = value;
+                itinerary[dayIdx][field][subfield] = safeValue;
             } else {
-                itinerary[dayIdx][field] = value;
+                itinerary[dayIdx][field] = safeValue;
             }
             saveItinerary();
             
@@ -1517,15 +1652,17 @@
 
             const newImg = prompt((currentLang === 'zh' ? "風景圖片網址 (自定義照片連結):" : "Landscape Image URL (Custom Photo):"), currentImg);
             if (newImg === null) return;
+            const safeQuery = sanitizeMapQuery(newQuery);
+            const safeImg = sanitizeImageUrl(newImg);
 
             if (itemIdx !== undefined) {
-                itinerary[dayIdx].zh.timeline[itemIdx][3] = newQuery;
-                itinerary[dayIdx].zh.timeline[itemIdx][4] = newImg;
-                itinerary[dayIdx].en.timeline[itemIdx][3] = newQuery;
-                itinerary[dayIdx].en.timeline[itemIdx][4] = newImg;
+                itinerary[dayIdx].zh.timeline[itemIdx][3] = safeQuery;
+                itinerary[dayIdx].zh.timeline[itemIdx][4] = safeImg;
+                itinerary[dayIdx].en.timeline[itemIdx][3] = safeQuery;
+                itinerary[dayIdx].en.timeline[itemIdx][4] = safeImg;
             } else {
-                itinerary[dayIdx].mapQuery = newQuery;
-                itinerary[dayIdx].customImg = newImg;
+                itinerary[dayIdx].mapQuery = safeQuery;
+                itinerary[dayIdx].customImg = safeImg;
             }
             
             saveItinerary();
@@ -1916,6 +2053,62 @@
             return Number.isFinite(num) ? num : null;
         }
 
+        function sanitizeTextInput(value, options = {}) {
+            const { maxLength = 200, allowLineBreaks = false } = options;
+            const raw = typeof value === 'string' ? value : String(value ?? '');
+            const withoutControlChars = raw.replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '');
+            const whitespaceNormalized = allowLineBreaks
+                ? withoutControlChars.replace(/\r\n?/g, '\n')
+                : withoutControlChars.replace(/\s+/g, ' ');
+            const withoutTagDelimiters = whitespaceNormalized.replace(/[<>]/g, '');
+            return withoutTagDelimiters.trim().slice(0, maxLength);
+        }
+
+        function sanitizeMapQuery(value) {
+            return sanitizeTextInput(value, { maxLength: 180 });
+        }
+
+        function sanitizeImageUrl(value) {
+            const raw = typeof value === 'string' ? value.trim() : '';
+            if (!raw) return '';
+            if (/^https?:\/\/[^\s"'<>]+$/i.test(raw)) return raw;
+            return '';
+        }
+
+        function sanitizeMemoryImageSource(value) {
+            const raw = typeof value === 'string' ? value.trim() : '';
+            if (!raw) return '';
+            if (/^https?:\/\/[^\s"'<>]+$/i.test(raw)) return raw;
+            if (/^data:image\/(?:png|jpe?g|webp|gif|bmp|heic|heif);base64,[a-z0-9+/=\s]+$/i.test(raw)) return raw;
+            return '';
+        }
+
+        function encodeInlineArg(value) {
+            return encodeURIComponent(String(value ?? ''));
+        }
+
+        function decodeInlineArg(value) {
+            try {
+                return decodeURIComponent(String(value ?? ''));
+            } catch (error) {
+                return '';
+            }
+        }
+
+        function normalizeMapQuery(query) {
+            return sanitizeMapQuery(query).replace(/\+/g, ' ').trim();
+        }
+
+        function buildGoogleMapsEmbedUrl(query, zoom = 14) {
+            const safeQuery = encodeURIComponent(normalizeMapQuery(query));
+            return `https://maps.google.com/maps?q=${safeQuery}&t=&z=${zoom}&ie=UTF8&iwloc=&output=embed`;
+        }
+
+        function buildGoogleMapsSearchUrl(query) {
+            const safeQuery = encodeURIComponent(normalizeMapQuery(query));
+            return `https://www.google.com/maps/search/?api=1&query=${safeQuery}`;
+        }
+
         function getAuroraLevel(score) {
             if (score >= 75) return 'excellent';
             if (score >= 50) return 'high';
@@ -2073,6 +2266,16 @@
             if (Number.isNaN(date.getTime())) return '--:--';
             const parts = getTimeZoneParts(date, NZ_TIMEZONE);
             return `${parts.hour}:${parts.minute}`;
+        }
+
+        function getMinutesOfDayInTimeZone(value, timeZone = NZ_TIMEZONE) {
+            const date = parseTimeZoneDateTimeValue(value, timeZone);
+            if (Number.isNaN(date.getTime())) return 0;
+            const parts = getTimeZoneParts(date, timeZone);
+            const hour = Number(parts.hour);
+            const minute = Number(parts.minute);
+            if (!Number.isFinite(hour) || !Number.isFinite(minute)) return 0;
+            return (hour * 60) + minute;
         }
 
         function addDaysToDateKey(dateKey, days) {
@@ -3410,7 +3613,7 @@
             const links = document.getElementById('drawer-links');
             const ui = translations[currentLang];
             links.innerHTML = `
-                <button onclick="toggleLang(); toggleDrawer(false);" class="w-full flex items-center justify-between p-4 bg-slate-50 rounded-2xl hover:bg-slate-100 transition-all group">
+                <button type="button" data-ui-action="drawer-toggle-lang" class="w-full flex items-center justify-between p-4 bg-slate-50 rounded-2xl hover:bg-slate-100 transition-all group">
                     <div class="flex items-center gap-3">
                         <div class="w-10 h-10 bg-white shadow-sm rounded-xl flex items-center justify-center text-slate-600">
                             <i class="fas fa-language"></i>
@@ -3420,7 +3623,7 @@
                     <i class="fas fa-chevron-right text-slate-300 group-hover:translate-x-1 transition-transform"></i>
                 </button>
 
-                <button onclick="toggleAurora(); toggleDrawer(false);" class="w-full flex items-center justify-between p-4 bg-slate-900 text-white rounded-2xl hover:opacity-90 transition-all group">
+                <button type="button" data-ui-action="drawer-toggle-aurora" class="w-full flex items-center justify-between p-4 bg-slate-900 text-white rounded-2xl hover:opacity-90 transition-all group">
                     <div class="flex items-center gap-3">
                         <div class="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center text-purple-300">
                             <i class="fas fa-moon"></i>
@@ -3430,7 +3633,7 @@
                     <i class="fas fa-chevron-right text-white/30 group-hover:translate-x-1 transition-transform"></i>
                 </button>
 
-                <button onclick="openDateModal(); toggleDrawer(false);" class="w-full flex items-center justify-between p-4 bg-amber-50 rounded-2xl hover:bg-amber-100 transition-all group">
+                <button type="button" data-ui-action="drawer-open-date-modal" class="w-full flex items-center justify-between p-4 bg-amber-50 rounded-2xl hover:bg-amber-100 transition-all group">
                     <div class="flex items-center gap-3">
                         <div class="w-10 h-10 bg-white shadow-sm rounded-xl flex items-center justify-center text-amber-600">
                             <i class="fas fa-calendar-day"></i>
@@ -3440,7 +3643,7 @@
                     <i class="fas fa-chevron-right text-amber-200 group-hover:translate-x-1 transition-transform"></i>
                 </button>
 
-                <button onclick="openConverter(); toggleDrawer(false);" class="w-full flex items-center justify-between p-4 bg-emerald-50 rounded-2xl hover:bg-emerald-100 transition-all group">
+                <button type="button" data-ui-action="drawer-open-converter" class="w-full flex items-center justify-between p-4 bg-emerald-50 rounded-2xl hover:bg-emerald-100 transition-all group">
                     <div class="flex items-center gap-3">
                         <div class="w-10 h-10 bg-white shadow-sm rounded-xl flex items-center justify-center text-emerald-600">
                             <i class="fas fa-calculator"></i>
@@ -3450,7 +3653,7 @@
                     <i class="fas fa-chevron-right text-emerald-200 group-hover:translate-x-1 transition-transform"></i>
                 </button>
 
-                <button onclick="openIOModal(); toggleDrawer(false);" class="w-full flex items-center justify-between p-4 bg-indigo-50 rounded-2xl hover:bg-indigo-100 transition-all group">
+                <button type="button" data-ui-action="drawer-open-io-modal" class="w-full flex items-center justify-between p-4 bg-indigo-50 rounded-2xl hover:bg-indigo-100 transition-all group">
                     <div class="flex items-center gap-3">
                         <div class="w-10 h-10 bg-white shadow-sm rounded-xl flex items-center justify-center text-indigo-600">
                             <i class="fas fa-file-import"></i>
@@ -3462,7 +3665,7 @@
 
 
 
-                <button onclick="resetAllData()" class="w-full flex items-center justify-between p-4 bg-red-50 rounded-2xl hover:bg-red-100 transition-all group mt-4">
+                <button type="button" data-ui-action="reset-all-data" class="w-full flex items-center justify-between p-4 bg-red-50 rounded-2xl hover:bg-red-100 transition-all group mt-4">
                     <div class="flex items-center gap-3">
                         <div class="w-10 h-10 bg-red-100 shadow-sm rounded-xl flex items-center justify-center text-red-600">
                             <i class="fas fa-trash-can"></i>
@@ -3559,18 +3762,28 @@
             }, 300);
         }
 
-        function copyIOText() {
+        async function copyIOText() {
             const textarea = document.getElementById('io-textarea');
-            textarea.select();
-            document.execCommand('copy');
-            alert(currentLang === 'zh' ? '已複製到剪貼簿！' : 'Copied to clipboard!');
+            try {
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    await navigator.clipboard.writeText(textarea.value);
+                } else {
+                    textarea.select();
+                    document.execCommand('copy');
+                }
+                alert(currentLang === 'zh' ? '已複製到剪貼簿！' : 'Copied to clipboard!');
+            } catch (error) {
+                alert(currentLang === 'zh' ? '複製失敗，請手動複製。' : 'Copy failed. Please copy manually.');
+            }
         }
 
         function importItinerary() {
             try {
-                const data = JSON.parse(document.getElementById('io-textarea').value);
-                if (!Array.isArray(data)) throw new Error("Invalid format");
-                itinerary = data;
+                const raw = document.getElementById('io-textarea').value;
+                const data = JSON.parse(raw);
+                const normalized = normalizeItineraryPayload(data, DEFAULT_ITINERARY);
+                if (!normalized) throw new Error("Invalid format");
+                itinerary = normalized;
                 saveItinerary();
                 alert(translations[currentLang].importDone);
                 closeIOModal();
@@ -3711,7 +3924,7 @@
 
             // Notices
             document.getElementById('notice-board').innerHTML = ui.notices.map((n, idx) => `
-                <div onclick="showNoticeModal(${idx})" class="bg-white/90 p-4 rounded-xl shadow-sm border border-slate-100 flex flex-col justify-center cursor-pointer hover:shadow-md hover:border-blue-200 hover:-translate-y-1 transition-all group">
+                <div data-ui-action="show-notice-modal" data-notice-idx="${idx}" class="bg-white/90 p-4 rounded-xl shadow-sm border border-slate-100 flex flex-col justify-center cursor-pointer hover:shadow-md hover:border-blue-200 hover:-translate-y-1 transition-all group">
                     <i class="fas ${n.icon} text-blue-500 mb-2 group-hover:scale-110 transition-transform"></i>
                     <h5 class="font-bold text-sm">${n.title}</h5>
                     <p class="text-[11px] text-slate-500 mt-1 leading-tight">${n.content}</p>
@@ -3757,7 +3970,7 @@
                                 <p class="text-sm font-bold text-rose-100">${ui.auroraUnavailable}</p>
                                 <p class="text-xs text-white/60 mt-2">${currentLang === 'zh' ? '可能是 NOAA 或 Open-Meteo 暫時沒有回應。' : 'NOAA or Open-Meteo may be temporarily unavailable.'}</p>
                             </div>
-                            <button onclick="refreshAuroraVisibility(true)" class="shrink-0 px-3 py-2 rounded-full bg-white/10 hover:bg-white/15 text-xs font-bold transition-colors">
+                            <button type="button" data-action="refresh-aurora" class="shrink-0 px-3 py-2 rounded-full bg-white/10 hover:bg-white/15 text-xs font-bold transition-colors">
                                 <i class="fas fa-rotate-right mr-1"></i>${ui.auroraRefresh}
                             </button>
                         </div>
@@ -3788,7 +4001,7 @@
                                     <h3 class="text-2xl sm:text-3xl font-black mt-2">${getDisplayCityName(data.cityKey, currentLang)}</h3>
                                     <p class="text-sm text-white/75 mt-3 leading-relaxed">${getAuroraSummary(data.level, { cloudCover: data.components.cloudCover, kp: data.kp, auroraActivityScore: data.components.auroraActivityScore })}</p>
                                 </div>
-                                <button onclick="refreshAuroraVisibility(true)" class="shrink-0 px-3 py-2 rounded-full bg-white/10 hover:bg-white/15 text-xs font-bold transition-colors">
+                                <button type="button" data-action="refresh-aurora" class="shrink-0 px-3 py-2 rounded-full bg-white/10 hover:bg-white/15 text-xs font-bold transition-colors">
                                     <i class="fas fa-rotate-right mr-1"></i>${ui.auroraRefresh}
                                 </button>
                             </div>
@@ -3867,7 +4080,7 @@
             const selectedStop = getSelectedSkyConditionsStop();
             return `
                 <div class="mb-6 sm:mb-8 rounded-[2rem] p-4 sm:p-5 sky-conditions-shell text-white">
-                    <button onclick="toggleSkyConditions()" class="w-full flex items-start sm:items-center justify-between gap-4 text-left">
+                    <button type="button" data-action="toggle-sky-conditions" class="w-full flex items-start sm:items-center justify-between gap-4 text-left">
                         <div class="min-w-0">
                             <div class="flex items-center gap-3">
                                 <div class="w-11 h-11 rounded-2xl bg-white/10 border border-white/10 flex items-center justify-center text-emerald-200 shrink-0">
@@ -3899,7 +4112,7 @@
                                 </div>
                                 <div class="flex flex-wrap gap-2 mt-4">
                                     ${stops.map((stop) => `
-                                        <button onclick="setSkyConditionsStop('${stop.id}')" class="px-3.5 py-2 rounded-full text-sm font-bold transition-all border ${selectedStop?.id === stop.id ? 'aurora-city-chip-active' : 'bg-white/10 text-white/80 border-white/10 hover:bg-white/15'}">
+                                        <button type="button" data-action="set-sky-stop" data-stop-id="${stop.id}" class="px-3.5 py-2 rounded-full text-sm font-bold transition-all border ${selectedStop?.id === stop.id ? 'aurora-city-chip-active' : 'bg-white/10 text-white/80 border-white/10 hover:bg-white/15'}">
                                             ${getSkyConditionsStopLabel(stop)}
                                         </button>
                                     `).join('')}
@@ -3939,7 +4152,7 @@
                                 <p class="text-sm font-bold text-rose-100">${ui.milkyWayUnavailable}</p>
                                 <p class="text-xs text-white/60 mt-2">${currentLang === 'zh' ? '目前無法計算夜空、月光或雲量條件。' : 'Night sky, moonlight, or cloud conditions could not be calculated right now.'}</p>
                             </div>
-                            <button onclick="refreshMilkyWayVisibility(true)" class="shrink-0 px-3 py-2 rounded-full bg-white/10 hover:bg-white/15 text-xs font-bold transition-colors">
+                            <button type="button" data-action="refresh-milkyway" class="shrink-0 px-3 py-2 rounded-full bg-white/10 hover:bg-white/15 text-xs font-bold transition-colors">
                                 <i class="fas fa-rotate-right mr-1"></i>${ui.auroraRefresh}
                             </button>
                         </div>
@@ -3981,7 +4194,7 @@
                                         <span class="px-3 py-1.5 rounded-full bg-white/8 border border-white/10 text-xs font-bold text-white/80">${ui.milkyWayCoreDirection}: ${data.components.coreDirectionLabel}</span>
                                     </div>
                                 </div>
-                                <button onclick="refreshMilkyWayVisibility(true)" class="shrink-0 px-3 py-2 rounded-full bg-white/10 hover:bg-white/15 text-xs font-bold transition-colors">
+                                <button type="button" data-action="refresh-milkyway" class="shrink-0 px-3 py-2 rounded-full bg-white/10 hover:bg-white/15 text-xs font-bold transition-colors">
                                     <i class="fas fa-rotate-right mr-1"></i>${ui.auroraRefresh}
                                 </button>
                             </div>
@@ -3993,7 +4206,7 @@
                                 </div>
                                 <div class="flex flex-wrap gap-2">
                                     ${data.windows.filter(windowInfo => data.bestViewingWindow.includes(windowInfo.label)).map(windowInfo => `
-                                        <button onclick="openMilkyWayWindowModal('${windowInfo.sortKey}')" class="px-3 py-2 rounded-2xl bg-amber-300/15 border border-amber-200/20 text-left transition-all hover:bg-amber-300/20">
+                                        <button type="button" data-action="open-milkyway-window" data-window-key="${windowInfo.sortKey}" class="px-3 py-2 rounded-2xl bg-amber-300/15 border border-amber-200/20 text-left transition-all hover:bg-amber-300/20">
                                             <span class="block text-sm font-bold text-amber-100">${windowInfo.label}</span>
                                             <span class="block text-[11px] text-amber-50/80 mt-1">${windowInfo.moonInterferenceLabel} · ${windowInfo.coreDirectionLabel}</span>
                                         </button>
@@ -4060,17 +4273,20 @@
                             const weekdayStr = formatDateKeyForDisplay(day.actualDate, { weekday: 'short' });
 
                             return `
-                            <div onclick="activeDayIndex=${i}; updateUI();" class="relative flex items-center p-4 rounded-2xl ${isWeekend ? 'bg-amber-50/50 border-amber-100 hover:bg-amber-50' : 'bg-white/50 border-slate-100 hover:bg-white'} border cursor-pointer transition-all overflow-hidden group">
+                            <div data-action="open-overview-day" data-day-idx="${i}" class="relative flex items-center p-4 rounded-2xl ${isWeekend ? 'bg-amber-50/50 border-amber-100 hover:bg-amber-50' : 'bg-white/50 border-slate-100 hover:bg-white'} border cursor-pointer transition-all overflow-hidden group">
                                 ${isPast ? '<div class="absolute inset-0 bg-slate-50/50 z-10 rounded-2xl flex items-center justify-center backdrop-blur-[0.5px] pointer-events-none transition-all duration-300 group-hover:bg-transparent group-hover:backdrop-blur-none"><div class="border-2 border-emerald-500/80 text-emerald-500/80 font-black text-[10px] uppercase tracking-widest px-2 py-0.5 rounded transform -rotate-12 shadow-sm transition-opacity duration-300 group-hover:opacity-0">Completed</div></div>' : ''}
                                 <div class="w-11 h-11 ${isToday ? 'bg-red-500 text-white animate-pulse' : (isPast ? 'bg-slate-200 text-slate-400' : (isWeekend ? 'bg-amber-100 text-amber-600' : 'bg-blue-100 text-blue-600'))} rounded-xl flex flex-col items-center justify-center mr-4 shrink-0 transition-colors z-0 leading-none">
                                     <span class="text-[11px] font-black">${displayDate}</span>
                                     <span class="text-[8px] font-bold opacity-80 uppercase mt-0.5">${weekdayStr}</span>
                                 </div>
                                 <div class="flex-1">
-                                    <h4 contenteditable="${isEditMode}" oninput="handleEdit(${i}, '${currentLang}', 'title', this.innerText)" onclick="event.stopPropagation()" class="font-bold text-slate-800 text-sm mb-0.5 outline-none focus:bg-white/80 rounded px-1">${day[currentLang].title}</h4>
+                                    <h4 contenteditable="${isEditMode}" data-edit-day="${i}" data-edit-field="${currentLang}" data-edit-subfield="title" class="font-bold text-slate-800 text-sm mb-0.5 outline-none focus:bg-white/80 rounded px-1">${day[currentLang].title}</h4>
                                     <p class="text-[10px] text-slate-400 uppercase font-extrabold tracking-wider italic flex items-center gap-1">
-                                        <span contenteditable="${isEditMode}" oninput="handleEdit(${i}, 'city', '${currentLang}', this.innerText)" onclick="event.stopPropagation()" class="outline-none focus:bg-white/80 rounded px-1">${day.city[currentLang]}</span>
-                                        <span contenteditable="${isEditMode}" oninput="handleEdit(${i}, 'drive', undefined, this.innerText)" onclick="event.stopPropagation()" class="outline-none focus:bg-white/80 rounded px-1 ${isEditMode && !day.drive ? 'bg-indigo-100 text-indigo-400 min-w-[30px] inline-block' : ''}">${day.drive ? `· ${day.drive}` : (isEditMode ? '· ...' : '')}</span>
+                                        <span contenteditable="${isEditMode}" data-edit-day="${i}" data-edit-field="city" data-edit-subfield="${currentLang}" class="outline-none focus:bg-white/80 rounded px-1">${day.city[currentLang]}</span>
+                                        <span class="outline-none focus:bg-white/80 rounded px-1 ${isEditMode && !day.drive ? 'bg-indigo-100 text-indigo-400 min-w-[30px] inline-block' : ''}">
+                                            ${day.drive || isEditMode ? '·' : ''}
+                                            <span contenteditable="${isEditMode}" data-edit-day="${i}" data-edit-field="drive" data-edit-strip-prefix="dot">${day.drive || (isEditMode ? '...' : '')}</span>
+                                        </span>
                                     </p>
                                 </div>
                             </div>
@@ -4124,7 +4340,7 @@
                             <div class="bg-white/70 p-5 rounded-2xl border ${isAllChecked ? 'border-amber-200 bg-amber-50/50' : 'border-slate-100'} shadow-sm transition-colors">
                                 <h3 class="font-bold text-slate-800 border-b border-slate-200 pb-2 mb-4 flex items-center justify-between">
                                     <div class="flex items-center gap-2"><i class="fas ${category.icon} text-amber-500"></i> ${category[currentLang]}</div>
-                                    <button onclick="toggleChecklistGroup('${category.id}')" class="text-[10px] text-slate-400 hover:text-amber-600 bg-slate-100 hover:bg-amber-100 px-2 py-1 rounded transition-colors uppercase tracking-wider">${currentLang === 'zh' ? (isAllChecked ? '全不選' : '全選') : (isAllChecked ? 'Uncheck All' : 'Select All')}</button>
+                                    <button type="button" data-action="toggle-checklist-group" data-group-id="${category.id}" class="text-[10px] text-slate-400 hover:text-amber-600 bg-slate-100 hover:bg-amber-100 px-2 py-1 rounded transition-colors uppercase tracking-wider">${currentLang === 'zh' ? (isAllChecked ? '全不選' : '全選') : (isAllChecked ? 'Uncheck All' : 'Select All')}</button>
                                 </h3>
                                 <div class="space-y-3">
                                     ${category.items.map((item, itemIndex) => {
@@ -4132,7 +4348,7 @@
                                         const isChecked = saved[itemId] ? 'checked' : '';
                                         return `
                                         <label class="flex items-start gap-3 cursor-pointer group">
-                                            <input type="checkbox" id="chk_${itemId}" onchange="saveChecklist('${itemId}', this.checked)" ${isChecked} class="mt-1 w-4 h-4 rounded border-slate-300 text-amber-600 focus:ring-amber-500 cursor-pointer transition-all">
+                                            <input type="checkbox" id="chk_${itemId}" data-action="toggle-checklist-item" data-check-id="${itemId}" ${isChecked} class="mt-1 w-4 h-4 rounded border-slate-300 text-amber-600 focus:ring-amber-500 cursor-pointer transition-all">
                                             <span class="text-sm font-medium ${isChecked ? 'text-slate-400 line-through' : 'text-slate-700'} group-hover:text-slate-900 leading-snug transition-colors">${item[currentLang]}</span>
                                         </label>
                                         `;
@@ -4175,9 +4391,7 @@
             const now = window.simulatedTime || new Date();
             const todayStr = getCurrentNzDateKey();
             const isToday = day.actualDate === todayStr;
-            const currentHour = now.getHours();
-            const currentMinutes = now.getMinutes();
-            const currentTimeVal = currentHour * 60 + currentMinutes;
+            const currentTimeVal = getMinutesOfDayInTimeZone(now, NZ_TIMEZONE);
 
             // Simple parser to map time string (e.g. "09:00", "早上") to an approximate minute value for the day
             function parseTime(timeStr) {
@@ -4205,12 +4419,12 @@
                         <div class="glass-card rounded-[2.5rem] p-8 shadow-2xl relative border-t border-white/60">
                             <div class="mb-8">
                                 <span class="${isToday ? 'bg-red-500 animate-pulse' : (makeTimeZoneDate(day.actualDate, 12, 0, NZ_TIMEZONE).getUTCDay() === 0 || makeTimeZoneDate(day.actualDate, 12, 0, NZ_TIMEZONE).getUTCDay() === 6 ? 'bg-amber-500' : 'bg-blue-600')} text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase mb-2 inline-block transition-colors">Day ${activeDayIndex + 1}</span>
-                                ${(day.drive || isEditMode) ? `<span class="bg-indigo-500 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase mb-2 ml-1 inline-block ${isEditMode && !day.drive ? 'bg-indigo-400/50' : ''}"><i class="fas fa-car mr-1"></i> ${ui.driveTimeLabel}: <span contenteditable="${isEditMode}" oninput="handleEdit(${activeDayIndex}, 'drive', undefined, this.innerText)" class="outline-none min-w-[30px] inline-block" placeholder="..."> ${day.drive || ''}</span></span>` : ''}
+                                ${(day.drive || isEditMode) ? `<span class="bg-indigo-500 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase mb-2 ml-1 inline-block ${isEditMode && !day.drive ? 'bg-indigo-400/50' : ''}"><i class="fas fa-car mr-1"></i> ${ui.driveTimeLabel}: <span contenteditable="${isEditMode}" data-edit-day="${activeDayIndex}" data-edit-field="drive" class="outline-none min-w-[30px] inline-block" placeholder="...">${day.drive || ''}</span></span>` : ''}
                                 ${(makeTimeZoneDate(day.actualDate, 12, 0, NZ_TIMEZONE).getUTCDay() === 0 || makeTimeZoneDate(day.actualDate, 12, 0, NZ_TIMEZONE).getUTCDay() === 6) ? `<span class="bg-amber-100 text-amber-700 text-[10px] font-black px-3 py-1 rounded-full uppercase mb-2 ml-1 inline-block border border-amber-200"><i class="fas fa-calendar-star mr-1"></i> ${currentLang === 'zh' ? '週末假期' : 'WEEKEND'}</span>` : ''}
                                 <div class="flex items-center justify-between gap-4">
-                                    <h2 contenteditable="${isEditMode}" oninput="handleEdit(${activeDayIndex}, '${currentLang}', 'title', this.innerText)" class="text-4xl font-extrabold text-slate-800 outline-none focus:bg-white/50 rounded px-2 flex-1">${lang.title}</h2>
+                                    <h2 contenteditable="${isEditMode}" data-edit-day="${activeDayIndex}" data-edit-field="${currentLang}" data-edit-subfield="title" class="text-4xl font-extrabold text-slate-800 outline-none focus:bg-white/50 rounded px-2 flex-1">${lang.title}</h2>
                                 </div>
-                                <p class="text-slate-500 font-bold mt-1 text-sm flex items-center gap-1.5"><i class="fas fa-calendar-day"></i> ${formatDateKeyForDisplay(day.actualDate, { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' })} · <span contenteditable="${isEditMode}" oninput="handleEdit(${activeDayIndex}, 'city', '${currentLang}', this.innerText)" class="outline-none focus:bg-white/50 rounded px-1">${day.city[currentLang]}</span></p>
+                                <p class="text-slate-500 font-bold mt-1 text-sm flex items-center gap-1.5"><i class="fas fa-calendar-day"></i> ${formatDateKeyForDisplay(day.actualDate, { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' })} · <span contenteditable="${isEditMode}" data-edit-day="${activeDayIndex}" data-edit-field="city" data-edit-subfield="${currentLang}" class="outline-none focus:bg-white/50 rounded px-1">${day.city[currentLang]}</span></p>
                             </div>
 
                             <div class="timeline-line space-y-8 pl-1">
@@ -4222,7 +4436,7 @@
                                         ${isEditMode ? `
                                         <div class="flex items-center gap-4 group/insert -mt-4 opacity-0 hover:opacity-100 transition-opacity">
                                             <div class="w-4 h-[2px] bg-blue-200"></div>
-                                            <button onclick="addTimelineItem(${activeDayIndex}, ${index})" class="bg-blue-50 text-blue-500 text-[10px] font-bold px-3 py-1 rounded-full border border-blue-100 hover:bg-blue-500 hover:text-white transition-all">
+                                            <button type="button" data-action="insert-item" data-day-idx="${activeDayIndex}" data-insert-idx="${index}" class="bg-blue-50 text-blue-500 text-[10px] font-bold px-3 py-1 rounded-full border border-blue-100 hover:bg-blue-500 hover:text-white transition-all">
                                                 <i class="fas fa-plus mr-1"></i> ${ui.insertHere}
                                             </button>
                                             <div class="flex-1 h-[2px] bg-blue-200"></div>
@@ -4231,36 +4445,36 @@
                                         <div class="flex gap-6 relative group ${isActive ? 'scale-105 origin-left transition-transform' : ''}">
                                             <div class="w-4 h-4 rounded-full ${isActive ? 'bg-red-500 border-4 border-red-200 animate-pulse' : 'bg-white border-4 border-blue-600'} z-10 mt-1 transition-colors"></div>
                                             <div class="flex-1 pb-4">
-                                                <p contenteditable="${isEditMode}" oninput="handleEdit(${activeDayIndex}, '${currentLang}', 'timeline', this.innerText, ${index}, 0)" class="text-[10px] font-bold ${isActive ? 'text-red-500' : 'text-blue-500'} uppercase outline-none">${t[0]}</p>
-                                                <div onclick="updateMapQuery('${t[3] || t[1]}', '${t[4] || ''}')" class="bg-white/60 flex-1 p-4 rounded-2xl shadow-sm border border-slate-100 hover:bg-white hover:shadow-md hover:border-blue-200 cursor-pointer transition-all relative mt-1 ${isActive ? 'border-red-200 ring-1 ring-red-100 shadow-md' : ''}">
+                                                <p contenteditable="${isEditMode}" data-edit-day="${activeDayIndex}" data-edit-field="${currentLang}" data-edit-subfield="timeline" data-edit-item-idx="${index}" data-edit-subitem-idx="0" class="text-[10px] font-bold ${isActive ? 'text-red-500' : 'text-blue-500'} uppercase outline-none">${t[0]}</p>
+                                                <div class="js-map-card bg-white/60 flex-1 p-4 rounded-2xl shadow-sm border border-slate-100 hover:bg-white hover:shadow-md hover:border-blue-200 cursor-pointer transition-all relative mt-1 ${isActive ? 'border-red-200 ring-1 ring-red-100 shadow-md' : ''}" data-map-query="${encodeInlineArg(t[3] || t[1])}" data-custom-img="${encodeInlineArg(t[4] || '')}">
                                                     <div class="flex items-start justify-between">
                                                         <div class="flex-1">
                                                             ${isActive ? '<span class="absolute -top-2 right-4 bg-red-500 text-white text-[9px] font-bold px-2 py-0.5 rounded uppercase shadow-sm">進行中 Now</span>' : ''}
-                                                            <p contenteditable="${isEditMode}" oninput="handleEdit(${activeDayIndex}, '${currentLang}', 'timeline', this.innerText, ${index}, 1)" class="text-[15px] font-bold ${isActive ? 'text-red-700' : 'text-slate-700'} outline-none focus:bg-blue-50 rounded px-1">${t[1]}</p>
+                                                            <p contenteditable="${isEditMode}" data-edit-day="${activeDayIndex}" data-edit-field="${currentLang}" data-edit-subfield="timeline" data-edit-item-idx="${index}" data-edit-subitem-idx="1" class="text-[15px] font-bold ${isActive ? 'text-red-700' : 'text-slate-700'} outline-none focus:bg-blue-50 rounded px-1">${t[1]}</p>
                                                             
                                                             <!-- Extended Description Feat -->
-                                                            <div contenteditable="${isEditMode}" oninput="handleEdit(${activeDayIndex}, '${currentLang}', 'timeline', this.innerText, ${index}, 5)" class="text-[12px] text-slate-500 mt-2 outline-none focus:bg-blue-50 rounded px-1 min-h-[1em]" placeholder="${isEditMode ? ui.editDescriptionPlaceholder : ''}">
+                                                            <div contenteditable="${isEditMode}" data-edit-day="${activeDayIndex}" data-edit-field="${currentLang}" data-edit-subfield="timeline" data-edit-item-idx="${index}" data-edit-subitem-idx="5" class="text-[12px] text-slate-500 mt-2 outline-none focus:bg-blue-50 rounded px-1 min-h-[1em]" placeholder="${isEditMode ? ui.editDescriptionPlaceholder : ''}">
                                                                 ${t[5] || ''}
                                                             </div>
                                                         </div>
                                                         <div class="flex flex-col gap-1 items-end">
                                                             <div class="flex gap-1">
                                                                 ${isEditMode ? `
-                                                                <button onclick="event.stopPropagation(); moveTimelineItem(${activeDayIndex}, ${index}, -1)" class="w-8 h-8 rounded-full bg-slate-50 text-slate-400 hover:bg-slate-100 flex items-center justify-center transition-all shrink-0 shadow-sm border border-slate-100" title="${ui.moveUp}">
+                                                                <button type="button" data-action="move-item" data-day-idx="${activeDayIndex}" data-item-idx="${index}" data-direction="-1" class="w-8 h-8 rounded-full bg-slate-50 text-slate-400 hover:bg-slate-100 flex items-center justify-center transition-all shrink-0 shadow-sm border border-slate-100" title="${ui.moveUp}">
                                                                     <i class="fas fa-chevron-up"></i>
                                                                 </button>
-                                                                <button onclick="event.stopPropagation(); moveTimelineItem(${activeDayIndex}, ${index}, 1)" class="w-8 h-8 rounded-full bg-slate-50 text-slate-400 hover:bg-slate-100 flex items-center justify-center transition-all shrink-0 shadow-sm border border-slate-100" title="${ui.moveDown}">
+                                                                <button type="button" data-action="move-item" data-day-idx="${activeDayIndex}" data-item-idx="${index}" data-direction="1" class="w-8 h-8 rounded-full bg-slate-50 text-slate-400 hover:bg-slate-100 flex items-center justify-center transition-all shrink-0 shadow-sm border border-slate-100" title="${ui.moveDown}">
                                                                     <i class="fas fa-chevron-down"></i>
                                                                 </button>
                                                                 ` : ''}
-                                                                <button onclick="event.stopPropagation(); openMemoryUpload(${activeDayIndex}, ${index})" class="w-8 h-8 rounded-full bg-white/80 text-slate-400 hover:bg-blue-100 hover:text-blue-600 flex items-center justify-center transition-all shrink-0 shadow-sm border border-slate-100" title="Upload Photo">
+                                                                <button type="button" data-action="upload-memory" data-day-idx="${activeDayIndex}" data-item-idx="${index}" class="w-8 h-8 rounded-full bg-white/80 text-slate-400 hover:bg-blue-100 hover:text-blue-600 flex items-center justify-center transition-all shrink-0 shadow-sm border border-slate-100" title="Upload Photo">
                                                                     <i class="fas fa-camera"></i>
                                                                 </button>
                                                                 ${isEditMode ? `
-                                                                <button onclick="event.stopPropagation(); editMapSettings(${activeDayIndex}, ${index})" class="w-8 h-8 rounded-full bg-amber-50 text-amber-500 hover:bg-amber-100 flex items-center justify-center transition-all shrink-0 shadow-sm border border-amber-100" title="Map & Image Settings">
+                                                                <button type="button" data-action="edit-map-settings" data-day-idx="${activeDayIndex}" data-item-idx="${index}" class="w-8 h-8 rounded-full bg-amber-50 text-amber-500 hover:bg-amber-100 flex items-center justify-center transition-all shrink-0 shadow-sm border border-amber-100" title="Map & Image Settings">
                                                                     <i class="fas fa-gear"></i>
                                                                 </button>
-                                                                <button onclick="event.stopPropagation(); removeTimelineItem(${activeDayIndex}, ${index})" class="w-8 h-8 rounded-full bg-red-50 text-red-400 hover:bg-red-100 hover:text-red-600 flex items-center justify-center transition-all shrink-0 shadow-sm border border-red-100" title="Delete">
+                                                                <button type="button" data-action="remove-item" data-day-idx="${activeDayIndex}" data-item-idx="${index}" class="w-8 h-8 rounded-full bg-red-50 text-red-400 hover:bg-red-100 hover:text-red-600 flex items-center justify-center transition-all shrink-0 shadow-sm border border-red-100" title="Delete">
                                                                     <i class="fas fa-trash"></i>
                                                                 </button>` : ''}
                                                             </div>
@@ -4274,7 +4488,7 @@
                                                 <div class="absolute left-1.5 top-6 bottom-[-20px] w-[2px] bg-slate-200 z-0 ${isEditMode && !t[2] ? 'opacity-30 border-dashed border-l-2 bg-transparent' : ''}">
                                                     <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-slate-100 text-slate-500 text-[9px] font-bold px-2 py-0.5 rounded border border-slate-200 shadow-sm flex items-center gap-1 whitespace-nowrap z-10 ${isEditMode && !t[2] ? 'bg-amber-50 border-amber-200 text-amber-500 cursor-text' : ''}">
                                                         <i class="fas ${t[2] && (t[2].includes('飛') || t[2].includes('flight')) ? 'fa-plane' : t[2] && (t[2].includes('步行') || t[2].includes('walk')) ? 'fa-person-walking' : 'fa-car-side'}"></i> 
-                                                        <span contenteditable="${isEditMode}" oninput="handleEdit(${activeDayIndex}, '${currentLang}', 'timeline', this.innerText, ${index}, 2)" class="outline-none min-w-[20px]" placeholder="${isEditMode ? '...' : ''}">${t[2] || ''}</span>
+                                                        <span contenteditable="${isEditMode}" data-edit-day="${activeDayIndex}" data-edit-field="${currentLang}" data-edit-subfield="timeline" data-edit-item-idx="${index}" data-edit-subitem-idx="2" class="outline-none min-w-[20px]" placeholder="${isEditMode ? '...' : ''}">${t[2] || ''}</span>
                                                     </div>
                                                 </div>
                                                 ` : ''}
@@ -4284,7 +4498,7 @@
                                     `;
                                 }).join('')}
                                 ${isEditMode ? `
-                                <button onclick="addTimelineItem(${activeDayIndex})" class="w-full py-4 border-2 border-dashed border-slate-200 rounded-2xl text-slate-400 hover:border-blue-400 hover:text-blue-500 hover:bg-blue-50/30 transition-all flex items-center justify-center gap-2 font-bold text-sm">
+                                <button type="button" data-action="append-item" data-day-idx="${activeDayIndex}" class="w-full py-4 border-2 border-dashed border-slate-200 rounded-2xl text-slate-400 hover:border-blue-400 hover:text-blue-500 hover:bg-blue-50/30 transition-all flex items-center justify-center gap-2 font-bold text-sm">
                                     <i class="fas fa-plus-circle"></i> 新增行程項目 / Add Item
                                 </button>
                                 ` : ''}
@@ -4299,7 +4513,7 @@
                                     <p class="font-bold text-sm ${decryptedHotels ? 'text-indigo-800' : 'text-slate-400 italic'}">${hotel}</p>
                                 </div>
                             </div>
-                            <a href="https://www.google.com/maps/search/?api=1&query=${day.mapUrl}" target="_blank" class="bg-slate-900 text-white p-5 rounded-3xl flex items-center justify-center gap-2 font-bold text-sm"><i class="fas fa-location-arrow text-blue-400"></i> MAP</a>
+                            <a href="${buildGoogleMapsSearchUrl(day.mapQuery || day.mapUrl)}" target="_blank" class="bg-slate-900 text-white p-5 rounded-3xl flex items-center justify-center gap-2 font-bold text-sm"><i class="fas fa-location-arrow text-blue-400"></i> MAP</a>
                         </div>
                     </div>
                     <div class="lg:col-span-5 h-[400px] lg:h-auto">
@@ -4310,7 +4524,7 @@
                                 <span class="text-xs font-bold text-slate-400 uppercase tracking-widest animate-pulse">Loading Map...</span>
                             </div>
                             <!-- Map iframe -->
-                            <iframe id="day-map-iframe" frameborder="0" class="relative w-full h-full rounded-[2rem] z-10 transition-opacity duration-1000" src="https://maps.google.com/maps?q=${day.mapUrl}&t=&z=13&ie=UTF8&iwloc=&output=embed"></iframe>
+                            <iframe id="day-map-iframe" frameborder="0" class="relative w-full h-full rounded-[2rem] z-10 transition-opacity duration-1000" src="${buildGoogleMapsEmbedUrl(day.mapQuery || day.mapUrl, 13)}"></iframe>
                         </div>
                     </div>
                 </div>
@@ -4324,6 +4538,262 @@
             // Auto-trigger map/spot visual for the day's main destination
             setTimeout(() => updateMapQuery(day.mapQuery || day.mapUrl, day.customImg), 50);
         }
+
+        function parseActionIndex(value) {
+            const parsed = Number(value);
+            return Number.isInteger(parsed) ? parsed : null;
+        }
+
+        function parseOptionalActionIndex(value) {
+            if (value === undefined || value === null || value === '') return undefined;
+            return parseActionIndex(value);
+        }
+
+        function handleContentDisplayInput(event) {
+            const contentDisplay = document.getElementById('content-display');
+            if (!contentDisplay) return;
+
+            const editable = event.target.closest('[data-edit-day]');
+            if (!editable || !contentDisplay.contains(editable)) return;
+            if (!editable.isContentEditable) return;
+
+            const dayIdx = parseActionIndex(editable.dataset.editDay);
+            if (dayIdx == null) return;
+
+            const field = editable.dataset.editField;
+            if (!field) return;
+
+            const subfield = editable.dataset.editSubfield || undefined;
+            const itemIdx = parseOptionalActionIndex(editable.dataset.editItemIdx);
+            const subItemIdx = parseOptionalActionIndex(editable.dataset.editSubitemIdx);
+
+            let value = editable.innerText;
+            if (editable.dataset.editStripPrefix === 'dot') {
+                value = value.replace(/^·\s*/, '');
+            }
+
+            handleEdit(dayIdx, field, subfield, value, itemIdx, subItemIdx);
+        }
+
+        const contentDisplayActionMap = {
+            'refresh-aurora': () => refreshAuroraVisibility(true),
+            'toggle-sky-conditions': () => toggleSkyConditions(),
+            'set-sky-stop': (actionEl) => {
+                const stopId = actionEl.dataset.stopId;
+                if (!stopId) return;
+                setSkyConditionsStop(stopId);
+            },
+            'refresh-milkyway': () => refreshMilkyWayVisibility(true),
+            'open-milkyway-window': (actionEl) => {
+                const windowKey = actionEl.dataset.windowKey;
+                if (!windowKey) return;
+                openMilkyWayWindowModal(windowKey);
+            },
+            'open-overview-day': (actionEl) => {
+                const dayIdx = parseActionIndex(actionEl.dataset.dayIdx);
+                if (dayIdx == null) return;
+                activeDayIndex = dayIdx;
+                updateUI();
+            },
+            'toggle-checklist-group': (actionEl) => {
+                const groupId = actionEl.dataset.groupId;
+                if (!groupId) return;
+                toggleChecklistGroup(groupId);
+            },
+            'insert-item': (actionEl) => {
+                const dayIdx = parseActionIndex(actionEl.dataset.dayIdx);
+                if (dayIdx == null) return;
+                const insertIdx = parseActionIndex(actionEl.dataset.insertIdx);
+                if (insertIdx == null) return;
+                addTimelineItem(dayIdx, insertIdx);
+            },
+            'append-item': (actionEl) => {
+                const dayIdx = parseActionIndex(actionEl.dataset.dayIdx);
+                if (dayIdx == null) return;
+                addTimelineItem(dayIdx);
+            },
+            'move-item': (actionEl) => {
+                const dayIdx = parseActionIndex(actionEl.dataset.dayIdx);
+                if (dayIdx == null) return;
+                const itemIdx = parseActionIndex(actionEl.dataset.itemIdx);
+                if (itemIdx == null) return;
+                const direction = parseActionIndex(actionEl.dataset.direction);
+                if (direction == null) return;
+                moveTimelineItem(dayIdx, itemIdx, direction);
+            },
+            'upload-memory': (actionEl) => {
+                const dayIdx = parseActionIndex(actionEl.dataset.dayIdx);
+                if (dayIdx == null) return;
+                const itemIdx = parseActionIndex(actionEl.dataset.itemIdx);
+                if (itemIdx == null) return;
+                openMemoryUpload(dayIdx, itemIdx);
+            },
+            'edit-map-settings': (actionEl) => {
+                const dayIdx = parseActionIndex(actionEl.dataset.dayIdx);
+                if (dayIdx == null) return;
+                const itemIdx = parseActionIndex(actionEl.dataset.itemIdx);
+                if (itemIdx == null) return;
+                editMapSettings(dayIdx, itemIdx);
+            },
+            'remove-item': (actionEl) => {
+                const dayIdx = parseActionIndex(actionEl.dataset.dayIdx);
+                if (dayIdx == null) return;
+                const itemIdx = parseActionIndex(actionEl.dataset.itemIdx);
+                if (itemIdx == null) return;
+                removeTimelineItem(dayIdx, itemIdx);
+            }
+        };
+
+        function handleContentDisplayClick(event) {
+            const contentDisplay = document.getElementById('content-display');
+            if (!contentDisplay) return;
+
+            const actionEl = event.target.closest('[data-action]');
+            if (actionEl && contentDisplay.contains(actionEl)) {
+                const action = actionEl.dataset.action;
+                if (!action) return;
+                if (action === 'toggle-checklist-item') return;
+
+                event.preventDefault();
+                const handler = contentDisplayActionMap[action];
+                if (typeof handler === 'function') {
+                    handler(actionEl);
+                }
+                return;
+            }
+
+            const mapCard = event.target.closest('.js-map-card');
+            if (!mapCard || !contentDisplay.contains(mapCard)) return;
+
+            const mapQuery = decodeInlineArg(mapCard.dataset.mapQuery);
+            const customImg = decodeInlineArg(mapCard.dataset.customImg);
+            if (!mapQuery) return;
+            updateMapQuery(mapQuery, customImg);
+        }
+
+        function handleContentDisplayChange(event) {
+            const contentDisplay = document.getElementById('content-display');
+            if (!contentDisplay) return;
+
+            const actionEl = event.target.closest('[data-action="toggle-checklist-item"]');
+            if (!actionEl || !contentDisplay.contains(actionEl)) return;
+
+            const checkId = actionEl.dataset.checkId;
+            if (!checkId) return;
+            saveChecklist(checkId, Boolean(actionEl.checked));
+        }
+
+        function stopEditableClickPropagation(event) {
+            const contentDisplay = document.getElementById('content-display');
+            if (!contentDisplay) return;
+            const editableTarget = event.target.closest('[contenteditable="true"]');
+            if (!editableTarget || !contentDisplay.contains(editableTarget)) return;
+            event.stopPropagation();
+        }
+
+        const contentDisplayRoot = document.getElementById('content-display');
+        if (contentDisplayRoot) {
+            contentDisplayRoot.addEventListener('click', stopEditableClickPropagation, true);
+            contentDisplayRoot.addEventListener('input', handleContentDisplayInput);
+            contentDisplayRoot.addEventListener('change', handleContentDisplayChange);
+            contentDisplayRoot.addEventListener('click', handleContentDisplayClick);
+        }
+
+        function handleGlobalUIInput(event) {
+            const target = event.target.closest('[data-currency-source]');
+            if (!target) return;
+
+            const source = target.dataset.currencySource;
+            if (source !== 'nzd' && source !== 'twd') return;
+            convertCurrency(source);
+        }
+
+        const globalUIActionMap = {
+            'go-overview': () => {
+                activeDayIndex = -1;
+                updateUI();
+            },
+            'show-notice-modal': (actionEl) => {
+                const noticeIdx = parseActionIndex(actionEl.dataset.noticeIdx);
+                if (noticeIdx == null) return;
+                showNoticeModal(noticeIdx);
+            },
+            'open-converter': () => openConverter(),
+            'print-itinerary': () => printItinerary(),
+            'toggle-aurora': () => toggleAurora(),
+            'toggle-edit-mode': () => toggleEditMode(),
+            'open-io-modal': () => openIOModal(),
+            'sync-zh-en': () => syncAllZhToEn(),
+            'export-html': () => exportUpdatedHTML(),
+            'reset-all-data': () => resetAllData(),
+            'unlock-hotels': () => askPassword(),
+            'open-date-modal': () => openDateModal(),
+            'open-drawer': () => toggleDrawer(true),
+            'close-drawer': () => toggleDrawer(false),
+            'toggle-lang': () => toggleLang(),
+            'toggle-map-mode': () => toggleMapMode(),
+            'close-password-modal': () => closeModal(),
+            'submit-password': () => submitPassword(),
+            'close-print-modal': () => closePrintModal(),
+            'execute-print-with-photos': () => executePrint(true),
+            'execute-print-only': () => executePrint(false),
+            'close-date-modal': () => closeDateModal(),
+            'submit-start-date': () => submitStartDate(),
+            'close-notice-modal': () => closeNoticeModal(),
+            'close-converter-modal': () => closeConverter(),
+            'close-flight-modal': () => closeFlightModal(),
+            'open-airnz-booking': () => window.open('https://www.airnewzealand.co.nz/book/flights', '_blank'),
+            'close-io-modal': () => closeIOModal(),
+            'copy-io-text': () => copyIOText(),
+            'import-itinerary': () => importItinerary(),
+            'close-reset-modal': () => closeResetModal(),
+            'execute-reset': () => executeReset(),
+            'close-milkyway-modal': () => closeMilkyWayWindowModal(),
+            'hide-spot-visual': () => hideSpotVisual(),
+            'drawer-toggle-lang': () => {
+                toggleLang();
+                toggleDrawer(false);
+            },
+            'drawer-toggle-aurora': () => {
+                toggleAurora();
+                toggleDrawer(false);
+            },
+            'drawer-open-date-modal': () => {
+                openDateModal();
+                toggleDrawer(false);
+            },
+            'drawer-open-converter': () => {
+                openConverter();
+                toggleDrawer(false);
+            },
+            'drawer-open-io-modal': () => {
+                openIOModal();
+                toggleDrawer(false);
+            }
+        };
+
+        function handleGlobalUIClick(event) {
+            const actionEl = event.target.closest('[data-ui-action]');
+            if (!actionEl) return;
+
+            const action = actionEl.dataset.uiAction;
+            if (!action) return;
+            const handler = globalUIActionMap[action];
+            if (typeof handler === 'function') {
+                handler(actionEl);
+            }
+        }
+
+        function handleGlobalUIKeydown(event) {
+            if (event.key !== 'Enter') return;
+            const target = event.target;
+            if (!target || target.id !== 'modal-password-input') return;
+            submitPassword();
+        }
+
+        document.addEventListener('input', handleGlobalUIInput);
+        document.addEventListener('click', handleGlobalUIClick);
+        document.addEventListener('keydown', handleGlobalUIKeydown);
 
         function initSnow() {
             const container = document.getElementById('snowfalls');
@@ -4474,6 +4944,15 @@
             touchStart = 0;
             touchLast = 0;
         }, { passive: true });
+
+        document.addEventListener('paste', (event) => {
+            const target = event.target;
+            if (!target || !target.isContentEditable) return;
+            event.preventDefault();
+            const pastedText = (event.clipboardData || window.clipboardData).getData('text') || '';
+            const safeText = sanitizeTextInput(pastedText, { maxLength: 300, allowLineBreaks: true });
+            document.execCommand('insertText', false, safeText);
+        });
 
         updateUI();
         initSnow();
