@@ -525,7 +525,7 @@
                     <input type="password" id="modal-password-input" class="w-full bg-white border border-slate-200 px-4 py-3 rounded-xl text-center text-lg tracking-widest focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all shadow-inner" placeholder="••••••">
                     <p id="modal-error" class="text-red-500 text-xs font-bold text-center h-4 opacity-0 transition-opacity">密碼錯誤，請重試</p>
                     <button type="button" data-ui-action="submit-password" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-xl shadow-md hover:shadow-lg transition-all transform active:scale-95">
-                        確認解鎖
+                        <span id="modal-submit-btn">確認解鎖</span>
                     </button>
                 </div>
             </div>
@@ -611,7 +611,7 @@
                 </div>
                 <div class="space-y-5">
                     <div class="relative">
-                        <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">NZD (紐幣)</label>
+                        <label id="converter-nzd-label" class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">NZD (紐幣)</label>
                         <input type="number" id="nzd-input" data-currency-source="nzd" value="1" step="0.01" class="w-full bg-slate-50 border border-slate-200 px-4 py-3 rounded-2xl text-lg font-black text-slate-700 focus:outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition-all shadow-inner">
                         <div class="absolute right-4 bottom-3.5 text-slate-300 font-bold text-xs">$</div>
                     </div>
@@ -619,7 +619,7 @@
                         <div class="bg-white p-2 rounded-full shadow-md border border-slate-100"><i class="fas fa-arrows-up-down text-emerald-500"></i></div>
                     </div>
                     <div class="relative">
-                        <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">TWD (台幣)</label>
+                        <label id="converter-twd-label" class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">TWD (台幣)</label>
                         <input type="number" id="twd-input" data-currency-source="twd" class="w-full bg-slate-50 border border-slate-200 px-4 py-3 rounded-2xl text-lg font-black text-emerald-600 focus:outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition-all shadow-inner">
                         <div class="absolute right-4 bottom-3.5 text-slate-300 font-bold text-xs">$</div>
                     </div>
@@ -681,10 +681,10 @@
                     <textarea id="io-textarea" class="w-full h-64 bg-slate-50 border border-slate-200 p-4 rounded-2xl text-[10px] font-mono text-slate-700 focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all shadow-inner resize-none"></textarea>
                     <div class="flex gap-3">
                         <button type="button" data-ui-action="copy-io-text" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3 px-4 rounded-xl transition-all flex items-center justify-center gap-2">
-                            <i class="fas fa-copy"></i> 複製內容
+                            <i class="fas fa-copy"></i> <span id="io-copy-btn-text">複製內容</span>
                         </button>
                         <button type="button" data-ui-action="import-itinerary" class="flex-[2] bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-xl shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2">
-                            <i class="fas fa-check-circle"></i> 確認導入
+                            <i class="fas fa-check-circle"></i> <span id="io-import-btn-text">確認導入</span>
                         </button>
                     </div>
                 </div>
@@ -706,10 +706,10 @@
                 </div>
                 <div class="flex flex-col gap-3">
                     <button type="button" data-ui-action="execute-reset" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3.5 px-4 rounded-2xl shadow-lg shadow-red-600/20 hover:shadow-red-600/30 transition-all transform active:scale-95">
-                        確認重置
+                        <span id="reset-confirm-btn-text">確認重置</span>
                     </button>
                     <button type="button" data-ui-action="close-reset-modal" class="w-full text-slate-400 font-bold py-2 px-4 text-sm hover:text-slate-600 transition-colors">
-                        取消
+                        <span id="reset-cancel-btn-text">取消</span>
                     </button>
                 </div>
             </div>
@@ -718,13 +718,13 @@
         document.body.insertAdjacentHTML('beforeend', resetModalHTML);
 
         const milkyWayWindowModalHTML = `
-        <div id="milky-way-window-modal" class="fixed inset-0 z-[130] hidden flex-col items-center justify-center p-4 sm:p-0">
+        <div id="milky-way-window-modal" class="fixed inset-0 z-[130] hidden flex-col items-start sm:items-center justify-start sm:justify-center p-3 sm:p-6 overflow-y-auto">
             <div class="absolute inset-0 bg-slate-950/55 backdrop-blur-md transition-opacity opacity-0" id="milky-way-window-backdrop" data-ui-action="close-milkyway-modal"></div>
-            <div class="bg-white/95 backdrop-blur-xl rounded-[2.5rem] p-6 sm:p-8 shadow-2xl w-full max-w-2xl relative z-10 scale-95 opacity-0 transition-all duration-300" id="milky-way-window-content">
-                <button type="button" data-ui-action="close-milkyway-modal" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100 transition-colors">
+            <div class="bg-white/95 backdrop-blur-xl rounded-[2rem] p-4 sm:p-6 shadow-2xl w-full max-w-xl relative z-10 scale-95 opacity-0 transition-all duration-300 max-h-[90vh] overflow-hidden flex flex-col" id="milky-way-window-content">
+                <button type="button" data-ui-action="close-milkyway-modal" class="absolute top-3 right-3 sm:top-4 sm:right-4 text-slate-500 hover:text-slate-700 w-11 h-11 flex items-center justify-center rounded-full bg-white/90 border border-slate-200 shadow-sm hover:bg-white transition-colors z-10" aria-label="Close Milky Way panel">
                     <i class="fas fa-times"></i>
                 </button>
-                <div id="milky-way-window-detail"></div>
+                <div id="milky-way-window-detail" class="mt-8 sm:mt-6 overflow-y-auto pr-1"></div>
             </div>
         </div>
         `;
@@ -1124,9 +1124,16 @@
                 ioModalDesc: "將代碼貼入下方空格即可導入行程內容，或複製內容作為備份。",
                 importDone: "資料導入成功！",
                 importError: "導入失敗，請檢查 JSON 格式是否正確。",
+                unlockConfirmBtn: "確認解鎖",
+                ioCopyBtn: "複製內容",
+                ioImportBtn: "確認導入",
+                resetConfirmBtn: "確認重置",
+                resetCancelBtn: "取消",
                 moveUp: "上移",
                 moveDown: "下移",
                 insertHere: "在此插入",
+                addItemBtn: "新增行程項目",
+                activeNowBadge: "進行中",
                 editDescriptionPlaceholder: "點擊編輯詳細說明...",
                 notices: [
                     { icon: "fa-passport", title: "NZeTA", content: "簽證核准件", desc: "紐西蘭電子旅行授權 (NZeTA) 必須在出發前至少 72 小時完成申請。建議使用 NZeTA 官方手機 App 申請，費用較低且包含 IVL (國際旅客保育及旅遊稅)。申請完成後請將 PDF 核准件存入手機或列印。" },
@@ -1248,9 +1255,16 @@
                 ioModalDesc: "Paste JSON code to import or copy content to backup.",
                 importDone: "Data imported successfully!",
                 importError: "Import failed, please check JSON format.",
+                unlockConfirmBtn: "Unlock",
+                ioCopyBtn: "Copy",
+                ioImportBtn: "Import",
+                resetConfirmBtn: "Confirm Reset",
+                resetCancelBtn: "Cancel",
                 moveUp: "Move Up",
                 moveDown: "Move Down",
                 insertHere: "Insert Here",
+                addItemBtn: "Add Item",
+                activeNowBadge: "Now",
                 editDescriptionPlaceholder: "Click to edit details...",
                 notices: [
                     { icon: "fa-passport", title: "Visa", content: "NZeTA Status", desc: "The NZeTA (New Zealand Electronic Travel Authority) is mandatory for visitors from visa-waiver countries. Apply at least 72 hours before departure via the official mobile app for a discount. The IVL levy is included in the fee." },
@@ -2465,12 +2479,27 @@
             return ui.milkyWayInterferenceHigh;
         }
 
-        function getAltitudeBandLabel(altitude, ui) {
+        function getAltitudeBandLabel(altitude, lang = currentLang, ui = translations[lang] || translations.en) {
             if (altitude <= 0) return ui.milkyWayBelowHorizon;
-            if (altitude < 15) return currentLang === 'zh' ? '低空' : 'Low';
-            if (altitude < 35) return currentLang === 'zh' ? '中低空' : 'Mid-low';
-            if (altitude < 55) return currentLang === 'zh' ? '中高空' : 'Mid-high';
-            return currentLang === 'zh' ? '高空' : 'High';
+            if (altitude < 15) return lang === 'zh' ? '低空' : 'Low';
+            if (altitude < 35) return lang === 'zh' ? '中低空' : 'Mid-low';
+            if (altitude < 55) return lang === 'zh' ? '中高空' : 'Mid-high';
+            return lang === 'zh' ? '高空' : 'High';
+        }
+
+        function getMilkyWayMoonStatusLabel(moonStatusKey, lang = currentLang) {
+            const ui = translations[lang] || translations.en;
+            return getMoonStatusLabel(moonStatusKey, ui);
+        }
+
+        function getMilkyWayMoonInterferenceLabel(moonAboveHorizon, moonIllumination, lang = currentLang) {
+            const ui = translations[lang] || translations.en;
+            return getMoonInterferenceLabel(moonAboveHorizon, moonIllumination, ui);
+        }
+
+        function getMilkyWayCoreDirectionLabel(coreAzimuth, coreAltitude, lang = currentLang) {
+            const ui = translations[lang] || translations.en;
+            return `${getCompassLabel(coreAzimuth, lang)} ${getAltitudeBandLabel(coreAltitude, lang, ui)}`;
         }
 
         function getMilkyWaySkyPointStyle(azimuth, altitude, belowHorizon = false) {
@@ -2901,11 +2930,7 @@
                     moonStatus,
                     moonIllumination,
                     moonPenalty,
-                    moonInterferenceLabel: getMoonInterferenceLabel(moonAboveHorizon, moonIllumination, translations[currentLang]),
-                    moonStatusLabel: getMoonStatusLabel(moonStatus.key, translations[currentLang]),
-                    moonDirectionLabel: moonAboveHorizon ? getCompassLabel(moonAzimuth, currentLang) : getMoonStatusLabel(moonStatus.key, translations[currentLang]),
-                    coreAzimuth,
-                    coreDirectionLabel: `${getCompassLabel(coreAzimuth, currentLang)} ${getAltitudeBandLabel(coreAltitude, translations[currentLang])}`
+                    coreAzimuth
                 };
             }).sort((a, b) => b.score - a.score);
 
@@ -2943,11 +2968,7 @@
                     moonStatusKey: best.moonStatus.key,
                     moonIllumination: best.moonIllumination,
                     moonPenalty: best.moonPenalty,
-                    moonInterferenceLabel: best.moonInterferenceLabel,
-                    moonStatusLabel: best.moonStatusLabel,
-                    moonDirectionLabel: best.moonDirectionLabel,
-                    coreAzimuth: best.coreAzimuth,
-                    coreDirectionLabel: best.coreDirectionLabel
+                    coreAzimuth: best.coreAzimuth
                 },
                 source: weatherPending ? 'SunCalc' : 'SunCalc + Open-Meteo'
             };
@@ -3034,6 +3055,10 @@
                 const clampedIndex = clamp(windowIndex, 0, data.windows.length - 1);
                 const windowInfo = data.windows[clampedIndex];
                 if (!windowInfo) return;
+                const coreDirectionLabel = getMilkyWayCoreDirectionLabel(windowInfo.coreAzimuth, windowInfo.coreAltitude, currentLang);
+                const moonStatusKey = windowInfo.moonStatus?.key || windowInfo.moonStatusKey || 'set';
+                const moonStatusLabel = getMilkyWayMoonStatusLabel(moonStatusKey, currentLang);
+                const moonInterferenceLabel = getMilkyWayMoonInterferenceLabel(windowInfo.moonAboveHorizon, windowInfo.moonIllumination, currentLang);
 
                 const recommendedIndexes = this.getRecommendedIndexes(data);
                 const recommendedSet = new Set(recommendedIndexes);
@@ -3051,14 +3076,17 @@
                 detail.innerHTML = `
                     <div class="mb-5">
                         <p class="text-xs uppercase tracking-[0.3em] text-slate-400">${ui.milkyWaySkyMapTitle}</p>
-                        <h3 class="text-2xl font-black text-slate-900 mt-2">${getDisplayCityName(data.cityKey, currentLang)} · ${windowInfo.label}</h3>
+                        <h3 data-milkyway-window-title class="text-2xl font-black text-slate-900 mt-2">${getDisplayCityName(data.cityKey, currentLang)} · ${windowInfo.label}</h3>
                         <p class="text-sm text-slate-500 mt-2">${getSkyConditionsBasedOnText(ui, getSelectedSkyConditionsStop())}</p>
                     </div>
 
-                    <div class="rounded-2xl bg-slate-50 border border-slate-100 p-4 sm:p-5 mb-5">
+                    <div data-milkyway-sky-diagram class="rounded-[2rem] bg-slate-950 p-3 sm:p-4">
+                        ${renderMilkyWayWindowSkyDiagram(windowInfo, ui)}
+                    </div>
+                    <div data-milkyway-seek-shell class="rounded-2xl bg-slate-50 border border-slate-100 p-4 sm:p-5 mt-4 mb-5">
                         <div class="flex items-center justify-between gap-3 text-[11px] uppercase tracking-[0.22em] text-slate-400">
                             <span>${ui.milkyWaySeekLabel}</span>
-                            <span class="font-black text-amber-600 tracking-normal text-sm">${windowInfo.label}</span>
+                            <span data-milkyway-current-label class="font-black text-amber-600 tracking-normal text-sm">${windowInfo.label}</span>
                         </div>
                         <input type="range" min="0" max="${data.windows.length - 1}" step="1" value="${clampedIndex}" data-ui-action="milkyway-seek" class="w-full mt-3 accent-amber-500 cursor-pointer">
                         <div class="flex items-center justify-between text-[11px] text-slate-400 mt-2 font-semibold">
@@ -3073,41 +3101,110 @@
                                 </button>
                             `).join('')}
                         </div>
-                        <div class="mt-3 rounded-xl px-3.5 py-2.5 text-sm font-bold ${isRecommended ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-slate-100 text-slate-600 border border-slate-200'}">
+                        <div data-milkyway-recommendation class="mt-3 rounded-xl px-3.5 py-2.5 text-sm font-bold ${isRecommended ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-slate-100 text-slate-600 border border-slate-200'}">
                             ${isRecommended ? `✓ ${ui.milkyWayRecommendedNow}` : `${ui.milkyWayRecommendedRange}: ${recommendedLabelText}`}
                         </div>
                     </div>
 
-                    <div class="rounded-[2rem] bg-slate-950 p-3 sm:p-4">
-                        ${renderMilkyWayWindowSkyDiagram(windowInfo, ui)}
-                    </div>
                     <div class="grid sm:grid-cols-2 gap-3 mt-5">
                         <div class="rounded-2xl bg-slate-50 border border-slate-100 p-4">
                             <p class="text-[11px] uppercase tracking-[0.24em] text-slate-400">${ui.milkyWayGalaxyPosition}</p>
-                            <p class="text-lg font-black text-slate-900 mt-2">${windowInfo.coreDirectionLabel}</p>
+                            <p data-milkyway-core-direction class="text-lg font-black text-slate-900 mt-2">${coreDirectionLabel}</p>
                             <p class="text-sm text-slate-500 mt-2">${ui.milkyWayCoreAltitude}: ${Math.round(windowInfo.coreAltitude)}°</p>
                         </div>
                         <div class="rounded-2xl bg-slate-50 border border-slate-100 p-4">
                             <p class="text-[11px] uppercase tracking-[0.24em] text-slate-400">${ui.milkyWayMoonPosition}</p>
-                            <p class="text-lg font-black text-slate-900 mt-2">${windowInfo.moonStatusLabel}</p>
-                            <p class="text-sm text-slate-500 mt-2">${ui.milkyWayMoonDirection}: ${windowInfo.moonAboveHorizon ? `${getCompassLabel(windowInfo.moonAzimuth, currentLang)} · ${Math.round(windowInfo.moonAltitude)}°` : ui.milkyWayBelowHorizon}</p>
+                            <p data-milkyway-moon-status class="text-lg font-black text-slate-900 mt-2">${moonStatusLabel}</p>
+                            <p data-milkyway-moon-direction class="text-sm text-slate-500 mt-2">${ui.milkyWayMoonDirection}: ${windowInfo.moonAboveHorizon ? `${getCompassLabel(windowInfo.moonAzimuth, currentLang)} · ${Math.round(windowInfo.moonAltitude)}°` : ui.milkyWayBelowHorizon}</p>
                         </div>
                     </div>
                     <div class="grid sm:grid-cols-3 gap-3 mt-3">
                         <div class="rounded-2xl bg-amber-50 border border-amber-100 p-4">
                             <p class="text-[11px] uppercase tracking-[0.24em] text-amber-500">${ui.milkyWayMoonInterference}</p>
-                            <p class="text-lg font-black text-amber-700 mt-2">${windowInfo.moonInterferenceLabel}</p>
+                            <p data-milkyway-moon-interference class="text-lg font-black text-amber-700 mt-2">${moonInterferenceLabel}</p>
                         </div>
                         <div class="rounded-2xl bg-slate-50 border border-slate-100 p-4">
                             <p class="text-[11px] uppercase tracking-[0.24em] text-slate-400">${ui.milkyWayMoon}</p>
-                            <p class="text-lg font-black text-slate-900 mt-2">${Math.round(windowInfo.moonIllumination * 100)}%</p>
+                            <p data-milkyway-moon-illumination class="text-lg font-black text-slate-900 mt-2">${Math.round(windowInfo.moonIllumination * 100)}%</p>
                         </div>
                         <div class="rounded-2xl bg-slate-50 border border-slate-100 p-4">
                             <p class="text-[11px] uppercase tracking-[0.24em] text-slate-400">${ui.milkyWayCloud}</p>
-                            <p class="text-lg font-black text-slate-900 mt-2">${windowInfo.cloudCover != null ? `${windowInfo.cloudCover}%` : '--'}</p>
+                            <p data-milkyway-cloud-cover class="text-lg font-black text-slate-900 mt-2">${windowInfo.cloudCover != null ? `${windowInfo.cloudCover}%` : '--'}</p>
                         </div>
                     </div>
                 `;
+            },
+
+            preview(windowIndex) {
+                const data = this.getCurrentData();
+                const detail = document.getElementById('milky-way-window-detail');
+                if (!detail || !data?.windows?.length) return;
+
+                const clampedIndex = clamp(windowIndex, 0, data.windows.length - 1);
+                const windowInfo = data.windows[clampedIndex];
+                if (!windowInfo) return;
+
+                const ui = translations[currentLang];
+                const coreDirectionLabel = getMilkyWayCoreDirectionLabel(windowInfo.coreAzimuth, windowInfo.coreAltitude, currentLang);
+                const moonStatusKey = windowInfo.moonStatus?.key || windowInfo.moonStatusKey || 'set';
+                const moonStatusLabel = getMilkyWayMoonStatusLabel(moonStatusKey, currentLang);
+                const moonInterferenceLabel = getMilkyWayMoonInterferenceLabel(windowInfo.moonAboveHorizon, windowInfo.moonIllumination, currentLang);
+                const moonDirectionLabel = `${ui.milkyWayMoonDirection}: ${windowInfo.moonAboveHorizon ? `${getCompassLabel(windowInfo.moonAzimuth, currentLang)} · ${Math.round(windowInfo.moonAltitude)}°` : ui.milkyWayBelowHorizon}`;
+
+                const recommendedIndexes = this.getRecommendedIndexes(data);
+                const recommendedSet = new Set(recommendedIndexes);
+                const isRecommended = recommendedSet.has(clampedIndex);
+                const recommendedSlots = recommendedIndexes.map(index => data.windows[index]).filter(Boolean);
+                const recommendedLabelText = recommendedSlots.length
+                    ? recommendedSlots.map(slot => slot.label).join(' · ')
+                    : '--';
+
+                activeMilkyWayWindowIndex = clampedIndex;
+                activeMilkyWayWindowKey = String(windowInfo.sortKey);
+
+                const titleEl = detail.querySelector('[data-milkyway-window-title]');
+                if (titleEl) titleEl.textContent = `${getDisplayCityName(data.cityKey, currentLang)} · ${windowInfo.label}`;
+
+                const currentLabelEl = detail.querySelector('[data-milkyway-current-label]');
+                if (currentLabelEl) currentLabelEl.textContent = windowInfo.label;
+
+                const seekInput = detail.querySelector('[data-ui-action="milkyway-seek"]');
+                if (seekInput && String(seekInput.value) !== String(clampedIndex)) {
+                    seekInput.value = String(clampedIndex);
+                }
+
+                const skyDiagramEl = detail.querySelector('[data-milkyway-sky-diagram]');
+                if (skyDiagramEl) skyDiagramEl.innerHTML = renderMilkyWayWindowSkyDiagram(windowInfo, ui);
+
+                const coreDirectionEl = detail.querySelector('[data-milkyway-core-direction]');
+                if (coreDirectionEl) coreDirectionEl.textContent = coreDirectionLabel;
+
+                const moonStatusEl = detail.querySelector('[data-milkyway-moon-status]');
+                if (moonStatusEl) moonStatusEl.textContent = moonStatusLabel;
+
+                const moonDirectionEl = detail.querySelector('[data-milkyway-moon-direction]');
+                if (moonDirectionEl) moonDirectionEl.textContent = moonDirectionLabel;
+
+                const moonInterferenceEl = detail.querySelector('[data-milkyway-moon-interference]');
+                if (moonInterferenceEl) moonInterferenceEl.textContent = moonInterferenceLabel;
+
+                const moonIlluminationEl = detail.querySelector('[data-milkyway-moon-illumination]');
+                if (moonIlluminationEl) moonIlluminationEl.textContent = `${Math.round(windowInfo.moonIllumination * 100)}%`;
+
+                const cloudCoverEl = detail.querySelector('[data-milkyway-cloud-cover]');
+                if (cloudCoverEl) cloudCoverEl.textContent = windowInfo.cloudCover != null ? `${windowInfo.cloudCover}%` : '--';
+
+                const recommendationEl = detail.querySelector('[data-milkyway-recommendation]');
+                if (recommendationEl) {
+                    recommendationEl.className = `mt-3 rounded-xl px-3.5 py-2.5 text-sm font-bold ${isRecommended ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-slate-100 text-slate-600 border border-slate-200'}`;
+                    recommendationEl.textContent = isRecommended ? `✓ ${ui.milkyWayRecommendedNow}` : `${ui.milkyWayRecommendedRange}: ${recommendedLabelText}`;
+                }
+
+                detail.querySelectorAll('[data-ui-action="milkyway-jump-window"]').forEach((button) => {
+                    const active = String(button.dataset.windowKey) === String(windowInfo.sortKey);
+                    button.classList.toggle('ring-2', active);
+                    button.classList.toggle('ring-amber-400', active);
+                });
             },
 
             setBySortKey(sortKey) {
@@ -3129,6 +3226,8 @@
                 if (!data || targetIndex == null || targetIndex < 0) return;
 
                 this.renderDetail(data, targetIndex);
+                const detail = document.getElementById('milky-way-window-detail');
+                if (detail) detail.scrollTop = 0;
 
                 const modal = document.getElementById('milky-way-window-modal');
                 const backdrop = document.getElementById('milky-way-window-backdrop');
@@ -3162,6 +3261,7 @@
         function getCurrentMilkyWayData() { return MilkyWayWindowModule.getCurrentData(); }
         function setMilkyWayWindowBySortKey(sortKey) { MilkyWayWindowModule.setBySortKey(sortKey); }
         function setMilkyWayWindowByIndex(windowIndex) { MilkyWayWindowModule.setByIndex(windowIndex); }
+        function previewMilkyWayWindowByIndex(windowIndex) { MilkyWayWindowModule.preview(windowIndex); }
         function openMilkyWayWindowModal(sortKey) { MilkyWayWindowModule.open(sortKey); }
         function closeMilkyWayWindowModal() { MilkyWayWindowModule.close(); }
 
@@ -3352,6 +3452,10 @@
             // Set text
             document.getElementById('reset-modal-title').innerText = ui.resetDataBtn;
             document.getElementById('reset-modal-desc').innerText = ui.resetConfirmMsg;
+            const confirmBtnText = document.getElementById('reset-confirm-btn-text');
+            const cancelBtnText = document.getElementById('reset-cancel-btn-text');
+            if (confirmBtnText) confirmBtnText.innerText = ui.resetConfirmBtn;
+            if (cancelBtnText) cancelBtnText.innerText = ui.resetCancelBtn;
 
             modal.classList.remove('hidden');
             modal.classList.add('flex');
@@ -3508,9 +3612,10 @@
                 }
             } catch (e) {
                 console.warn('Failed to fetch exchange rate', e);
-                const fallback = "1 NZD ≈ 19.8 TWD (含手續費)";
-                translations['zh'].notices.find(n => n.id === 'exchangeRate').content = fallback;
-                translations['en'].notices.find(n => n.id === 'exchangeRate').content = fallback;
+                const fallbackZh = "1 NZD ≈ 19.8 TWD (含手續費)";
+                const fallbackEn = "1 NZD ≈ 19.8 TWD (incl. service fee)";
+                translations['zh'].notices.find(n => n.id === 'exchangeRate').content = fallbackZh;
+                translations['en'].notices.find(n => n.id === 'exchangeRate').content = fallbackEn;
                 if (activeDayIndex === -1 && document.getElementById('notice-board')) updateUI();
             }
         }
@@ -3523,6 +3628,10 @@
             document.getElementById('converter-title').innerText = translations[currentLang].converterTitle;
             const note = currentLang === 'zh' ? translations['zh'].nzdFeeNote.replace('{rate}', currentNZDRate) : translations['en'].nzdFeeNote.replace('{rate}', currentNZDRate);
             document.getElementById('converter-rate-info').innerText = note;
+            const nzdLabel = document.getElementById('converter-nzd-label');
+            const twdLabel = document.getElementById('converter-twd-label');
+            if (nzdLabel) nzdLabel.innerText = translations[currentLang].nzdLabel;
+            if (twdLabel) twdLabel.innerText = translations[currentLang].twdLabel;
             
             document.getElementById('nzd-input').value = 1;
             document.getElementById('twd-input').value = currentNZDRate;
@@ -3612,6 +3721,8 @@
             const ui = translations[currentLang];
             document.getElementById('modal-title').innerText = currentLang === 'zh' ? '解鎖住宿資訊' : 'Unlock Accommodation';
             document.getElementById('modal-desc').innerText = currentLang === 'zh' ? '請輸入安全密碼以檢視詳細住宿與定位資訊。' : 'Please enter the security password to view detailed accommodation info.';
+            const submitText = document.getElementById('modal-submit-btn');
+            if (submitText) submitText.innerText = ui.unlockConfirmBtn;
             document.getElementById('modal-password-input').placeholder = '••••••';
             document.getElementById('modal-error').style.opacity = '0';
             document.getElementById('modal-password-input').value = '';
@@ -3837,6 +3948,10 @@
             const ui = translations[currentLang];
             document.getElementById('io-title').innerText = ui.ioModalTitle;
             document.getElementById('io-desc').innerText = ui.ioModalDesc;
+            const copyBtnText = document.getElementById('io-copy-btn-text');
+            const importBtnText = document.getElementById('io-import-btn-text');
+            if (copyBtnText) copyBtnText.innerText = ui.ioCopyBtn;
+            if (importBtnText) importBtnText.innerText = ui.ioImportBtn;
             document.getElementById('io-textarea').value = JSON.stringify(itinerary, null, 2);
             
             const modal = document.getElementById('io-modal');
@@ -4264,6 +4379,9 @@
             }
 
             if (selectedState.status === 'success' && data) {
+                const bestMoonStatusLabel = getMilkyWayMoonStatusLabel(data.components.moonStatusKey, currentLang);
+                const bestMoonInterferenceLabel = getMilkyWayMoonInterferenceLabel(data.components.moonAboveHorizon, data.components.moonIllumination, currentLang);
+                const bestCoreDirectionLabel = getMilkyWayCoreDirectionLabel(data.components.coreAzimuth, data.components.coreAltitude, currentLang);
                 bodyMarkup = `
                     <div class="grid lg:grid-cols-[220px,1fr] gap-5 lg:gap-6 items-center">
                         <div class="rounded-[1.75rem] bg-white/5 border border-white/10 p-5 flex flex-col items-center text-center">
@@ -4291,10 +4409,10 @@
                                     <div class="flex flex-wrap gap-2 mt-4">
                                         <span class="px-3 py-1.5 rounded-full bg-white/8 border border-white/10 text-xs font-bold text-white/80">${ui.milkyWayDarkSky}: ${data.components.darkSky ? (currentLang === 'zh' ? '有' : 'Yes') : (currentLang === 'zh' ? '無' : 'No')}</span>
                                         <span class="px-3 py-1.5 rounded-full bg-white/8 border border-white/10 text-xs font-bold text-white/80">${ui.milkyWayMoon}: ${Math.round(data.components.moonIllumination * 100)}%</span>
-                                        <span class="px-3 py-1.5 rounded-full bg-white/8 border border-white/10 text-xs font-bold text-white/80">${ui.milkyWayMoonPosition}: ${data.components.moonStatusLabel}</span>
-                                        <span class="px-3 py-1.5 rounded-full bg-white/8 border border-white/10 text-xs font-bold text-white/80">${ui.milkyWayMoonInterference}: ${data.components.moonInterferenceLabel}</span>
+                                        <span class="px-3 py-1.5 rounded-full bg-white/8 border border-white/10 text-xs font-bold text-white/80">${ui.milkyWayMoonPosition}: ${bestMoonStatusLabel}</span>
+                                        <span class="px-3 py-1.5 rounded-full bg-white/8 border border-white/10 text-xs font-bold text-white/80">${ui.milkyWayMoonInterference}: ${bestMoonInterferenceLabel}</span>
                                         ${data.components.weatherPending ? `<span class="px-3 py-1.5 rounded-full bg-amber-300/10 border border-amber-200/20 text-xs font-bold text-amber-100">${ui.milkyWayWeatherPending}</span>` : `<span class="px-3 py-1.5 rounded-full bg-white/8 border border-white/10 text-xs font-bold text-white/80">${ui.milkyWayCloud}: ${data.components.cloudCover}%</span>`}
-                                        <span class="px-3 py-1.5 rounded-full bg-white/8 border border-white/10 text-xs font-bold text-white/80">${ui.milkyWayCoreDirection}: ${data.components.coreDirectionLabel}</span>
+                                        <span class="px-3 py-1.5 rounded-full bg-white/8 border border-white/10 text-xs font-bold text-white/80">${ui.milkyWayCoreDirection}: ${bestCoreDirectionLabel}</span>
                                     </div>
                                 </div>
                                 <button type="button" data-action="refresh-milkyway" class="shrink-0 px-3 py-2 rounded-full bg-white/10 hover:bg-white/15 text-xs font-bold transition-colors">
@@ -4311,7 +4429,7 @@
                                     ${data.windows.filter(windowInfo => data.bestViewingWindow.includes(windowInfo.label)).map(windowInfo => `
                                         <button type="button" data-action="open-milkyway-window" data-window-key="${windowInfo.sortKey}" class="px-3 py-2 rounded-2xl bg-amber-300/15 border border-amber-200/20 text-left transition-all hover:bg-amber-300/20">
                                             <span class="block text-sm font-bold text-amber-100">${windowInfo.label}</span>
-                                            <span class="block text-[11px] text-amber-50/80 mt-1">${windowInfo.moonInterferenceLabel} · ${windowInfo.coreDirectionLabel}</span>
+                                            <span class="block text-[11px] text-amber-50/80 mt-1">${getMilkyWayMoonInterferenceLabel(windowInfo.moonAboveHorizon, windowInfo.moonIllumination, currentLang)} · ${getMilkyWayCoreDirectionLabel(windowInfo.coreAzimuth, windowInfo.coreAltitude, currentLang)}</span>
                                         </button>
                                     `).join('')}
                                 </div>
@@ -4552,7 +4670,7 @@
                                                 <div class="js-map-card bg-white/60 flex-1 p-4 rounded-2xl shadow-sm border border-slate-100 hover:bg-white hover:shadow-md hover:border-blue-200 cursor-pointer transition-all relative mt-1 ${isActive ? 'border-red-200 ring-1 ring-red-100 shadow-md' : ''}" data-map-query="${encodeInlineArg(t[3] || t[1])}" data-custom-img="${encodeInlineArg(t[4] || '')}">
                                                     <div class="flex items-start justify-between">
                                                         <div class="flex-1">
-                                                            ${isActive ? '<span class="absolute -top-2 right-4 bg-red-500 text-white text-[9px] font-bold px-2 py-0.5 rounded uppercase shadow-sm">進行中 Now</span>' : ''}
+                                                            ${isActive ? `<span class="absolute -top-2 right-4 bg-red-500 text-white text-[9px] font-bold px-2 py-0.5 rounded uppercase shadow-sm">${ui.activeNowBadge}</span>` : ''}
                                                             <p contenteditable="${isEditMode}" data-edit-day="${activeDayIndex}" data-edit-field="${currentLang}" data-edit-subfield="timeline" data-edit-item-idx="${index}" data-edit-subitem-idx="1" class="text-[15px] font-bold ${isActive ? 'text-red-700' : 'text-slate-700'} outline-none focus:bg-blue-50 rounded px-1">${t[1]}</p>
                                                             
                                                             <!-- Extended Description Feat -->
@@ -4602,7 +4720,7 @@
                                 }).join('')}
                                 ${isEditMode ? `
                                 <button type="button" data-action="append-item" data-day-idx="${activeDayIndex}" class="w-full py-4 border-2 border-dashed border-slate-200 rounded-2xl text-slate-400 hover:border-blue-400 hover:text-blue-500 hover:bg-blue-50/30 transition-all flex items-center justify-center gap-2 font-bold text-sm">
-                                    <i class="fas fa-plus-circle"></i> 新增行程項目 / Add Item
+                                    <i class="fas fa-plus-circle"></i> ${ui.addItemBtn}
                                 </button>
                                 ` : ''}
                             </div>
@@ -4815,6 +4933,14 @@
             if (!uiActionTarget) return;
             const windowIndex = parseActionIndex(uiActionTarget.value);
             if (windowIndex == null) return;
+            previewMilkyWayWindowByIndex(windowIndex);
+        }
+
+        function handleGlobalUIChange(event) {
+            const uiActionTarget = event.target.closest('[data-ui-action="milkyway-seek"]');
+            if (!uiActionTarget) return;
+            const windowIndex = parseActionIndex(uiActionTarget.value);
+            if (windowIndex == null) return;
             setMilkyWayWindowByIndex(windowIndex);
         }
 
@@ -4900,6 +5026,13 @@
         }
 
         function handleGlobalUIKeydown(event) {
+            if (event.key === 'Escape') {
+                const milkyWayModal = document.getElementById('milky-way-window-modal');
+                if (milkyWayModal && !milkyWayModal.classList.contains('hidden')) {
+                    closeMilkyWayWindowModal();
+                    return;
+                }
+            }
             if (event.key !== 'Enter') return;
             const target = event.target;
             if (!target || target.id !== 'modal-password-input') return;
@@ -4907,6 +5040,7 @@
         }
 
         document.addEventListener('input', handleGlobalUIInput);
+        document.addEventListener('change', handleGlobalUIChange);
         document.addEventListener('click', handleGlobalUIClick);
         document.addEventListener('keydown', handleGlobalUIKeydown);
 

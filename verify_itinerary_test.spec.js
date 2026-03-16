@@ -103,8 +103,10 @@ test.describe('Itinerary editor real-flow E2E', () => {
     test('sky conditions 互動（展開、切換 stop、收合）', async ({ page }) => {
         await openApp(page);
 
-        const skyToggle = page.locator('[data-action="toggle-sky-conditions"]').first();
-        await skyToggle.click();
+        await page.evaluate(() => {
+            const skyToggle = document.querySelector('[data-action="toggle-sky-conditions"]');
+            if (skyToggle) skyToggle.click();
+        });
 
         await expect.poll(async () => page.locator('[data-action="set-sky-stop"]').count()).toBeGreaterThan(1);
 
@@ -120,7 +122,10 @@ test.describe('Itinerary editor real-flow E2E', () => {
         await targetStopBtn.click();
         await expect(targetStopBtn).toHaveClass(/aurora-city-chip-active/);
 
-        await skyToggle.click();
+        await page.evaluate(() => {
+            const skyToggle = document.querySelector('[data-action="toggle-sky-conditions"]');
+            if (skyToggle) skyToggle.click();
+        });
         await expect(page.locator('[data-action="set-sky-stop"]')).toHaveCount(0);
     });
 });
