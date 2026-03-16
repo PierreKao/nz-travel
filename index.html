@@ -260,6 +260,17 @@
         body.theme-dark .aurora-city-chip-active {
             color: #0f172a !important;
         }
+        .sky-conditions-shell {
+            background: linear-gradient(135deg, rgba(2, 6, 23, 0.92), rgba(15, 23, 42, 0.84));
+            border: 1px solid rgba(148, 163, 184, 0.18);
+            box-shadow: 0 22px 60px rgba(2, 6, 23, 0.22);
+        }
+        .sky-conditions-toggle {
+            transition: transform 0.25s ease;
+        }
+        .sky-conditions-toggle.is-open {
+            transform: rotate(180deg);
+        }
 
         @media (max-width: 768px) {
             .mobile-nav { 
@@ -713,6 +724,7 @@
         let isAurora = false;
         let isEditMode = false;
         let currentNZDRate = 19.5; // Default fallback
+        let isSkyConditionsExpanded = false;
         const AURORA_CACHE_TTL = 30 * 60 * 1000;
         const AURORA_CITY_PRIORITY = ["Tekapo", "Mount Cook", "Twizel", "Queenstown", "Wanaka", "Glenorchy", "Oamaru", "Christchurch"];
         let auroraSelectedCity = "Tekapo";
@@ -1088,6 +1100,12 @@
                 },
                 auroraTitle: "極光可見指標",
                 auroraSubtitle: "用 NOAA 與 Open-Meteo 估算下一波追光條件",
+                skyConditionsTitle: "今晚天空條件",
+                skyConditionsExpand: "展開",
+                skyConditionsCollapse: "收合",
+                skyConditionsLoading: "正在更新極光條件",
+                skyConditionsUnavailable: "天空條件暫時無法取得",
+                skyConditionsSummaryPrefix: "極光",
                 auroraLoading: "正在計算今晚的極光條件...",
                 auroraUnavailable: "目前無法取得極光資料",
                 auroraBestHours: "最佳時段",
@@ -1163,6 +1181,12 @@
                 },
                 auroraTitle: "Aurora Visibility",
                 auroraSubtitle: "Estimated with NOAA and Open-Meteo for the next viewing window",
+                skyConditionsTitle: "Tonight's Sky Conditions",
+                skyConditionsExpand: "Expand",
+                skyConditionsCollapse: "Collapse",
+                skyConditionsLoading: "Updating aurora conditions",
+                skyConditionsUnavailable: "Sky conditions are temporarily unavailable",
+                skyConditionsSummaryPrefix: "Aurora",
                 auroraLoading: "Calculating the next aurora window...",
                 auroraUnavailable: "Aurora data is currently unavailable",
                 auroraBestHours: "Best Hours",
@@ -2053,6 +2077,29 @@
             auroraState = { status: 'idle', city: cityKey, data: null, error: '' };
             if (activeDayIndex === -1) renderOverview(document.getElementById('content-display'), translations[currentLang]);
             refreshAuroraVisibility(false);
+        }
+
+        function toggleSkyConditions() {
+            isSkyConditionsExpanded = !isSkyConditionsExpanded;
+            if (activeDayIndex === -1) {
+                renderOverview(document.getElementById('content-display'), translations[currentLang]);
+            }
+        }
+
+        function getSkyConditionsSummary(ui) {
+            if (auroraState.status === 'loading') {
+                return `${ui.skyConditionsSummaryPrefix}: ${ui.skyConditionsLoading}`;
+            }
+
+            if (auroraState.status === 'error') {
+                return `${ui.skyConditionsSummaryPrefix}: ${ui.skyConditionsUnavailable}`;
+            }
+
+            if (auroraState.status === 'success' && auroraState.data) {
+                return `${ui.skyConditionsSummaryPrefix}: ${getAuroraLevelLabel(auroraState.data.level)} · ${getDisplayCityName(auroraState.data.cityKey, currentLang)} · ${auroraState.data.bestViewingHours[0] || '--'}`;
+            }
+
+            return `${ui.skyConditionsSummaryPrefix}: ${ui.skyConditionsLoading}`;
         }
 
         async function printItinerary() {
@@ -2956,7 +3003,7 @@
             }
 
             return `
-                <div class="mb-6 sm:mb-8 rounded-[2rem] p-6 sm:p-7 shadow-2xl relative overflow-hidden border border-white/10 text-white"
+                <div class="rounded-[1.6rem] p-6 sm:p-7 shadow-2xl relative overflow-hidden border border-white/10 text-white"
                     style="background:
                         radial-gradient(circle at 12% 18%, rgba(52, 211, 153, 0.28), transparent 30%),
                         radial-gradient(circle at 88% 22%, rgba(56, 189, 248, 0.22), transparent 28%),
@@ -2990,6 +3037,34 @@
             `;
         }
 
+        function renderSkyConditionsSection(ui) {
+            return `
+                <div class="mb-6 sm:mb-8 rounded-[2rem] p-4 sm:p-5 sky-conditions-shell text-white">
+                    <button onclick="toggleSkyConditions()" class="w-full flex items-start sm:items-center justify-between gap-4 text-left">
+                        <div class="min-w-0">
+                            <div class="flex items-center gap-3">
+                                <div class="w-11 h-11 rounded-2xl bg-white/10 border border-white/10 flex items-center justify-center text-emerald-200 shrink-0">
+                                    <i class="fas fa-stars"></i>
+                                </div>
+                                <div class="min-w-0">
+                                    <p class="text-xs uppercase tracking-[0.35em] text-emerald-100/55">${ui.skyConditionsTitle}</p>
+                                    <h3 class="text-xl sm:text-2xl font-black mt-1">${getSkyConditionsSummary(ui)}</h3>
+                                </div>
+                            </div>
+                            <p class="text-sm text-white/55 mt-3 ml-14">${currentLang === 'zh' ? '先收合成一條摘要，之後可在這裡擴充銀河與其他觀測條件。' : 'Collapsed by default so the overview stays lighter. Milky Way can be added here next.'}</p>
+                        </div>
+                        <div class="shrink-0 flex items-center gap-3 pl-2">
+                            <span class="hidden sm:inline text-xs font-bold uppercase tracking-[0.28em] text-white/45">${isSkyConditionsExpanded ? ui.skyConditionsCollapse : ui.skyConditionsExpand}</span>
+                            <span class="w-10 h-10 rounded-full bg-white/10 border border-white/10 flex items-center justify-center">
+                                <i class="fas fa-chevron-down sky-conditions-toggle ${isSkyConditionsExpanded ? 'is-open' : ''}"></i>
+                            </span>
+                        </div>
+                    </button>
+                    ${isSkyConditionsExpanded ? `<div class="mt-5">${renderAuroraOverviewCard(ui)}</div>` : ''}
+                </div>
+            `;
+        }
+
         function renderOverview(container, ui) {
             container.innerHTML = `
                 <div class="glass-card rounded-[2rem] p-8 shadow-2xl animate-in fade-in relative overflow-hidden">
@@ -2997,7 +3072,7 @@
                         <i class="fas fa-route text-blue-600"></i> ${ui.overviewBtn}
                     </h2>
 
-                    ${renderAuroraOverviewCard(ui)}
+                    ${renderSkyConditionsSection(ui)}
 
                     
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-3 relative z-10">
