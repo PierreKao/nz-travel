@@ -3005,157 +3005,165 @@
             fetchMilkyWayVisibility(cityKey, { force });
         }
 
-        function getCurrentMilkyWayData() {
-            const selectedStop = getSelectedSkyConditionsStop();
-            const targetDateString = selectedStop?.actualDate || getMilkyWayTargetDate();
-            if (milkyWayState.city === auroraSelectedCity && milkyWayState.data?.components?.targetDate === targetDateString) {
-                return milkyWayState.data;
-            }
-            return null;
-        }
-
-        function getRecommendedMilkyWayWindowIndexes(data) {
-            const recommendedLabels = new Set(data?.bestViewingWindow || []);
-            const indexes = [];
-            (data?.windows || []).forEach((slot, index) => {
-                if (recommendedLabels.has(slot.label)) {
-                    indexes.push(index);
+        const MilkyWayWindowModule = {
+            getCurrentData() {
+                const selectedStop = getSelectedSkyConditionsStop();
+                const targetDateString = selectedStop?.actualDate || getMilkyWayTargetDate();
+                if (milkyWayState.city === auroraSelectedCity && milkyWayState.data?.components?.targetDate === targetDateString) {
+                    return milkyWayState.data;
                 }
-            });
-            return indexes;
-        }
+                return null;
+            },
 
-        function renderMilkyWayWindowDetail(data, windowIndex) {
-            const ui = translations[currentLang];
-            const detail = document.getElementById('milky-way-window-detail');
-            if (!detail || !data?.windows?.length) return;
+            getRecommendedIndexes(data) {
+                const recommendedLabels = new Set(data?.bestViewingWindow || []);
+                const indexes = [];
+                (data?.windows || []).forEach((slot, index) => {
+                    if (recommendedLabels.has(slot.label)) {
+                        indexes.push(index);
+                    }
+                });
+                return indexes;
+            },
 
-            const clampedIndex = clamp(windowIndex, 0, data.windows.length - 1);
-            const windowInfo = data.windows[clampedIndex];
-            if (!windowInfo) return;
+            renderDetail(data, windowIndex) {
+                const ui = translations[currentLang];
+                const detail = document.getElementById('milky-way-window-detail');
+                if (!detail || !data?.windows?.length) return;
 
-            const recommendedIndexes = getRecommendedMilkyWayWindowIndexes(data);
-            const recommendedSet = new Set(recommendedIndexes);
-            const isRecommended = recommendedSet.has(clampedIndex);
-            const recommendedSlots = recommendedIndexes.map(index => data.windows[index]).filter(Boolean);
-            const recommendedLabelText = recommendedSlots.length
-                ? recommendedSlots.map(slot => slot.label).join(' · ')
-                : '--';
-            const sliderMinLabel = data.windows[0]?.label || '--';
-            const sliderMaxLabel = data.windows[data.windows.length - 1]?.label || '--';
+                const clampedIndex = clamp(windowIndex, 0, data.windows.length - 1);
+                const windowInfo = data.windows[clampedIndex];
+                if (!windowInfo) return;
 
-            activeMilkyWayWindowIndex = clampedIndex;
-            activeMilkyWayWindowKey = String(windowInfo.sortKey);
+                const recommendedIndexes = this.getRecommendedIndexes(data);
+                const recommendedSet = new Set(recommendedIndexes);
+                const isRecommended = recommendedSet.has(clampedIndex);
+                const recommendedSlots = recommendedIndexes.map(index => data.windows[index]).filter(Boolean);
+                const recommendedLabelText = recommendedSlots.length
+                    ? recommendedSlots.map(slot => slot.label).join(' · ')
+                    : '--';
+                const sliderMinLabel = data.windows[0]?.label || '--';
+                const sliderMaxLabel = data.windows[data.windows.length - 1]?.label || '--';
 
-            detail.innerHTML = `
-                <div class="mb-5">
-                    <p class="text-xs uppercase tracking-[0.3em] text-slate-400">${ui.milkyWaySkyMapTitle}</p>
-                    <h3 class="text-2xl font-black text-slate-900 mt-2">${getDisplayCityName(data.cityKey, currentLang)} · ${windowInfo.label}</h3>
-                    <p class="text-sm text-slate-500 mt-2">${getSkyConditionsBasedOnText(ui, getSelectedSkyConditionsStop())}</p>
-                </div>
+                activeMilkyWayWindowIndex = clampedIndex;
+                activeMilkyWayWindowKey = String(windowInfo.sortKey);
 
-                <div class="rounded-2xl bg-slate-50 border border-slate-100 p-4 sm:p-5 mb-5">
-                    <div class="flex items-center justify-between gap-3 text-[11px] uppercase tracking-[0.22em] text-slate-400">
-                        <span>${ui.milkyWaySeekLabel}</span>
-                        <span class="font-black text-amber-600 tracking-normal text-sm">${windowInfo.label}</span>
+                detail.innerHTML = `
+                    <div class="mb-5">
+                        <p class="text-xs uppercase tracking-[0.3em] text-slate-400">${ui.milkyWaySkyMapTitle}</p>
+                        <h3 class="text-2xl font-black text-slate-900 mt-2">${getDisplayCityName(data.cityKey, currentLang)} · ${windowInfo.label}</h3>
+                        <p class="text-sm text-slate-500 mt-2">${getSkyConditionsBasedOnText(ui, getSelectedSkyConditionsStop())}</p>
                     </div>
-                    <input type="range" min="0" max="${data.windows.length - 1}" step="1" value="${clampedIndex}" data-ui-action="milkyway-seek" class="w-full mt-3 accent-amber-500 cursor-pointer">
-                    <div class="flex items-center justify-between text-[11px] text-slate-400 mt-2 font-semibold">
-                        <span>${sliderMinLabel}</span>
-                        <span>${sliderMaxLabel}</span>
-                    </div>
-                    <p class="text-xs text-slate-500 mt-3">${ui.milkyWaySeekHint}</p>
-                    <div class="mt-3 flex flex-wrap gap-2">
-                        ${recommendedSlots.map(slot => `
-                            <button type="button" data-ui-action="milkyway-jump-window" data-window-key="${slot.sortKey}" class="px-3 py-1.5 rounded-full bg-amber-100 border border-amber-200 text-amber-700 text-[11px] font-black transition-all hover:bg-amber-200 ${String(slot.sortKey) === String(windowInfo.sortKey) ? 'ring-2 ring-amber-400' : ''}">
-                                ${slot.label}
-                            </button>
-                        `).join('')}
-                    </div>
-                    <div class="mt-3 rounded-xl px-3.5 py-2.5 text-sm font-bold ${isRecommended ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-slate-100 text-slate-600 border border-slate-200'}">
-                        ${isRecommended ? `✓ ${ui.milkyWayRecommendedNow}` : `${ui.milkyWayRecommendedRange}: ${recommendedLabelText}`}
-                    </div>
-                </div>
 
-                <div class="rounded-[2rem] bg-slate-950 p-3 sm:p-4">
-                    ${renderMilkyWayWindowSkyDiagram(windowInfo, ui)}
-                </div>
-                <div class="grid sm:grid-cols-2 gap-3 mt-5">
-                    <div class="rounded-2xl bg-slate-50 border border-slate-100 p-4">
-                        <p class="text-[11px] uppercase tracking-[0.24em] text-slate-400">${ui.milkyWayGalaxyPosition}</p>
-                        <p class="text-lg font-black text-slate-900 mt-2">${windowInfo.coreDirectionLabel}</p>
-                        <p class="text-sm text-slate-500 mt-2">${ui.milkyWayCoreAltitude}: ${Math.round(windowInfo.coreAltitude)}°</p>
+                    <div class="rounded-2xl bg-slate-50 border border-slate-100 p-4 sm:p-5 mb-5">
+                        <div class="flex items-center justify-between gap-3 text-[11px] uppercase tracking-[0.22em] text-slate-400">
+                            <span>${ui.milkyWaySeekLabel}</span>
+                            <span class="font-black text-amber-600 tracking-normal text-sm">${windowInfo.label}</span>
+                        </div>
+                        <input type="range" min="0" max="${data.windows.length - 1}" step="1" value="${clampedIndex}" data-ui-action="milkyway-seek" class="w-full mt-3 accent-amber-500 cursor-pointer">
+                        <div class="flex items-center justify-between text-[11px] text-slate-400 mt-2 font-semibold">
+                            <span>${sliderMinLabel}</span>
+                            <span>${sliderMaxLabel}</span>
+                        </div>
+                        <p class="text-xs text-slate-500 mt-3">${ui.milkyWaySeekHint}</p>
+                        <div class="mt-3 flex flex-wrap gap-2">
+                            ${recommendedSlots.map(slot => `
+                                <button type="button" data-ui-action="milkyway-jump-window" data-window-key="${slot.sortKey}" class="px-3 py-1.5 rounded-full bg-amber-100 border border-amber-200 text-amber-700 text-[11px] font-black transition-all hover:bg-amber-200 ${String(slot.sortKey) === String(windowInfo.sortKey) ? 'ring-2 ring-amber-400' : ''}">
+                                    ${slot.label}
+                                </button>
+                            `).join('')}
+                        </div>
+                        <div class="mt-3 rounded-xl px-3.5 py-2.5 text-sm font-bold ${isRecommended ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-slate-100 text-slate-600 border border-slate-200'}">
+                            ${isRecommended ? `✓ ${ui.milkyWayRecommendedNow}` : `${ui.milkyWayRecommendedRange}: ${recommendedLabelText}`}
+                        </div>
                     </div>
-                    <div class="rounded-2xl bg-slate-50 border border-slate-100 p-4">
-                        <p class="text-[11px] uppercase tracking-[0.24em] text-slate-400">${ui.milkyWayMoonPosition}</p>
-                        <p class="text-lg font-black text-slate-900 mt-2">${windowInfo.moonStatusLabel}</p>
-                        <p class="text-sm text-slate-500 mt-2">${ui.milkyWayMoonDirection}: ${windowInfo.moonAboveHorizon ? `${getCompassLabel(windowInfo.moonAzimuth, currentLang)} · ${Math.round(windowInfo.moonAltitude)}°` : ui.milkyWayBelowHorizon}</p>
+
+                    <div class="rounded-[2rem] bg-slate-950 p-3 sm:p-4">
+                        ${renderMilkyWayWindowSkyDiagram(windowInfo, ui)}
                     </div>
-                </div>
-                <div class="grid sm:grid-cols-3 gap-3 mt-3">
-                    <div class="rounded-2xl bg-amber-50 border border-amber-100 p-4">
-                        <p class="text-[11px] uppercase tracking-[0.24em] text-amber-500">${ui.milkyWayMoonInterference}</p>
-                        <p class="text-lg font-black text-amber-700 mt-2">${windowInfo.moonInterferenceLabel}</p>
+                    <div class="grid sm:grid-cols-2 gap-3 mt-5">
+                        <div class="rounded-2xl bg-slate-50 border border-slate-100 p-4">
+                            <p class="text-[11px] uppercase tracking-[0.24em] text-slate-400">${ui.milkyWayGalaxyPosition}</p>
+                            <p class="text-lg font-black text-slate-900 mt-2">${windowInfo.coreDirectionLabel}</p>
+                            <p class="text-sm text-slate-500 mt-2">${ui.milkyWayCoreAltitude}: ${Math.round(windowInfo.coreAltitude)}°</p>
+                        </div>
+                        <div class="rounded-2xl bg-slate-50 border border-slate-100 p-4">
+                            <p class="text-[11px] uppercase tracking-[0.24em] text-slate-400">${ui.milkyWayMoonPosition}</p>
+                            <p class="text-lg font-black text-slate-900 mt-2">${windowInfo.moonStatusLabel}</p>
+                            <p class="text-sm text-slate-500 mt-2">${ui.milkyWayMoonDirection}: ${windowInfo.moonAboveHorizon ? `${getCompassLabel(windowInfo.moonAzimuth, currentLang)} · ${Math.round(windowInfo.moonAltitude)}°` : ui.milkyWayBelowHorizon}</p>
+                        </div>
                     </div>
-                    <div class="rounded-2xl bg-slate-50 border border-slate-100 p-4">
-                        <p class="text-[11px] uppercase tracking-[0.24em] text-slate-400">${ui.milkyWayMoon}</p>
-                        <p class="text-lg font-black text-slate-900 mt-2">${Math.round(windowInfo.moonIllumination * 100)}%</p>
+                    <div class="grid sm:grid-cols-3 gap-3 mt-3">
+                        <div class="rounded-2xl bg-amber-50 border border-amber-100 p-4">
+                            <p class="text-[11px] uppercase tracking-[0.24em] text-amber-500">${ui.milkyWayMoonInterference}</p>
+                            <p class="text-lg font-black text-amber-700 mt-2">${windowInfo.moonInterferenceLabel}</p>
+                        </div>
+                        <div class="rounded-2xl bg-slate-50 border border-slate-100 p-4">
+                            <p class="text-[11px] uppercase tracking-[0.24em] text-slate-400">${ui.milkyWayMoon}</p>
+                            <p class="text-lg font-black text-slate-900 mt-2">${Math.round(windowInfo.moonIllumination * 100)}%</p>
+                        </div>
+                        <div class="rounded-2xl bg-slate-50 border border-slate-100 p-4">
+                            <p class="text-[11px] uppercase tracking-[0.24em] text-slate-400">${ui.milkyWayCloud}</p>
+                            <p class="text-lg font-black text-slate-900 mt-2">${windowInfo.cloudCover != null ? `${windowInfo.cloudCover}%` : '--'}</p>
+                        </div>
                     </div>
-                    <div class="rounded-2xl bg-slate-50 border border-slate-100 p-4">
-                        <p class="text-[11px] uppercase tracking-[0.24em] text-slate-400">${ui.milkyWayCloud}</p>
-                        <p class="text-lg font-black text-slate-900 mt-2">${windowInfo.cloudCover != null ? `${windowInfo.cloudCover}%` : '--'}</p>
-                    </div>
-                </div>
-            `;
-        }
+                `;
+            },
 
-        function setMilkyWayWindowBySortKey(sortKey) {
-            const data = getCurrentMilkyWayData();
-            const index = data?.windows?.findIndex(slot => String(slot.sortKey) === String(sortKey));
-            if (!data || index == null || index < 0) return;
-            renderMilkyWayWindowDetail(data, index);
-        }
+            setBySortKey(sortKey) {
+                const data = this.getCurrentData();
+                const index = data?.windows?.findIndex(slot => String(slot.sortKey) === String(sortKey));
+                if (!data || index == null || index < 0) return;
+                this.renderDetail(data, index);
+            },
 
-        function setMilkyWayWindowByIndex(windowIndex) {
-            const data = getCurrentMilkyWayData();
-            if (!data?.windows?.length) return;
-            renderMilkyWayWindowDetail(data, windowIndex);
-        }
+            setByIndex(windowIndex) {
+                const data = this.getCurrentData();
+                if (!data?.windows?.length) return;
+                this.renderDetail(data, windowIndex);
+            },
 
-        function openMilkyWayWindowModal(sortKey) {
-            const data = getCurrentMilkyWayData();
-            const targetIndex = data?.windows?.findIndex(slot => String(slot.sortKey) === String(sortKey));
-            if (!data || targetIndex == null || targetIndex < 0) return;
+            open(sortKey) {
+                const data = this.getCurrentData();
+                const targetIndex = data?.windows?.findIndex(slot => String(slot.sortKey) === String(sortKey));
+                if (!data || targetIndex == null || targetIndex < 0) return;
 
-            renderMilkyWayWindowDetail(data, targetIndex);
+                this.renderDetail(data, targetIndex);
 
-            const modal = document.getElementById('milky-way-window-modal');
-            const backdrop = document.getElementById('milky-way-window-backdrop');
-            const content = document.getElementById('milky-way-window-content');
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-            setTimeout(() => {
-                backdrop.classList.replace('opacity-0', 'opacity-100');
-                content.classList.replace('opacity-0', 'opacity-100');
-                content.classList.replace('scale-95', 'scale-100');
-            }, 10);
-        }
+                const modal = document.getElementById('milky-way-window-modal');
+                const backdrop = document.getElementById('milky-way-window-backdrop');
+                const content = document.getElementById('milky-way-window-content');
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+                setTimeout(() => {
+                    backdrop.classList.replace('opacity-0', 'opacity-100');
+                    content.classList.replace('opacity-0', 'opacity-100');
+                    content.classList.replace('scale-95', 'scale-100');
+                }, 10);
+            },
 
-        function closeMilkyWayWindowModal() {
-            const modal = document.getElementById('milky-way-window-modal');
-            const backdrop = document.getElementById('milky-way-window-backdrop');
-            const content = document.getElementById('milky-way-window-content');
-            if (!modal) return;
-            activeMilkyWayWindowKey = null;
-            activeMilkyWayWindowIndex = null;
-            backdrop.classList.replace('opacity-100', 'opacity-0');
-            content.classList.replace('opacity-100', 'opacity-0');
-            content.classList.replace('scale-100', 'scale-95');
-            setTimeout(() => {
-                modal.classList.add('hidden');
-                modal.classList.remove('flex');
-            }, 300);
-        }
+            close() {
+                const modal = document.getElementById('milky-way-window-modal');
+                const backdrop = document.getElementById('milky-way-window-backdrop');
+                const content = document.getElementById('milky-way-window-content');
+                if (!modal) return;
+                activeMilkyWayWindowKey = null;
+                activeMilkyWayWindowIndex = null;
+                backdrop.classList.replace('opacity-100', 'opacity-0');
+                content.classList.replace('opacity-100', 'opacity-0');
+                content.classList.replace('scale-100', 'scale-95');
+                setTimeout(() => {
+                    modal.classList.add('hidden');
+                    modal.classList.remove('flex');
+                }, 300);
+            }
+        };
+
+        function getCurrentMilkyWayData() { return MilkyWayWindowModule.getCurrentData(); }
+        function setMilkyWayWindowBySortKey(sortKey) { MilkyWayWindowModule.setBySortKey(sortKey); }
+        function setMilkyWayWindowByIndex(windowIndex) { MilkyWayWindowModule.setByIndex(windowIndex); }
+        function openMilkyWayWindowModal(sortKey) { MilkyWayWindowModule.open(sortKey); }
+        function closeMilkyWayWindowModal() { MilkyWayWindowModule.close(); }
 
         function toggleSkyConditions() {
             isSkyConditionsExpanded = !isSkyConditionsExpanded;
