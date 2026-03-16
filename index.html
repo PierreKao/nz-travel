@@ -358,7 +358,7 @@
     <header class="bg-white/70 backdrop-blur-md border-b sticky top-0 z-50 px-3 py-2 sm:px-6 sm:py-3 flex justify-between items-center shadow-sm">
         <div onclick="activeDayIndex = -1; updateUI();" class="cursor-pointer shrink-0">
                 <span id="ui-header-title">紐西蘭南島 · 冬季自駕</span>
-            <p class="text-[10px] text-blue-600 font-bold uppercase tracking-widest">Winter Adventure · v1.0.6</p>
+            <p class="text-[10px] text-blue-600 font-bold uppercase tracking-widest">Winter Adventure · v1.2.0</p>
         </div>
         
         <div class="flex items-center gap-1 sm:gap-3">
@@ -453,7 +453,7 @@
                 </div>
 
                 <div class="mt-12 pt-8 border-t border-slate-100">
-                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider text-center">New Zealand 2025 · v1.0.6</p>
+                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider text-center">New Zealand 2025 · v1.2.0</p>
                 </div>
             </div>
         </div>
@@ -1109,6 +1109,7 @@
                 skyConditionsCollapse: "收合",
                 skyConditionsLoading: "正在更新極光條件",
                 skyConditionsUnavailable: "天空條件暫時無法取得",
+                skyConditionsReady: "今晚觀測建議",
                 skyConditionsSummaryPrefix: "極光",
                 skyConditionsMilkyWayPrefix: "銀河",
                 auroraLoading: "正在計算今晚的極光條件...",
@@ -1135,11 +1136,13 @@
                 milkyWayUnavailable: "目前無法取得銀河資料",
                 milkyWayBestHours: "最佳觀賞時段",
                 milkyWayScore: "銀河指標",
-                milkyWayMoon: "月光",
-                milkyWayDarkSky: "天空黑度",
+                milkyWayMoon: "月亮亮度",
+                milkyWayDarkSky: "天文夜",
                 milkyWayCloud: "雲量",
-                milkyWaySummaryHint: "銀河指標會綜合天文夜、銀河核心高度、月光與雲量，不保證肉眼一定看見。",
+                milkyWaySummaryHint: "銀河指標綜合天文夜、銀河高度、月亮亮度與雲量，不保證肉眼一定看見。",
                 milkyWayBestSpot: "推薦觀星點",
+                milkyWayCoreAltitude: "銀河高度",
+                milkyWayUpdated: "更新",
                 milkyWayLow: "不佳",
                 milkyWayModerate: "普通",
                 milkyWayHigh: "佳",
@@ -1206,6 +1209,7 @@
                 skyConditionsCollapse: "Collapse",
                 skyConditionsLoading: "Updating aurora conditions",
                 skyConditionsUnavailable: "Sky conditions are temporarily unavailable",
+                skyConditionsReady: "Tonight's recommendation",
                 skyConditionsSummaryPrefix: "Aurora",
                 skyConditionsMilkyWayPrefix: "Milky Way",
                 auroraLoading: "Calculating the next aurora window...",
@@ -1232,11 +1236,13 @@
                 milkyWayUnavailable: "Milky Way data is currently unavailable",
                 milkyWayBestHours: "Best Viewing Window",
                 milkyWayScore: "Milky Way Score",
-                milkyWayMoon: "Moonlight",
-                milkyWayDarkSky: "Dark Sky",
+                milkyWayMoon: "Moon Brightness",
+                milkyWayDarkSky: "Astronomical Night",
                 milkyWayCloud: "Cloud",
-                milkyWaySummaryHint: "Milky Way score combines astronomical darkness, core altitude, moonlight, and cloud cover. It is not a guarantee.",
+                milkyWaySummaryHint: "Milky Way score combines astronomical darkness, core altitude, moon brightness, and cloud cover. It is not a guarantee.",
                 milkyWayBestSpot: "Best Stargazing Spot",
+                milkyWayCoreAltitude: "Core Altitude",
+                milkyWayUpdated: "Updated",
                 milkyWayLow: "Low",
                 milkyWayModerate: "Moderate",
                 milkyWayHigh: "High",
@@ -2320,22 +2326,49 @@
 
         function getSkyConditionsSummary(ui) {
             if (auroraState.status === 'loading') {
-                return `${ui.skyConditionsSummaryPrefix}: ${ui.skyConditionsLoading}`;
+                return {
+                    headline: ui.skyConditionsLoading,
+                    detail: currentLang === 'zh' ? '正在整理今晚最值得看的天空條件。' : 'Preparing the best viewing call for tonight.'
+                };
             }
 
             if (auroraState.status === 'error') {
-                return `${ui.skyConditionsSummaryPrefix}: ${ui.skyConditionsUnavailable}`;
+                return {
+                    headline: ui.skyConditionsUnavailable,
+                    detail: currentLang === 'zh' ? '稍後可再重新整理一次。' : 'Try refreshing again in a moment.'
+                };
             }
 
             if (auroraState.status === 'success' && auroraState.data) {
-                const auroraSummary = `${ui.skyConditionsSummaryPrefix}: ${getAuroraLevelLabel(auroraState.data.level)}`;
-                const milkyWaySummary = milkyWayState.status === 'success' && milkyWayState.data
-                    ? `${ui.skyConditionsMilkyWayPrefix}: ${getMilkyWayLevelLabel(milkyWayState.data.level)}`
-                    : `${ui.skyConditionsMilkyWayPrefix}: ${ui.milkyWayLoading}`;
-                return `${auroraSummary} · ${milkyWaySummary} · ${getDisplayCityName(auroraState.data.cityKey, currentLang)}`;
+                const cityName = getDisplayCityName(auroraState.data.cityKey, currentLang);
+                const auroraLevel = getAuroraLevelLabel(auroraState.data.level);
+                const auroraTime = auroraState.data.bestViewingHours[0] || '--';
+
+                if (milkyWayState.status === 'success' && milkyWayState.data) {
+                    const milkyLevel = getMilkyWayLevelLabel(milkyWayState.data.level);
+                    const milkyTime = milkyWayState.data.bestViewingWindow[0] || '--';
+                    const milkyIsBetter = milkyWayState.data.score >= auroraState.data.score;
+
+                    return {
+                        headline: milkyIsBetter
+                            ? `${cityName}${currentLang === 'zh' ? '今晚更適合追銀河' : ' is better for Milky Way tonight'}`
+                            : `${cityName}${currentLang === 'zh' ? '今晚可先看極光' : ' is leaning aurora tonight'}`,
+                        detail: milkyIsBetter
+                            ? `${ui.skyConditionsMilkyWayPrefix} ${milkyLevel} · ${milkyTime}後較好 · ${ui.skyConditionsSummaryPrefix} ${auroraLevel}`
+                            : `${ui.skyConditionsSummaryPrefix} ${auroraLevel} · ${auroraTime}較佳 · ${ui.skyConditionsMilkyWayPrefix} ${milkyLevel}`
+                    };
+                }
+
+                return {
+                    headline: `${cityName}${currentLang === 'zh' ? '今晚可看極光條件' : ' aurora conditions are available tonight'}`,
+                    detail: `${ui.skyConditionsSummaryPrefix} ${auroraLevel} · ${auroraTime}較佳`
+                };
             }
 
-            return `${ui.skyConditionsSummaryPrefix}: ${ui.skyConditionsLoading}`;
+            return {
+                headline: ui.skyConditionsLoading,
+                detail: currentLang === 'zh' ? '正在整理今晚最值得看的天空條件。' : 'Preparing the best viewing call for tonight.'
+            };
         }
 
         async function printItinerary() {
@@ -3279,6 +3312,7 @@
         }
 
         function renderSkyConditionsSection(ui) {
+            const summary = getSkyConditionsSummary(ui);
             return `
                 <div class="mb-6 sm:mb-8 rounded-[2rem] p-4 sm:p-5 sky-conditions-shell text-white">
                     <button onclick="toggleSkyConditions()" class="w-full flex items-start sm:items-center justify-between gap-4 text-left">
@@ -3289,10 +3323,10 @@
                                 </div>
                                 <div class="min-w-0">
                                     <p class="text-xs uppercase tracking-[0.35em] text-emerald-100/55">${ui.skyConditionsTitle}</p>
-                                    <h3 class="text-xl sm:text-2xl font-black mt-1">${getSkyConditionsSummary(ui)}</h3>
+                                    <h3 class="text-xl sm:text-2xl font-black mt-1">${summary.headline}</h3>
                                 </div>
                             </div>
-                            <p class="text-sm text-white/55 mt-3 ml-14">${currentLang === 'zh' ? '先收合成一條摘要，之後可在這裡擴充銀河與其他觀測條件。' : 'Collapsed by default so the overview stays lighter. Milky Way can be added here next.'}</p>
+                            <p class="text-sm text-white/55 mt-3 ml-14">${summary.detail}</p>
                         </div>
                         <div class="shrink-0 flex items-center gap-3 pl-2">
                             <span class="hidden sm:inline text-xs font-bold uppercase tracking-[0.28em] text-white/45">${isSkyConditionsExpanded ? ui.skyConditionsCollapse : ui.skyConditionsExpand}</span>
@@ -3352,7 +3386,7 @@
                             <span class="mt-4 px-4 py-1.5 rounded-full text-sm font-bold ${styles.badge}">
                                 ${getMilkyWayLevelLabel(data.level)}
                             </span>
-                            <p class="text-xs text-white/55 mt-3">${ui.auroraUpdated}: ${formatAuroraUpdatedAt(data.updatedAt)}</p>
+                            <p class="text-xs text-white/55 mt-3">${ui.milkyWayUpdated}: ${formatAuroraUpdatedAt(data.updatedAt)}</p>
                         </div>
 
                         <div class="space-y-4">
@@ -3361,6 +3395,12 @@
                                     <p class="text-xs uppercase tracking-[0.3em] text-white/45">${ui.milkyWayBestSpot}</p>
                                     <h3 class="text-2xl sm:text-3xl font-black mt-2">${getDisplayCityName(data.cityKey, currentLang)}</h3>
                                     <p class="text-sm text-white/75 mt-3 leading-relaxed">${getMilkyWaySummary(data.level, { cloudCover: data.components.cloudCover, moonIllumination: data.components.moonIllumination, darkSky: data.components.darkSky })}</p>
+                                    <div class="flex flex-wrap gap-2 mt-4">
+                                        <span class="px-3 py-1.5 rounded-full bg-white/8 border border-white/10 text-xs font-bold text-white/80">${ui.milkyWayDarkSky}: ${data.components.darkSky ? (currentLang === 'zh' ? '有' : 'Yes') : (currentLang === 'zh' ? '無' : 'No')}</span>
+                                        <span class="px-3 py-1.5 rounded-full bg-white/8 border border-white/10 text-xs font-bold text-white/80">${ui.milkyWayMoon}: ${Math.round(data.components.moonIllumination * 100)}%</span>
+                                        <span class="px-3 py-1.5 rounded-full bg-white/8 border border-white/10 text-xs font-bold text-white/80">${ui.milkyWayCloud}: ${data.components.cloudCover}%</span>
+                                        <span class="px-3 py-1.5 rounded-full bg-white/8 border border-white/10 text-xs font-bold text-white/80">${ui.milkyWayCoreAltitude}: ${data.components.coreAltitude}°</span>
+                                    </div>
                                 </div>
                                 <button onclick="refreshMilkyWayVisibility(true)" class="shrink-0 px-3 py-2 rounded-full bg-white/10 hover:bg-white/15 text-xs font-bold transition-colors">
                                     <i class="fas fa-rotate-right mr-1"></i>${ui.auroraRefresh}
@@ -3378,25 +3418,6 @@
 
                             <div class="rounded-[1.5rem] bg-white/5 border border-white/10 p-4">
                                 <p class="text-sm text-white/80">${ui.milkyWaySummaryHint}</p>
-                            </div>
-
-                            <div class="grid grid-cols-2 xl:grid-cols-4 gap-3">
-                                <div class="rounded-2xl bg-white/5 border border-white/10 p-4">
-                                    <p class="text-[11px] uppercase tracking-[0.28em] text-white/45">${ui.milkyWayDarkSky}</p>
-                                    <p class="text-2xl font-black mt-2">${data.components.darkSky ? (currentLang === 'zh' ? '夠黑' : 'Dark') : (currentLang === 'zh' ? '未夠黑' : 'Bright')}</p>
-                                </div>
-                                <div class="rounded-2xl bg-white/5 border border-white/10 p-4">
-                                    <p class="text-[11px] uppercase tracking-[0.28em] text-white/45">${ui.milkyWayMoon}</p>
-                                    <p class="text-2xl font-black mt-2">${Math.round(data.components.moonIllumination * 100)}%</p>
-                                </div>
-                                <div class="rounded-2xl bg-white/5 border border-white/10 p-4">
-                                    <p class="text-[11px] uppercase tracking-[0.28em] text-white/45">${ui.milkyWayCloud}</p>
-                                    <p class="text-2xl font-black mt-2">${data.components.cloudCover}%</p>
-                                </div>
-                                <div class="rounded-2xl bg-white/5 border border-white/10 p-4">
-                                    <p class="text-[11px] uppercase tracking-[0.28em] text-white/45">${currentLang === 'zh' ? '核心高度' : 'Core Altitude'}</p>
-                                    <p class="text-2xl font-black mt-2">${data.components.coreAltitude}°</p>
-                                </div>
                             </div>
 
                             <p class="text-xs text-white/45">${ui.auroraSource}: ${data.source}</p>
