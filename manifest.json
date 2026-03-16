@@ -1,6 +1,6 @@
 {
-  "name": "NZ South Island Trip 2025",
-  "short_name": "NZ 2025",
+  "name": "NZ South Island Trip",
+  "short_name": "NZ Travel",
   "description": "Premium New Zealand South Island Winter Trip Guide",
   "start_url": "./index.html",
   "display": "standalone",
