@@ -740,6 +740,7 @@
         let currentNZDRate = 19.5; // Default fallback
         let isSkyConditionsExpanded = false;
         const NZ_TIMEZONE = 'Pacific/Auckland';
+        const SYSTEM_TIMEZONE = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
         const AURORA_CACHE_TTL = 30 * 60 * 1000;
         const MILKY_WAY_CACHE_TTL = 60 * 60 * 1000;
         const MILKY_WAY_WEATHER_FORECAST_DAYS = 7;
@@ -1692,14 +1693,16 @@
 
         // Date Logic
         function updateItineraryDates(start) {
-            const baseDateKey = typeof start === 'string' ? start : formatLocalDateKey(start);
+            const baseDateKey = typeof start === 'string' ? start : formatSystemDateKey(start);
             itinerary.forEach((day, i) => {
                 day.actualDate = addDaysToDateKey(baseDateKey, i);
             });
         }
 
         let savedStartDate = localStorage.getItem('nz_trip_start_date');
-        let startDate = savedStartDate ? parseTimeZoneDateTimeValue(savedStartDate) : parseTimeZoneDateTimeValue(formatLocalDateKey(new Date()));
+        let startDate = savedStartDate
+            ? parseTimeZoneDateTimeValue(savedStartDate, SYSTEM_TIMEZONE)
+            : parseTimeZoneDateTimeValue(formatSystemDateKey(new Date()), SYSTEM_TIMEZONE);
         updateItineraryDates(startDate);
 
         function updateSidebarTitles() {
@@ -1711,7 +1714,7 @@
                     const day = itinerary[dayIdx];
                     const [y, m, d] = day.actualDate.split('-');
                     const displayDate = savedStartDate ? `${parseInt(m)}/${parseInt(d)}` : `D${dayIdx+1}`;
-                    const isToday = day.actualDate === getCurrentNzDateKey();
+                    const isToday = day.actualDate === getCurrentSystemDateKey();
                     
                     const title = day[currentLang].title || day.city[currentLang];
                     const shortTitle = title.length > 10 ? title.substring(0, 10) + '...' : title;
@@ -1731,7 +1734,7 @@
             document.getElementById('date-modal-desc').innerText = ui.dateInputLabel;
             document.querySelector('#date-modal button').innerText = ui.confirmBtn;
             
-            input.value = formatLocalDateKey(startDate);
+            input.value = formatSystemDateKey(startDate);
             modal.classList.remove('hidden');
             modal.classList.add('flex');
             setTimeout(() => {
@@ -1757,7 +1760,7 @@
         function submitStartDate() {
             const dateVal = document.getElementById('start-date-input').value;
             if (dateVal) {
-                startDate = parseTimeZoneDateTimeValue(dateVal);
+                startDate = parseTimeZoneDateTimeValue(dateVal, SYSTEM_TIMEZONE);
                 savedStartDate = dateVal;
                 localStorage.setItem('nz_trip_start_date', dateVal);
                 updateItineraryDates(startDate);
@@ -1773,7 +1776,7 @@
         window.simulatedTime = simTimeParam ? parseTimeZoneDateTimeValue(simTimeParam) : null;
 
         window.testTime = function(dayNumber, timeStr) {
-            const targetDateKey = itinerary[dayNumber - 1]?.actualDate || formatLocalDateKey(startDate);
+            const targetDateKey = itinerary[dayNumber - 1]?.actualDate || formatSystemDateKey(startDate);
             const [hours, minutes] = timeStr ? timeStr.split(':').map(Number) : [12, 0];
             const d = makeTimeZoneDate(targetDateKey, hours, minutes);
             window.simulatedTime = d;
@@ -2253,19 +2256,31 @@
             return Number.isNaN(date.getTime()) ? new Date(NaN) : date;
         }
 
-        function formatLocalDateKey(value) {
+        function formatDateKeyForTimeZone(value, timeZone = NZ_TIMEZONE) {
             if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
-            const date = parseTimeZoneDateTimeValue(value);
+            const date = parseTimeZoneDateTimeValue(value, timeZone);
             if (Number.isNaN(date.getTime())) return '';
-            const parts = getTimeZoneParts(date, NZ_TIMEZONE);
+            const parts = getTimeZoneParts(date, timeZone);
             return `${parts.year}-${parts.month}-${parts.day}`;
         }
 
-        function formatLocalTimeLabel(value) {
-            const date = parseTimeZoneDateTimeValue(value);
+        function formatTimeLabelForTimeZone(value, timeZone = NZ_TIMEZONE) {
+            const date = parseTimeZoneDateTimeValue(value, timeZone);
             if (Number.isNaN(date.getTime())) return '--:--';
-            const parts = getTimeZoneParts(date, NZ_TIMEZONE);
+            const parts = getTimeZoneParts(date, timeZone);
             return `${parts.hour}:${parts.minute}`;
+        }
+
+        function formatLocalDateKey(value) {
+            return formatDateKeyForTimeZone(value, NZ_TIMEZONE);
+        }
+
+        function formatLocalTimeLabel(value) {
+            return formatTimeLabelForTimeZone(value, NZ_TIMEZONE);
+        }
+
+        function formatSystemDateKey(value) {
+            return formatDateKeyForTimeZone(value, SYSTEM_TIMEZONE);
         }
 
         function getMinutesOfDayInTimeZone(value, timeZone = NZ_TIMEZONE) {
@@ -2301,6 +2316,10 @@
 
         function getCurrentNzDateKey() {
             return formatLocalDateKey(window.simulatedTime || new Date());
+        }
+
+        function getCurrentSystemDateKey() {
+            return formatSystemDateKey(window.simulatedTime || new Date());
         }
 
         function formatDateKeyForDisplay(dateKey, options) {
@@ -3841,7 +3860,7 @@
                 chkBtn.onclick = (e) => { e.stopPropagation(); activeDayIndex = -2; updateUI(); };
                 nav.appendChild(chkBtn);
 
-                const todayStr = getCurrentNzDateKey();
+                const todayStr = getCurrentSystemDateKey();
 
                 itinerary.forEach((day, i) => {
                     const isToday = day.actualDate === todayStr;
@@ -4263,7 +4282,7 @@
                     
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-3 relative z-10">
                         ${itinerary.map((day, i) => {
-                            const todayStr = getCurrentNzDateKey();
+                            const todayStr = getCurrentSystemDateKey();
                             const isToday = day.actualDate === todayStr;
                             const isPast = compareDateKeys(day.actualDate, todayStr) < 0;
                             const dayDate = makeTimeZoneDate(day.actualDate, 12, 0, NZ_TIMEZONE);
@@ -4389,9 +4408,9 @@
 
             // Check current time and date using simulated time if available
             const now = window.simulatedTime || new Date();
-            const todayStr = getCurrentNzDateKey();
+            const todayStr = getCurrentSystemDateKey();
             const isToday = day.actualDate === todayStr;
-            const currentTimeVal = getMinutesOfDayInTimeZone(now, NZ_TIMEZONE);
+            const currentTimeVal = getMinutesOfDayInTimeZone(now, SYSTEM_TIMEZONE);
 
             // Simple parser to map time string (e.g. "09:00", "早上") to an approximate minute value for the day
             function parseTime(timeStr) {
