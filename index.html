@@ -1220,8 +1220,8 @@
                 milkyWayUpdated: "更新",
                 milkyWayModeAstronomy: "天文預估",
                 milkyWayModeForecast: "天氣版",
-                milkyWayWeatherPending: "天氣尚未進入預報範圍",
-                milkyWayWeatherPendingHint: "以下只依天文夜、銀河高度與月面照明推估，尚未納入雲量。",
+                milkyWayWeatherPending: "日期不在天氣預報範圍",
+                milkyWayWeatherPendingHint: "所選日期不在可用天氣預報範圍，以下只依天文夜、銀河高度與月面照明推估。",
                 milkyWayLow: "不佳",
                 milkyWayModerate: "普通",
                 milkyWayHigh: "佳",
@@ -1351,8 +1351,8 @@
                 milkyWayUpdated: "Updated",
                 milkyWayModeAstronomy: "Astronomy Estimate",
                 milkyWayModeForecast: "Forecast Mode",
-                milkyWayWeatherPending: "Weather pending",
-                milkyWayWeatherPendingHint: "This is an astronomy-only estimate. Local cloud cover is not available yet.",
+                milkyWayWeatherPending: "Weather out of range",
+                milkyWayWeatherPendingHint: "The selected date is outside the available weather forecast window, so this is astronomy-only.",
                 milkyWayLow: "Low",
                 milkyWayModerate: "Moderate",
                 milkyWayHigh: "High",
@@ -2555,7 +2555,7 @@
             const { cloudCover, moonIllumination, darkSky, weatherPending } = details;
             if (currentLang === 'zh') {
                 if (!darkSky) return '太陽尚未低到天文夜，今晚這個時段不適合看銀河。';
-                if (weatherPending) return `天氣還太早無法預估，但若月面照明維持在 ${Math.round(moonIllumination * 100)}% 左右，這天仍值得先看銀河時段。`;
+                if (weatherPending) return `所選日期不在可用天氣預報範圍，先以天文條件估算；月面照明約 ${Math.round(moonIllumination * 100)}%。`;
                 if (level === 'excellent') return '天夠黑、月光干擾低，今晚很適合觀賞銀河帶。';
                 if (level === 'high') return `雲量約 ${cloudCover}% 且月光干擾低，今晚有不錯的銀河機會。`;
                 if (level === 'moderate') return `月光或雲量有些干擾，建議挑更晚、更暗的時段再觀察。`;
@@ -2563,7 +2563,7 @@
             }
 
             if (!darkSky) return 'The sun has not dropped deep enough below the horizon for a proper Milky Way window.';
-            if (weatherPending) return `Weather is still too far out to predict, but moon illumination near ${Math.round(moonIllumination * 100)}% keeps this date worth watching.`;
+            if (weatherPending) return `This date is outside the weather forecast window, so this score uses astronomy-only inputs with moon illumination near ${Math.round(moonIllumination * 100)}%.`;
             if (level === 'excellent') return 'Dark skies, low moonlight, and low cloud cover make tonight ideal for Milky Way viewing.';
             if (level === 'high') return `Cloud cover near ${cloudCover}% and light moon interference keep tonight promising for Milky Way viewing.`;
             if (level === 'moderate') return 'Moonlight or cloud cover adds some interference. A later and darker slot may work better.';
@@ -2582,6 +2582,11 @@
 
         function getDaysFromToday(targetDateString) {
             return compareDateKeys(targetDateString, getCurrentNzDateKey());
+        }
+
+        function isMilkyWayWeatherPending(daysFromToday) {
+            if (!Number.isFinite(daysFromToday)) return true;
+            return daysFromToday < 0 || daysFromToday >= MILKY_WAY_WEATHER_FORECAST_DAYS;
         }
 
         function ceilDateToHalfHour(date) {
@@ -2979,7 +2984,7 @@
             if (!cityKey || !COORDS[cityKey]) return null;
             const targetDateString = getMilkyWayTargetDate();
             const daysFromToday = getDaysFromToday(targetDateString);
-            const weatherPending = daysFromToday >= MILKY_WAY_WEATHER_FORECAST_DAYS;
+            const weatherPending = isMilkyWayWeatherPending(daysFromToday);
             const cacheKey = `${cityKey}:${targetDateString}:${weatherPending ? 'astro' : 'forecast'}`;
 
             const cached = milkyWayCache.get(cacheKey);
@@ -3006,7 +3011,16 @@
                     if (!response.ok) throw new Error('Milky Way weather response failed');
 
                     const weatherPayload = await response.json();
-                    data = calculateMilkyWayVisibility(cityKey, { weatherPayload, targetDateString, weatherPending: false });
+                    try {
+                        data = calculateMilkyWayVisibility(cityKey, { weatherPayload, targetDateString, weatherPending: false });
+                    } catch (error) {
+                        // If forecast data does not include the selected date/time, degrade to astronomy-only mode.
+                        if (String(error?.message || '').includes('No Milky Way windows')) {
+                            data = calculateMilkyWayVisibility(cityKey, { targetDateString, weatherPending: true });
+                        } else {
+                            throw error;
+                        }
+                    }
                 }
                 milkyWayCache.set(cacheKey, { timestamp: Date.now(), data });
                 milkyWayState = { status: 'success', city: cityKey, data, error: '' };
@@ -4101,7 +4115,7 @@
                     auroraState = { status: 'success', city: auroraSelectedCity, data: cachedAurora.data, error: '' };
                 }
                 const targetDateString = getMilkyWayTargetDate();
-                const weatherPending = getDaysFromToday(targetDateString) >= MILKY_WAY_WEATHER_FORECAST_DAYS;
+                const weatherPending = isMilkyWayWeatherPending(getDaysFromToday(targetDateString));
                 const cachedMilkyWay = milkyWayCache.get(`${auroraSelectedCity}:${targetDateString}:${weatherPending ? 'astro' : 'forecast'}`);
                 if (cachedMilkyWay && (Date.now() - cachedMilkyWay.timestamp) < MILKY_WAY_CACHE_TTL) {
                     milkyWayState = { status: 'success', city: auroraSelectedCity, data: cachedMilkyWay.data, error: '' };
@@ -4303,7 +4317,7 @@
                         <div class="min-w-0">
                             <div class="flex items-center gap-3">
                                 <div class="w-11 h-11 rounded-2xl bg-white/10 border border-white/10 flex items-center justify-center text-emerald-200 shrink-0">
-                                    <i class="fas fa-stars"></i>
+                                    <i class="fas fa-star"></i>
                                 </div>
                                 <div class="min-w-0">
                                     <p class="text-xs uppercase tracking-[0.35em] text-emerald-100/55">${ui.skyConditionsTitle}</p>
@@ -4461,7 +4475,7 @@
                         <div class="mb-5">
                             <p class="text-xs uppercase tracking-[0.35em] text-amber-100/60 mb-3">${ui.milkyWayTitle}</p>
                             <h2 class="text-3xl font-black flex items-center gap-3">
-                                <i class="fas fa-meteor text-amber-200"></i>${getDisplayCityName(auroraSelectedCity, currentLang)}
+                                <i class="fas fa-star text-amber-200"></i>${getDisplayCityName(auroraSelectedCity, currentLang)}
                             </h2>
                             <p class="text-sm text-white/70 mt-3 max-w-2xl">${ui.milkyWaySubtitle}</p>
                             ${selectedStop ? `<p class="text-xs text-white/50 mt-2">${getSkyConditionsBasedOnText(ui, selectedStop)}</p>` : ''}
