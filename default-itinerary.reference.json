@@ -1,0 +1,832 @@
+[
+  {
+    "date": "Day 01",
+    "city": {
+      "zh": "台北/奧克蘭",
+      "en": "TPE/AKL"
+    },
+    "mapUrl": "Auckland+Airport",
+    "stay": {
+      "zh": "過夜航班",
+      "en": "Overnight flight"
+    },
+    "zh": {
+      "title": "✈️ 台北出發前往奧克蘭",
+      "timeline": [
+        [
+          "18:35",
+          "桃園機場起飛（NZ78）",
+          "11 小時 航程",
+          "",
+          "",
+          "長程夜航，建議機上補眠並備妥保暖衣物。"
+        ],
+        [
+          "機上",
+          "休息與調整時差",
+          "過夜航班"
+        ],
+        [
+          "次日 09:15",
+          "抵達奧克蘭",
+          "航班轉乘"
+        ]
+      ]
+    },
+    "en": {
+      "title": "✈️ TPE Departure to Auckland",
+      "timeline": [
+        [
+          "18:35",
+          "Depart TPE on NZ78",
+          "11 hr flight",
+          "",
+          "",
+          "Overnight long-haul. Rest on board and keep warm layers handy."
+        ],
+        [
+          "On board",
+          "Rest and adjust to time zone",
+          "Overnight flight"
+        ],
+        [
+          "Next day 09:15",
+          "Arrive in Auckland",
+          "Flight transfer"
+        ]
+      ]
+    }
+  },
+  {
+    "date": "Day 02",
+    "city": {
+      "zh": "皇后鎮",
+      "en": "Queenstown"
+    },
+    "mapUrl": "Queenstown,New+Zealand",
+    "stay": {
+      "zh": "皇后鎮",
+      "en": "Queenstown"
+    },
+    "zh": {
+      "title": "🏔️ 奧克蘭轉機前往皇后鎮",
+      "timeline": [
+        [
+          "上午",
+          "奧克蘭轉國內線",
+          "航程（待確認）",
+          "",
+          "",
+          "國內線時間待確認，先預留取車與採買緩衝。"
+        ],
+        [
+          "下午",
+          "抵達後取車與入住",
+          "市區車程"
+        ],
+        [
+          "晚上",
+          "湖畔散步與晚餐",
+          "市區步行"
+        ]
+      ]
+    },
+    "en": {
+      "title": "🏔️ AKL Connection to Queenstown",
+      "timeline": [
+        [
+          "Morning",
+          "Transfer to domestic flight in AKL",
+          "Flight (TBD)",
+          "",
+          "",
+          "Domestic segment is TBD. Keep buffer for car pickup and groceries."
+        ],
+        [
+          "Afternoon",
+          "Pick up car and check in",
+          "Town drive"
+        ],
+        [
+          "Evening",
+          "Lakefront walk and dinner",
+          "Town walk"
+        ]
+      ]
+    }
+  },
+  {
+    "date": "Day 03",
+    "city": {
+      "zh": "皇后鎮",
+      "en": "Queenstown"
+    },
+    "mapUrl": "Skyline+Queenstown",
+    "stay": {
+      "zh": "皇后鎮",
+      "en": "Queenstown"
+    },
+    "zh": {
+      "title": "🚠 皇后鎮：採買、纜車與 滑車",
+      "timeline": [
+        [
+          "上午",
+          "超市採買補給",
+          "市區車程",
+          "",
+          "",
+          "熱門時段建議先買 纜車與滑車 票券。"
+        ],
+        [
+          "中午",
+          "Skyline 纜車",
+          "纜車"
+        ],
+        [
+          "下午",
+          "滑車 體驗",
+          "步行"
+        ],
+        [
+          "晚上",
+          "皇后鎮晚餐",
+          "市區步行"
+        ]
+      ]
+    },
+    "en": {
+      "title": "🚠 Queenstown: Groceries, Gondola & Luge",
+      "timeline": [
+        [
+          "Morning",
+          "Supermarket run",
+          "Town drive",
+          "",
+          "",
+          "Booking Skyline and Luge in advance is recommended for peak hours."
+        ],
+        [
+          "Noon",
+          "Skyline Gondola",
+          "Gondola ride"
+        ],
+        [
+          "Afternoon",
+          "Luge sessions",
+          "Walk"
+        ],
+        [
+          "Evening",
+          "Dinner in Queenstown",
+          "Town walk"
+        ]
+      ]
+    }
+  },
+  {
+    "date": "Day 04",
+    "city": {
+      "zh": "皇后鎮/格萊諾基",
+      "en": "Queenstown/Glenorchy"
+    },
+    "mapUrl": "Glenorchy+New+Zealand",
+    "stay": {
+      "zh": "皇后鎮",
+      "en": "Queenstown"
+    },
+    "zh": {
+      "title": "⛴️ 格萊諾基或 TSS Earnslaw 遊船",
+      "timeline": [
+        [
+          "上午",
+          "方案 A：前往格萊諾基",
+          "往返車程",
+          "",
+          "",
+          "依天候在自駕與遊船方案間彈性切換。"
+        ],
+        [
+          "下午",
+          "方案 B：TSS Earnslaw 遊船",
+          "碼頭步行"
+        ],
+        [
+          "晚上",
+          "返回皇后鎮市區",
+          "市區車程"
+        ]
+      ]
+    },
+    "en": {
+      "title": "⛴️ Glenorchy or TSS Earnslaw Cruise",
+      "timeline": [
+        [
+          "Morning",
+          "Option A: Drive to Glenorchy",
+          "Round-trip drive",
+          "",
+          "",
+          "Choose between self-drive and cruise based on weather."
+        ],
+        [
+          "Afternoon",
+          "Option B: TSS Earnslaw cruise",
+          "Wharf walk"
+        ],
+        [
+          "Evening",
+          "Return to Queenstown center",
+          "Town drive"
+        ]
+      ]
+    }
+  },
+  {
+    "date": "Day 05",
+    "city": {
+      "zh": "瓦納卡",
+      "en": "Wanaka"
+    },
+    "mapUrl": "Arrowtown+New+Zealand",
+    "drive": "1.5 hr",
+    "stay": {
+      "zh": "瓦納卡",
+      "en": "Wanaka"
+    },
+    "zh": {
+      "title": "📷 皇后鎮 → 箭鎮 → 瓦納卡",
+      "timeline": [
+        [
+          "上午",
+          "皇后鎮出發前往箭鎮",
+          "車程",
+          "",
+          "",
+          "箭鎮停留後前往瓦納卡，建議抓日落前抵達。"
+        ],
+        [
+          "中午",
+          "箭鎮散步與午餐",
+          "步行"
+        ],
+        [
+          "下午",
+          "前往瓦納卡並入住",
+          "1.5 小時 車程"
+        ],
+        [
+          "傍晚",
+          "湖邊散步",
+          "步行"
+        ]
+      ]
+    },
+    "en": {
+      "title": "📷 Queenstown → Arrowtown → Wanaka",
+      "timeline": [
+        [
+          "Morning",
+          "Leave Queenstown for Arrowtown",
+          "Drive",
+          "",
+          "",
+          "After Arrowtown stop, aim to reach Wanaka before sunset."
+        ],
+        [
+          "Noon",
+          "Walk and lunch in Arrowtown",
+          "Walk"
+        ],
+        [
+          "Afternoon",
+          "Drive to Wanaka and check in",
+          "1.5 hr drive"
+        ],
+        [
+          "Evening",
+          "Lakefront walk",
+          "Walk"
+        ]
+      ]
+    }
+  },
+  {
+    "date": "Day 06",
+    "city": {
+      "zh": "瓦納卡",
+      "en": "Wanaka"
+    },
+    "mapUrl": "Puzzling+World+Wanaka",
+    "stay": {
+      "zh": "瓦納卡",
+      "en": "Wanaka"
+    },
+    "zh": {
+      "title": "🪾 瓦納卡：迷宮世界 與孤獨樹",
+      "timeline": [
+        [
+          "上午",
+          "迷宮世界（Puzzling World）",
+          "市區車程",
+          "",
+          "",
+          "雨天可增加室內停留時間，行程保持彈性。"
+        ],
+        [
+          "下午",
+          "瓦納卡孤獨樹 拍照",
+          "湖畔步行"
+        ],
+        [
+          "晚上",
+          "瓦納卡市區晚餐",
+          "市區步行"
+        ]
+      ]
+    },
+    "en": {
+      "title": "🪾 Wanaka: Puzzling World & Wanaka Tree",
+      "timeline": [
+        [
+          "Morning",
+          "Puzzling World",
+          "Town drive",
+          "",
+          "",
+          "Extend indoor time if rainy and keep the plan flexible."
+        ],
+        [
+          "Afternoon",
+          "Photos at That Wanaka Tree",
+          "Lakefront walk"
+        ],
+        [
+          "Evening",
+          "Dinner in Wanaka",
+          "Town walk"
+        ]
+      ]
+    }
+  },
+  {
+    "date": "Day 07",
+    "city": {
+      "zh": "奧瑪魯",
+      "en": "Oamaru"
+    },
+    "mapUrl": "Oamaru+Blue+Penguin+Colony",
+    "drive": "3.5 hr",
+    "stay": {
+      "zh": "奧瑪魯",
+      "en": "Oamaru"
+    },
+    "zh": {
+      "title": "🐧 瓦納卡 → 奧瑪魯：老城與藍企鵝",
+      "timeline": [
+        [
+          "上午",
+          "瓦納卡出發前往奧瑪魯",
+          "3.5 小時 車程",
+          "",
+          "",
+          "藍企鵝活動建議提早查詢入場與集合時間。"
+        ],
+        [
+          "下午",
+          "奧瑪魯老城區散步",
+          "步行"
+        ],
+        [
+          "傍晚",
+          "藍企鵝歸巢觀賞",
+          "步行"
+        ],
+        [
+          "晚上",
+          "入住奧瑪魯",
+          "市區車程"
+        ]
+      ]
+    },
+    "en": {
+      "title": "🐧 Wanaka → Oamaru: Old Town & Blue Penguins",
+      "timeline": [
+        [
+          "Morning",
+          "Drive from Wanaka to Oamaru",
+          "3.5 hr drive",
+          "",
+          "",
+          "Check penguin entry and check-in times in advance."
+        ],
+        [
+          "Afternoon",
+          "Walk around Oamaru old town",
+          "Walk"
+        ],
+        [
+          "Dusk",
+          "Blue penguin viewing",
+          "Walk"
+        ],
+        [
+          "Night",
+          "Check in at Oamaru",
+          "Town drive"
+        ]
+      ]
+    }
+  },
+  {
+    "date": "Day 08",
+    "city": {
+      "zh": "特威澤爾",
+      "en": "Twizel"
+    },
+    "mapUrl": "High+Country+Salmon",
+    "drive": "2 hr",
+    "stay": {
+      "zh": "特威澤爾",
+      "en": "Twizel"
+    },
+    "zh": {
+      "title": "🐟 奧瑪魯 → 特威澤爾：鮭魚與採買",
+      "timeline": [
+        [
+          "上午",
+          "奧瑪魯出發前往特威澤爾",
+          "2 小時 車程",
+          "",
+          "",
+          "隔日上山前，先完成晚餐與補給採買。"
+        ],
+        [
+          "中午",
+          "高地鮭魚農場（High Country Salmon） 用餐",
+          "短程車程"
+        ],
+        [
+          "下午",
+          "特威澤爾採買補給",
+          "市區車程"
+        ],
+        [
+          "晚上",
+          "入住特威澤爾",
+          "市區車程"
+        ]
+      ]
+    },
+    "en": {
+      "title": "🐟 Oamaru → Twizel: Salmon & Supplies",
+      "timeline": [
+        [
+          "Morning",
+          "Drive from Oamaru to Twizel",
+          "2 hr drive",
+          "",
+          "",
+          "Complete supplies and dinner prep before the Mt Cook day."
+        ],
+        [
+          "Noon",
+          "Lunch at High Country Salmon",
+          "Short drive"
+        ],
+        [
+          "Afternoon",
+          "Shopping in Twizel",
+          "Town drive"
+        ],
+        [
+          "Evening",
+          "Check in at Twizel",
+          "Town drive"
+        ]
+      ]
+    }
+  },
+  {
+    "date": "Day 09",
+    "city": {
+      "zh": "庫克山",
+      "en": "Mt Cook"
+    },
+    "mapUrl": "Hooker+Valley+Track",
+    "drive": "1 hr",
+    "stay": {
+      "zh": "特威澤爾",
+      "en": "Twizel"
+    },
+    "zh": {
+      "title": "⛰️ 特威澤爾 → 庫克山健行日",
+      "timeline": [
+        [
+          "上午",
+          "前往庫克山園區",
+          "1 小時 車程",
+          "",
+          "",
+          "依風況與體力調整步道長度，傍晚返回特威澤爾。"
+        ],
+        [
+          "白天",
+          "胡克谷步道（Hooker Valley Track） 健行",
+          "步行"
+        ],
+        [
+          "下午",
+          "老登山者咖啡館（The Old Mountaineers Cafe）",
+          "短程步行"
+        ],
+        [
+          "傍晚",
+          "返回特威澤爾",
+          "1 小時 車程"
+        ]
+      ]
+    },
+    "en": {
+      "title": "⛰️ Twizel → Mt Cook Hiking Day",
+      "timeline": [
+        [
+          "Morning",
+          "Drive to Mt Cook area",
+          "1 hr drive",
+          "",
+          "",
+          "Adjust hike length by wind and condition, then return to Twizel."
+        ],
+        [
+          "Daytime",
+          "Hooker Valley Track",
+          "Walk"
+        ],
+        [
+          "Afternoon",
+          "The Old Mountaineers Cafe",
+          "Short walk"
+        ],
+        [
+          "Evening",
+          "Return to Twizel",
+          "1 hr drive"
+        ]
+      ]
+    }
+  },
+  {
+    "date": "Day 10",
+    "city": {
+      "zh": "蒂卡波",
+      "en": "Tekapo"
+    },
+    "mapUrl": "Church+of+the+Good+Shepherd,Lake+Tekapo",
+    "drive": "1.5 hr",
+    "stay": {
+      "zh": "蒂卡波",
+      "en": "Tekapo"
+    },
+    "zh": {
+      "title": "🥾 特威澤爾 → 蒂卡波 星空窗",
+      "timeline": [
+        [
+          "上午",
+          "特威澤爾出發前往蒂卡波",
+          "1.5 小時 車程",
+          "",
+          "",
+          "晚間觀星視雲量與風速彈性調整出發時間。"
+        ],
+        [
+          "下午",
+          "湖區散步與拍照",
+          "步行"
+        ],
+        [
+          "晚上",
+          "星空窗觀測（Stargazing Window）",
+          "車程 10 分"
+        ],
+        [
+          "夜間",
+          "入住蒂卡波",
+          "市區車程"
+        ]
+      ]
+    },
+    "en": {
+      "title": "🥾 Twizel → Tekapo Stargazing Window",
+      "timeline": [
+        [
+          "Morning",
+          "Leave Twizel for Tekapo",
+          "1.5 hr drive",
+          "",
+          "",
+          "Adjust stargazing departure based on cloud and wind conditions."
+        ],
+        [
+          "Afternoon",
+          "Lake area walk and photos",
+          "Walk"
+        ],
+        [
+          "Evening",
+          "Stargazing Window",
+          "10 min drive"
+        ],
+        [
+          "Night",
+          "Check in at Tekapo",
+          "Town drive"
+        ]
+      ]
+    }
+  },
+  {
+    "date": "Day 11",
+    "city": {
+      "zh": "蒂卡波",
+      "en": "Tekapo"
+    },
+    "mapUrl": "Lake+Tekapo",
+    "stay": {
+      "zh": "蒂卡波",
+      "en": "Tekapo"
+    },
+    "zh": {
+      "title": "⭐ 蒂卡波 全日活動",
+      "timeline": [
+        [
+          "白天",
+          "湖區自由行程",
+          "市區車程",
+          "",
+          "",
+          "全日彈性安排，保留晚間觀星與拍攝窗口。"
+        ],
+        [
+          "傍晚",
+          "觀星前準備",
+          "市區車程"
+        ],
+        [
+          "晚上",
+          "星空窗觀測（Stargazing Window）",
+          "車程 10 分"
+        ],
+        [
+          "夜間",
+          "返回住宿休息",
+          "市區車程"
+        ]
+      ]
+    },
+    "en": {
+      "title": "⭐ Tekapo Full Day",
+      "timeline": [
+        [
+          "Daytime",
+          "Free schedule around the lake",
+          "Town drive",
+          "",
+          "",
+          "Keep daytime flexible and preserve a clear night-sky window."
+        ],
+        [
+          "Dusk",
+          "Prepare for stargazing",
+          "Town drive"
+        ],
+        [
+          "Evening",
+          "Stargazing Window",
+          "10 min drive"
+        ],
+        [
+          "Night",
+          "Return to stay",
+          "Town drive"
+        ]
+      ]
+    }
+  },
+  {
+    "date": "Day 12",
+    "city": {
+      "zh": "奧克蘭",
+      "en": "Auckland"
+    },
+    "mapUrl": "Christchurch+Airport",
+    "drive": "3 hr",
+    "stay": {
+      "zh": "奧克蘭",
+      "en": "Auckland"
+    },
+    "zh": {
+      "title": "🚗 蒂卡波 → 基督城 → 奧克蘭",
+      "timeline": [
+        [
+          "08:30",
+          "由蒂卡波出發前往基督城",
+          "3 小時 車程",
+          "",
+          "",
+          "務必 08:30 準時出發，預留還車與報到時間。"
+        ],
+        [
+          "中午前",
+          "抵達 基督城 機場辦理還車與報到",
+          "機場步行"
+        ],
+        [
+          "下午/晚上",
+          "基督城飛往奧克蘭",
+          "國內線航程"
+        ],
+        [
+          "夜間",
+          "入住奧克蘭",
+          "市區車程"
+        ]
+      ]
+    },
+    "en": {
+      "title": "🚗 Tekapo → CHC → AKL",
+      "timeline": [
+        [
+          "08:30",
+          "Leave Tekapo for Christchurch",
+          "3 hr drive",
+          "",
+          "",
+          "Leave at 08:30 sharp and keep buffer for return and check-in."
+        ],
+        [
+          "Before noon",
+          "Arrive CHC for car return and check-in",
+          "Airport walk"
+        ],
+        [
+          "Afternoon/Evening",
+          "Fly from CHC to AKL",
+          "Domestic flight"
+        ],
+        [
+          "Night",
+          "Check in at Auckland",
+          "Town drive"
+        ]
+      ]
+    }
+  },
+  {
+    "date": "Day 13",
+    "city": {
+      "zh": "台北",
+      "en": "Taipei"
+    },
+    "mapUrl": "Taipei+101",
+    "stay": {
+      "zh": "返程日（不住宿）",
+      "en": "Return day (no stay)"
+    },
+    "zh": {
+      "title": "✈️ 奧克蘭返台",
+      "timeline": [
+        [
+          "09:40",
+          "奧克蘭起飛（NZ77）",
+          "國際線航程",
+          "",
+          "",
+          "出發前確認行李、證件與退稅資料。"
+        ],
+        [
+          "17:05",
+          "抵達台北",
+          ""
+        ]
+      ]
+    },
+    "en": {
+      "title": "✈️ Auckland to Taipei",
+      "timeline": [
+        [
+          "09:40",
+          "Depart AKL on NZ77",
+          "International flight",
+          "",
+          "",
+          "Double-check baggage, travel documents, and tax-refund paperwork."
+        ],
+        [
+          "17:05",
+          "Arrive in Taipei",
+          ""
+        ]
+      ]
+    }
+  }
+]

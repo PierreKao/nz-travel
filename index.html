@@ -18,7 +18,6 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/suncalc@1.9.0/suncalc.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;700&family=Inter:wght@400;700&family=Caveat:wght@700&display=swap');
@@ -363,7 +362,7 @@
 
         @media print {
             body { background: white !important; }
-            #app, #drawer-overlay, #drawer-menu, #initial-date-modal, #password-modal, #converter-modal, .mobile-nav, header, .snow-container, .bg-overlay, .aurora-bg { 
+            #app, #drawer-overlay, #drawer-menu, #initial-date-modal, #converter-modal, .mobile-nav, header, .snow-container, .bg-overlay, .aurora-bg { 
                 display: none !important; 
             }
             #print-area { 
@@ -408,7 +407,7 @@
     <header class="bg-white/70 backdrop-blur-md border-b sticky top-0 z-50 px-3 py-2 sm:px-6 sm:py-3 flex justify-between items-center shadow-sm">
         <div data-ui-action="go-overview" class="cursor-pointer shrink-0">
                 <span id="ui-header-title">紐西蘭南島 · 冬季自駕</span>
-            <p id="app-version-badge-header" class="text-[10px] text-blue-600 font-bold uppercase tracking-widest">Winter Adventure · v1.3.1</p>
+            <p id="app-version-badge-header" class="text-[10px] text-blue-600 font-bold uppercase tracking-widest">Winter Adventure · v1.3.2</p>
         </div>
         
         <div class="flex items-center gap-1 sm:gap-3">
@@ -465,11 +464,6 @@
 
             </div>
 
-            <!-- Primary Actions (Restored) -->
-            <button type="button" id="unlock-btn" data-ui-action="unlock-hotels" class="bg-blue-600 hover:bg-blue-700 text-white px-2.5 py-1 sm:px-4 sm:py-1.5 rounded-full text-[11px] sm:text-[12px] font-bold transition-all shadow-sm">
-                <i class="fas fa-key sm:mr-1"></i> <span id="ui-unlock-text" class="hidden sm:inline">解鎖住宿</span>
-            </button>
-            
             <button type="button" data-ui-action="open-date-modal" class="hidden sm:flex bg-amber-100 hover:bg-amber-200 text-amber-700 px-3 py-1.5 rounded-full text-[12px] font-bold transition-all shadow-sm">
                 <i class="fas fa-calendar-days"></i>
             </button>
@@ -503,7 +497,7 @@
                 </div>
 
                 <div class="mt-12 pt-8 border-t border-slate-100">
-                    <p id="app-version-badge-drawer" class="text-[10px] text-slate-400 font-bold uppercase tracking-wider text-center">New Zealand Travel · v1.3.1</p>
+                    <p id="app-version-badge-drawer" class="text-[10px] text-slate-400 font-bold uppercase tracking-wider text-center">New Zealand Travel · v1.3.2</p>
                 </div>
             </div>
         </div>
@@ -556,33 +550,6 @@
     </div>
 
     <script>
-        // Password Modal Logic and HTML Injection Setup
-        const modalHTML = `
-        <div id="password-modal" class="fixed inset-0 z-[100] hidden flex-col items-center justify-center p-4 sm:p-0">
-            <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity opacity-0" id="modal-backdrop" data-ui-action="close-password-modal"></div>
-            <div class="bg-white/90 backdrop-blur-md rounded-[2rem] p-8 sm:p-10 shadow-2xl w-full max-w-sm relative z-10 scale-95 opacity-0 transition-all duration-300" id="modal-content">
-                <button type="button" data-ui-action="close-password-modal" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100 transition-colors">
-                    <i class="fas fa-times"></i>
-                </button>
-                <div class="text-center mb-6">
-                    <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-4 shadow-sm">
-                        <i class="fas fa-lock"></i>
-                    </div>
-                    <h3 class="text-xl font-bold text-slate-800" id="modal-title">解鎖住宿資訊</h3>
-                    <p class="text-sm text-slate-500 mt-2" id="modal-desc">請輸入安全密碼以檢視詳細住宿資訊。</p>
-                </div>
-                <div class="space-y-4">
-                    <input type="password" id="modal-password-input" class="w-full bg-white border border-slate-200 px-4 py-3 rounded-xl text-center text-lg tracking-widest focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all shadow-inner" placeholder="••••••">
-                    <p id="modal-error" class="text-red-500 text-xs font-bold text-center h-4 opacity-0 transition-opacity">密碼錯誤，請重試</p>
-                    <button type="button" data-ui-action="submit-password" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-xl shadow-md hover:shadow-lg transition-all transform active:scale-95">
-                        <span id="modal-submit-btn">確認解鎖</span>
-                    </button>
-                </div>
-            </div>
-        </div>
-        `;
-        document.body.insertAdjacentHTML('beforeend', modalHTML);
-
         const printChoiceModalHTML = `
         <div id="print-choice-modal" class="fixed inset-0 z-[100] hidden flex-col items-center justify-center p-4 sm:p-0">
             <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity opacity-0" id="print-modal-backdrop" data-ui-action="close-print-modal"></div>
@@ -803,11 +770,9 @@
         `;
         document.body.insertAdjacentHTML('beforeend', milkyWayWindowModalHTML);
 
-        const ENCRYPTED_HOTELS = "U2FsdGVkX1/5B7ukylTrcGjm0fKXPxOORKLwexAFiM7PQj0iJ4VSrYodK89sZYwKjzEZUjUQBOuWThstnVLG3OTtftpfc9JocyZssCpUontSb8YDsusQTyLLl3H4GyuxcwojvMxO6XVDTuDuiXUBHIqfNhhMC0eqK4Vw/eF09Spv7Nr7MgSd6z+wTMeo6aY9qe3X4ed0DpcU0Z/3EuV6caUFiQHgFGdB9pfPpr3P+K5BK06WnMRDowp7kEmMa/Fro0+CinlZEv6/lbRty8rRY5UlTJLIvHMerea6ASxqlc53xjeOrpHUHUQ1mmOpA7zy8SNb37O8vF3oDwOReu1hhkOAOQRY8pypdnxyIs+W1o+3Bcd4VTbTeAfM8HYyLff+gKvSOADGGiUAivL3BxFa1herFwTIW+wnFXpgKgSGwfTByLYju+Zmx4T3uNgTBM1bnFOwQoz+UaI/xbUNilO7/nuPeXoeIsE4rkKGActJ6gmOGUwgjZA9J7YiE2BD2aCfUZpuVVT/NripRq0nh9j/R7AmEvgA3yULLQQT3P7y1A75Bq3+f79EnVuYBsujubifHMFDinWRUUJkJRCKzQgqtg7sL8TXfLX1U1Y4NcGmCpms1TlEvg3APrpSlYLfAaOq3IdiZwHkmstNTtGw20jc51Jenjg1/hYEg+QXx5zGviw="; 
-        const APP_VERSION = "1.3.1";
+        const APP_VERSION = "1.3.2";
         const AIR_NZ_BOOKING_URL = "https://www.airnewzealand.co.nz/book";
 
-        let decryptedHotels = null; 
         let currentLang = 'zh';
         let activeDayIndex = -1;
         let isAurora = false;
@@ -819,6 +784,7 @@
         const AURORA_CACHE_TTL = 30 * 60 * 1000;
         const MILKY_WAY_CACHE_TTL = 60 * 60 * 1000;
         const MILKY_WAY_WEATHER_FORECAST_DAYS = 7;
+        const CUSTOM_CITY_COORDS_STORAGE_KEY = 'nz_travel_custom_city_coords';
         const AURORA_CITY_PRIORITY = ["Tekapo", "Mount Cook", "Twizel", "Queenstown", "Wanaka", "Glenorchy", "Oamaru", "Christchurch"];
         let auroraSelectedCity = "Tekapo";
         let skyConditionsSelectedStop = null;
@@ -1171,11 +1137,8 @@
                 overviewBtn: "行程總覽",
                 checklistBtn: "行前準備",
                 timelineLabel: "今日安排",
-                hotelLabel: "住宿/資訊",
+                hotelLabel: "住宿",
                 driveTimeLabel: "預估車程",
-                unlockBtn: "解鎖資訊",
-                unlockDone: "已解鎖",
-                locked: "🔒 點擊上方解鎖",
                 printBtn: "列印",
                 dateBtn: "設定出發日",
                 dateModalTitle: "設定行程出發日期",
@@ -1201,10 +1164,9 @@
                 flightSearchBtn: "查詢紐航班次",
                 importExportBtn: "導入/導出行程",
                 ioModalTitle: "導入或導出行程資料",
-                ioModalDesc: "將代碼貼入下方空格即可導入行程內容，或複製內容作為備份。",
+                ioModalDesc: "將 JSON 貼入下方可導入行程（含 customCoords 自訂座標），或複製內容備份。",
                 importDone: "資料導入成功！",
                 importError: "導入失敗，請檢查 JSON 格式是否正確。",
-                unlockConfirmBtn: "確認解鎖",
                 ioCopyBtn: "複製內容",
                 ioImportBtn: "確認導入",
                 resetConfirmBtn: "確認重置",
@@ -1312,11 +1274,8 @@
                 overviewBtn: "Overview",
                 checklistBtn: "Checklist",
                 timelineLabel: "Schedule",
-                hotelLabel: "Accommodation",
+                hotelLabel: "Stay",
                 driveTimeLabel: "Est. Drive",
-                unlockBtn: "Unlock",
-                unlockDone: "Unlocked",
-                locked: "🔒 Click Unlock",
                 printBtn: "Print",
                 dateBtn: "Set Start Date",
                 dateModalTitle: "Set Departure Date",
@@ -1337,10 +1296,9 @@
                 flightSearchBtn: "Search Air NZ Flights",
                 importExportBtn: "Import/Export",
                 ioModalTitle: "Import/Export Data",
-                ioModalDesc: "Paste JSON code to import or copy content to backup.",
+                ioModalDesc: "Paste JSON to import itinerary data (including customCoords), or copy for backup.",
                 importDone: "Data imported successfully!",
                 importError: "Import failed, please check JSON format.",
-                unlockConfirmBtn: "Unlock",
                 ioCopyBtn: "Copy",
                 ioImportBtn: "Import",
                 resetConfirmBtn: "Confirm Reset",
@@ -1470,23 +1428,926 @@
         ];
 
         const DEFAULT_ITINERARY = [
-            { date: "Day 01", city: { zh: "台北/奧克蘭", en: "TPE/AKL" }, mapUrl: "Auckland+Airport", zh: { title: "✈️ 啟程：台北 → 奧克蘭", timeline: [["18:35", "桃園機場出發 (NZ 78)", "11 hr 飛航"], ["晚上", "機上休息"]] }, en: { title: "✈️ Departure: TPE to AKL", timeline: [["18:35", "Depart TPE (NZ 78)", "11 hr flight"], ["Night", "Rest on board"]] } },
-            { date: "Day 02", city: { zh: "皇鎮", en: "Queenstown" }, mapUrl: "Queenstown,New+Zealand", zh: { title: "🏔️ 抵達：皇后鎮", timeline: [["09:15", "抵達奧克蘭機場", "2 hr 轉機"], ["12:25", "國內線飛往皇后鎮", "2 hr 飛航"], ["14:20", "抵達、取車、超市採買"]] }, en: { title: "🏔️ Arrival: Queenstown", timeline: [["09:15", "Arrive AKL", "2 hr layover"], ["12:25", "Flight to ZQN", "2 hr flight"], ["14:20", "Pick up car & Groceries"]] } },
-            { date: "Day 03", city: { zh: "皇后鎮", en: "Queenstown" }, mapUrl: "Skyline+Queenstown", zh: { title: "🚠 皇后鎮：Skyline", timeline: [["早上", "市中心湖畔散步", "15 min 步行"], ["中午", "Skyline Gondola 纜車", "2 hr 停留"], ["下午", "Luge 溜溜車挑戰", "15 min 步行"], ["晚上", "皇后鎮美食漢堡"]] }, en: { title: "🚠 Queenstown: Skyline", timeline: [["Morning", "Lakefront Stroll", "15 min walk"], ["Noon", "Gondola ride", "2 hr stay"], ["Afternoon", "Luge runs", "15 min walk"], ["Evening", "Town Dinner"]] } },
-            { date: "Day 04", city: { zh: "格萊諾基", en: "Glenorchy" }, mapUrl: "Glenorchy+New+Zealand", zh: { title: "⛴️ 蒸汽船與格萊諾基", timeline: [["早上", "前往 Arrowtown 箭鎮", "45 min 車程"], ["中午", "小鎮景點拍照", "45 min 車程"], ["下午", "回市區搭乘 TSS 蒸汽船"]] }, en: { title: "⛴️ Steamboat & Glenorchy", timeline: [["Morning", "Drive to Glenorchy (LoTR Town)", "45 min drive"], ["Noon", "Sightseeing & Photos", "45 min drive"], ["Afternoon", "Back to town for TSS Earnslaw"]] } },
-            { date: "Day 05", city: { zh: "瓦納卡", en: "Wanaka" }, mapUrl: "That+Wanaka+Tree", drive: "1.5 hr", zh: { title: "📷 箭鎮與瓦納卡", timeline: [["09:00", "前往 Arrowtown 箭鎮", "1 hr 車程"], ["中午", "箭鎮午餐", "1 hr 車程"], ["14:00", "抵達 Wanaka", "10 min 車程"], ["傍晚", "尋找孤獨的樹"]] }, en: { title: "📷 Arrowtown & Wanaka", timeline: [["09:00", "Drive to Arrowtown", "1 hr drive"], ["12:00", "Lunch at Arrowtown", "1 hr drive"], ["14:00", "Wanaka Arrival", "10 min drive"], ["Sunset", "The Wanaka Tree"]] } },
-            { date: "Day 06", city: { zh: "瓦納卡", en: "Wanaka" }, mapUrl: "Puzzling+World", zh: { title: "🪾 瓦納卡：悠閒全日", timeline: [["上午", "Puzzling World 奇幻世界", "10 min 車程"], ["下午", "瓦納卡湖邊漫步", "10 min 車程"], ["晚上", "瓦納卡特色餐廳"]] }, en: { title: "🪾 Wanaka: Relax Day", timeline: [["AM", "Puzzling World", "10 min drive"], ["PM", "Wanaka Lakefront", "10 min drive"], ["Night", "Wanaka Dinner"]] } },
-            { date: "Day 07", city: { zh: "奧瑪魯", en: "Oamaru" }, mapUrl: "Oamaru+Blue+Penguin+Colony", drive: "3.5 hr", zh: { title: "🐧 奧瑪魯：企鵝歸巢", timeline: [["早上", "奧瑪魯海景散步", "1.5 hr 車程"], ["11:00", "前往 Twizel", "15 min 車程"], ["中午", "鮭魚農場新鮮午餐", "10 min 車程"], ["下午", "奧瑪魯老城區", "10 min 車程"], ["傍晚", "藍企鵝歸巢觀賞"]] }, en: { title: "🐧 Oamaru: Penguins", timeline: [["09:00", "Leave Wanaka", "1.5 hr drive"], ["12:00", "Stop by Lindis Pass", "2 hr drive"], ["16:00", "Oamaru Old Town", "10 min drive"], ["Sunset", "Blue Penguin Colony"]] } },
-            { date: "Day 08", city: { zh: "特威澤爾", en: "Twizel" }, mapUrl: "High+Country+Salmon", drive: "2 hr", zh: { title: "🐟 特威澤爾：鮭魚餐", timeline: [["早上", "奧瑪魯海景散步", "1.5 hr 車程"], ["11:00", "前往 Twizel", "15 min 車程"], ["中午", "鮭魚農場新鮮午餐", "10 min 車程"], ["下午", "Twizel 市區補給"]] }, en: { title: "🐟 Twizel: Salmon Farm", timeline: [["AM", "Oamaru Coastline", "1.5 hr drive"], ["11:00", "Drive to Twizel", "15 min drive"], ["13:00", "Salmon Farm Sashimi", "10 min drive"], ["PM", "Twizel Supply Run"]] } },
-            { date: "Day 09", city: { zh: "庫克山", en: "Mount Cook" }, mapUrl: "Hooker+Valley+Track", drive: "1 hr", zh: { title: "⛰️ 庫克山：冰川健行", timeline: [["09:00", "前往庫克山", "1 hr 車程"], ["10:30", "Hooker Valley 健行", "15 min 車程"], ["下午", "塔斯曼冰河景觀", "1 hr 車程"], ["傍晚", "回 Twizel 休息"]] }, en: { title: "⛰️ Mt. Cook: Glacier Trek", timeline: [["09:00", "To Mt. Cook", "1 hr drive"], ["10:30", "Hooker Valley Track", "15 min drive"], ["PM", "Tasman Glacier Point"], ["1 hr drive", "Back to Twizel"]] } },
-            { date: "Day 10", city: { zh: "蒂卡波", en: "Tekapo" }, mapUrl: "Church+of+the+Good+Shepherd,Lake+Tekapo", drive: "1.5 hr", zh: { title: "⭐ 蒂卡波：觀星之夜", timeline: [["10:00", "前往 Tekapo", "1 hr 車程"], ["中午", "湖畔教堂午餐", "5 min 步行"], ["下午", "牧羊人教堂拍照", "5 min 車程"], ["18:20", "星空窗觀星"]] }, en: { title: "⭐ Tekapo: Stargazing", timeline: [["10:00", "To Tekapo", "1 hr drive"], ["12:00", "Lakeview Lunch", "5 min walk"], ["PM", "Church of Good Shepherd", "5 min drive"], ["18:20", "Stargazing Window"]] } },
-            { date: "Day 11", city: { zh: "蒂卡波", en: "Tekapo" }, mapUrl: "Lake+Tekapo", zh: { title: "🔭 蒂卡波：深度全日", timeline: [["早上", "Mt. John 天文台咖啡", "15 min 車程"], ["下午", "湖邊漫步休憩", "10 min 車程"], ["晚上", "星空窗觀星"]] }, en: { title: "🔭 Tekapo: Full Day", timeline: [["AM", "Mt. John Cafe", "15 min drive"], ["PM", "Tekapo Lakefront", "10 min drive"], ["Night", "Star Session"]] } },
-            { date: "Day 12", city: { zh: "基督城", en: "Christchurch" }, mapUrl: "Christchurch+Airport", drive: "3 hr", zh: { title: "🚗 歸途：CHC → AKL", timeline: [["08:30", "準時離開 Tekapo", "3 hr 車程"], ["12:00", "抵達基督城機場", "1.5 hr 飛航"], ["18:10", "飛往奧克蘭"]] }, en: { title: "🚗 Return: CHC to AKL", timeline: [["08:30", "Must leave Tekapo", "3 hr drive"], ["12:00", "Arrive CHC Airport", "1.5 hr flight"], ["18:10", "Flight to AKL"]] } },
-            { date: "Day 13", city: { zh: "台北", en: "Taipei" }, mapUrl: "Taipei+101", zh: { title: "✈️ 回家：奧克蘭 → 台北", timeline: [["07:30", "前往機場", "11 hr 飛航"], ["09:40", "起飛回台", "搭車"], ["17:05", "抵達台北"]] }, en: { title: "✈️ Homebound: AKL to TPE", timeline: [["07:30", "To AKL Airport", "11 hr flight"], ["09:40", "Depart for Taiwan", "Drive"], ["17:05", "Arrive in Taipei"]] } }
-        ];
+    {
+        "date": "Day 01",
+        "city": {
+            "zh": "台北/奧克蘭",
+            "en": "TPE/AKL"
+        },
+        "mapUrl": "Auckland+Airport",
+        "stay": {
+            "zh": "過夜航班",
+            "en": "Overnight flight"
+        },
+        "zh": {
+            "title": "✈️ 台北出發前往奧克蘭",
+            "timeline": [
+                [
+                    "18:35",
+                    "桃園機場起飛（NZ78）",
+                    "11 小時 航程",
+                    "",
+                    "",
+                    "長程夜航，建議機上補眠並備妥保暖衣物。"
+                ],
+                [
+                    "機上",
+                    "休息與調整時差",
+                    "過夜航班"
+                ],
+                [
+                    "次日 09:15",
+                    "抵達奧克蘭",
+                    "航班轉乘"
+                ]
+            ]
+        },
+        "en": {
+            "title": "✈️ TPE Departure to Auckland",
+            "timeline": [
+                [
+                    "18:35",
+                    "Depart TPE on NZ78",
+                    "11 hr flight",
+                    "",
+                    "",
+                    "Overnight long-haul. Rest on board and keep warm layers handy."
+                ],
+                [
+                    "On board",
+                    "Rest and adjust to time zone",
+                    "Overnight flight"
+                ],
+                [
+                    "Next day 09:15",
+                    "Arrive in Auckland",
+                    "Flight transfer"
+                ]
+            ]
+        }
+    },
+    {
+        "date": "Day 02",
+        "city": {
+            "zh": "皇后鎮",
+            "en": "Queenstown"
+        },
+        "mapUrl": "Queenstown,New+Zealand",
+        "stay": {
+            "zh": "皇后鎮",
+            "en": "Queenstown"
+        },
+        "zh": {
+            "title": "🏔️ 奧克蘭轉機前往皇后鎮",
+            "timeline": [
+                [
+                    "上午",
+                    "奧克蘭轉國內線",
+                    "航程（待確認）",
+                    "",
+                    "",
+                    "國內線時間待確認，先預留取車與採買緩衝。"
+                ],
+                [
+                    "下午",
+                    "抵達後取車與入住",
+                    "市區車程"
+                ],
+                [
+                    "晚上",
+                    "湖畔散步與晚餐",
+                    "市區步行"
+                ]
+            ]
+        },
+        "en": {
+            "title": "🏔️ AKL Connection to Queenstown",
+            "timeline": [
+                [
+                    "Morning",
+                    "Transfer to domestic flight in AKL",
+                    "Flight (TBD)",
+                    "",
+                    "",
+                    "Domestic segment is TBD. Keep buffer for car pickup and groceries."
+                ],
+                [
+                    "Afternoon",
+                    "Pick up car and check in",
+                    "Town drive"
+                ],
+                [
+                    "Evening",
+                    "Lakefront walk and dinner",
+                    "Town walk"
+                ]
+            ]
+        }
+    },
+    {
+        "date": "Day 03",
+        "city": {
+            "zh": "皇后鎮",
+            "en": "Queenstown"
+        },
+        "mapUrl": "Skyline+Queenstown",
+        "stay": {
+            "zh": "皇后鎮",
+            "en": "Queenstown"
+        },
+        "zh": {
+            "title": "🚠 皇后鎮：採買、纜車與 滑車",
+            "timeline": [
+                [
+                    "上午",
+                    "超市採買補給",
+                    "市區車程",
+                    "",
+                    "",
+                    "熱門時段建議先買 纜車與滑車 票券。"
+                ],
+                [
+                    "中午",
+                    "Skyline 纜車",
+                    "纜車"
+                ],
+                [
+                    "下午",
+                    "滑車 體驗",
+                    "步行"
+                ],
+                [
+                    "晚上",
+                    "皇后鎮晚餐",
+                    "市區步行"
+                ]
+            ]
+        },
+        "en": {
+            "title": "🚠 Queenstown: Groceries, Gondola & Luge",
+            "timeline": [
+                [
+                    "Morning",
+                    "Supermarket run",
+                    "Town drive",
+                    "",
+                    "",
+                    "Booking Skyline and Luge in advance is recommended for peak hours."
+                ],
+                [
+                    "Noon",
+                    "Skyline Gondola",
+                    "Gondola ride"
+                ],
+                [
+                    "Afternoon",
+                    "Luge sessions",
+                    "Walk"
+                ],
+                [
+                    "Evening",
+                    "Dinner in Queenstown",
+                    "Town walk"
+                ]
+            ]
+        }
+    },
+    {
+        "date": "Day 04",
+        "city": {
+            "zh": "皇后鎮/格萊諾基",
+            "en": "Queenstown/Glenorchy"
+        },
+        "mapUrl": "Glenorchy+New+Zealand",
+        "stay": {
+            "zh": "皇后鎮",
+            "en": "Queenstown"
+        },
+        "zh": {
+            "title": "⛴️ 格萊諾基或 TSS Earnslaw 遊船",
+            "timeline": [
+                [
+                    "上午",
+                    "方案 A：前往格萊諾基",
+                    "往返車程",
+                    "",
+                    "",
+                    "依天候在自駕與遊船方案間彈性切換。"
+                ],
+                [
+                    "下午",
+                    "方案 B：TSS Earnslaw 遊船",
+                    "碼頭步行"
+                ],
+                [
+                    "晚上",
+                    "返回皇后鎮市區",
+                    "市區車程"
+                ]
+            ]
+        },
+        "en": {
+            "title": "⛴️ Glenorchy or TSS Earnslaw Cruise",
+            "timeline": [
+                [
+                    "Morning",
+                    "Option A: Drive to Glenorchy",
+                    "Round-trip drive",
+                    "",
+                    "",
+                    "Choose between self-drive and cruise based on weather."
+                ],
+                [
+                    "Afternoon",
+                    "Option B: TSS Earnslaw cruise",
+                    "Wharf walk"
+                ],
+                [
+                    "Evening",
+                    "Return to Queenstown center",
+                    "Town drive"
+                ]
+            ]
+        }
+    },
+    {
+        "date": "Day 05",
+        "city": {
+            "zh": "瓦納卡",
+            "en": "Wanaka"
+        },
+        "mapUrl": "Arrowtown+New+Zealand",
+        "drive": "1.5 hr",
+        "stay": {
+            "zh": "瓦納卡",
+            "en": "Wanaka"
+        },
+        "zh": {
+            "title": "📷 皇后鎮 → 箭鎮 → 瓦納卡",
+            "timeline": [
+                [
+                    "上午",
+                    "皇后鎮出發前往箭鎮",
+                    "車程",
+                    "",
+                    "",
+                    "箭鎮停留後前往瓦納卡，建議抓日落前抵達。"
+                ],
+                [
+                    "中午",
+                    "箭鎮散步與午餐",
+                    "步行"
+                ],
+                [
+                    "下午",
+                    "前往瓦納卡並入住",
+                    "1.5 小時 車程"
+                ],
+                [
+                    "傍晚",
+                    "湖邊散步",
+                    "步行"
+                ]
+            ]
+        },
+        "en": {
+            "title": "📷 Queenstown → Arrowtown → Wanaka",
+            "timeline": [
+                [
+                    "Morning",
+                    "Leave Queenstown for Arrowtown",
+                    "Drive",
+                    "",
+                    "",
+                    "After Arrowtown stop, aim to reach Wanaka before sunset."
+                ],
+                [
+                    "Noon",
+                    "Walk and lunch in Arrowtown",
+                    "Walk"
+                ],
+                [
+                    "Afternoon",
+                    "Drive to Wanaka and check in",
+                    "1.5 hr drive"
+                ],
+                [
+                    "Evening",
+                    "Lakefront walk",
+                    "Walk"
+                ]
+            ]
+        }
+    },
+    {
+        "date": "Day 06",
+        "city": {
+            "zh": "瓦納卡",
+            "en": "Wanaka"
+        },
+        "mapUrl": "Puzzling+World+Wanaka",
+        "stay": {
+            "zh": "瓦納卡",
+            "en": "Wanaka"
+        },
+        "zh": {
+            "title": "🪾 瓦納卡：迷宮世界 與孤獨樹",
+            "timeline": [
+                [
+                    "上午",
+                    "迷宮世界（Puzzling World）",
+                    "市區車程",
+                    "",
+                    "",
+                    "雨天可增加室內停留時間，行程保持彈性。"
+                ],
+                [
+                    "下午",
+                    "瓦納卡孤獨樹 拍照",
+                    "湖畔步行"
+                ],
+                [
+                    "晚上",
+                    "瓦納卡市區晚餐",
+                    "市區步行"
+                ]
+            ]
+        },
+        "en": {
+            "title": "🪾 Wanaka: Puzzling World & Wanaka Tree",
+            "timeline": [
+                [
+                    "Morning",
+                    "Puzzling World",
+                    "Town drive",
+                    "",
+                    "",
+                    "Extend indoor time if rainy and keep the plan flexible."
+                ],
+                [
+                    "Afternoon",
+                    "Photos at That Wanaka Tree",
+                    "Lakefront walk"
+                ],
+                [
+                    "Evening",
+                    "Dinner in Wanaka",
+                    "Town walk"
+                ]
+            ]
+        }
+    },
+    {
+        "date": "Day 07",
+        "city": {
+            "zh": "奧瑪魯",
+            "en": "Oamaru"
+        },
+        "mapUrl": "Oamaru+Blue+Penguin+Colony",
+        "drive": "3.5 hr",
+        "stay": {
+            "zh": "奧瑪魯",
+            "en": "Oamaru"
+        },
+        "zh": {
+            "title": "🐧 瓦納卡 → 奧瑪魯：老城與藍企鵝",
+            "timeline": [
+                [
+                    "上午",
+                    "瓦納卡出發前往奧瑪魯",
+                    "3.5 小時 車程",
+                    "",
+                    "",
+                    "藍企鵝活動建議提早查詢入場與集合時間。"
+                ],
+                [
+                    "下午",
+                    "奧瑪魯老城區散步",
+                    "步行"
+                ],
+                [
+                    "傍晚",
+                    "藍企鵝歸巢觀賞",
+                    "步行"
+                ],
+                [
+                    "晚上",
+                    "入住奧瑪魯",
+                    "市區車程"
+                ]
+            ]
+        },
+        "en": {
+            "title": "🐧 Wanaka → Oamaru: Old Town & Blue Penguins",
+            "timeline": [
+                [
+                    "Morning",
+                    "Drive from Wanaka to Oamaru",
+                    "3.5 hr drive",
+                    "",
+                    "",
+                    "Check penguin entry and check-in times in advance."
+                ],
+                [
+                    "Afternoon",
+                    "Walk around Oamaru old town",
+                    "Walk"
+                ],
+                [
+                    "Dusk",
+                    "Blue penguin viewing",
+                    "Walk"
+                ],
+                [
+                    "Night",
+                    "Check in at Oamaru",
+                    "Town drive"
+                ]
+            ]
+        }
+    },
+    {
+        "date": "Day 08",
+        "city": {
+            "zh": "特威澤爾",
+            "en": "Twizel"
+        },
+        "mapUrl": "High+Country+Salmon",
+        "drive": "2 hr",
+        "stay": {
+            "zh": "特威澤爾",
+            "en": "Twizel"
+        },
+        "zh": {
+            "title": "🐟 奧瑪魯 → 特威澤爾：鮭魚與採買",
+            "timeline": [
+                [
+                    "上午",
+                    "奧瑪魯出發前往特威澤爾",
+                    "2 小時 車程",
+                    "",
+                    "",
+                    "隔日上山前，先完成晚餐與補給採買。"
+                ],
+                [
+                    "中午",
+                    "高地鮭魚農場（High Country Salmon） 用餐",
+                    "短程車程"
+                ],
+                [
+                    "下午",
+                    "特威澤爾採買補給",
+                    "市區車程"
+                ],
+                [
+                    "晚上",
+                    "入住特威澤爾",
+                    "市區車程"
+                ]
+            ]
+        },
+        "en": {
+            "title": "🐟 Oamaru → Twizel: Salmon & Supplies",
+            "timeline": [
+                [
+                    "Morning",
+                    "Drive from Oamaru to Twizel",
+                    "2 hr drive",
+                    "",
+                    "",
+                    "Complete supplies and dinner prep before the Mt Cook day."
+                ],
+                [
+                    "Noon",
+                    "Lunch at High Country Salmon",
+                    "Short drive"
+                ],
+                [
+                    "Afternoon",
+                    "Shopping in Twizel",
+                    "Town drive"
+                ],
+                [
+                    "Evening",
+                    "Check in at Twizel",
+                    "Town drive"
+                ]
+            ]
+        }
+    },
+    {
+        "date": "Day 09",
+        "city": {
+            "zh": "庫克山",
+            "en": "Mt Cook"
+        },
+        "mapUrl": "Hooker+Valley+Track",
+        "drive": "1 hr",
+        "stay": {
+            "zh": "特威澤爾",
+            "en": "Twizel"
+        },
+        "zh": {
+            "title": "⛰️ 特威澤爾 → 庫克山健行日",
+            "timeline": [
+                [
+                    "上午",
+                    "前往庫克山園區",
+                    "1 小時 車程",
+                    "",
+                    "",
+                    "依風況與體力調整步道長度，傍晚返回特威澤爾。"
+                ],
+                [
+                    "白天",
+                    "胡克谷步道（Hooker Valley Track） 健行",
+                    "步行"
+                ],
+                [
+                    "下午",
+                    "老登山者咖啡館（The Old Mountaineers Cafe）",
+                    "短程步行"
+                ],
+                [
+                    "傍晚",
+                    "返回特威澤爾",
+                    "1 小時 車程"
+                ]
+            ]
+        },
+        "en": {
+            "title": "⛰️ Twizel → Mt Cook Hiking Day",
+            "timeline": [
+                [
+                    "Morning",
+                    "Drive to Mt Cook area",
+                    "1 hr drive",
+                    "",
+                    "",
+                    "Adjust hike length by wind and condition, then return to Twizel."
+                ],
+                [
+                    "Daytime",
+                    "Hooker Valley Track",
+                    "Walk"
+                ],
+                [
+                    "Afternoon",
+                    "The Old Mountaineers Cafe",
+                    "Short walk"
+                ],
+                [
+                    "Evening",
+                    "Return to Twizel",
+                    "1 hr drive"
+                ]
+            ]
+        }
+    },
+    {
+        "date": "Day 10",
+        "city": {
+            "zh": "蒂卡波",
+            "en": "Tekapo"
+        },
+        "mapUrl": "Church+of+the+Good+Shepherd,Lake+Tekapo",
+        "drive": "1.5 hr",
+        "stay": {
+            "zh": "蒂卡波",
+            "en": "Tekapo"
+        },
+        "zh": {
+            "title": "🥾 特威澤爾 → 蒂卡波 星空窗",
+            "timeline": [
+                [
+                    "上午",
+                    "特威澤爾出發前往蒂卡波",
+                    "1.5 小時 車程",
+                    "",
+                    "",
+                    "晚間觀星視雲量與風速彈性調整出發時間。"
+                ],
+                [
+                    "下午",
+                    "湖區散步與拍照",
+                    "步行"
+                ],
+                [
+                    "晚上",
+                    "星空窗觀測（Stargazing Window）",
+                    "車程 10 分"
+                ],
+                [
+                    "夜間",
+                    "入住蒂卡波",
+                    "市區車程"
+                ]
+            ]
+        },
+        "en": {
+            "title": "🥾 Twizel → Tekapo Stargazing Window",
+            "timeline": [
+                [
+                    "Morning",
+                    "Leave Twizel for Tekapo",
+                    "1.5 hr drive",
+                    "",
+                    "",
+                    "Adjust stargazing departure based on cloud and wind conditions."
+                ],
+                [
+                    "Afternoon",
+                    "Lake area walk and photos",
+                    "Walk"
+                ],
+                [
+                    "Evening",
+                    "Stargazing Window",
+                    "10 min drive"
+                ],
+                [
+                    "Night",
+                    "Check in at Tekapo",
+                    "Town drive"
+                ]
+            ]
+        }
+    },
+    {
+        "date": "Day 11",
+        "city": {
+            "zh": "蒂卡波",
+            "en": "Tekapo"
+        },
+        "mapUrl": "Lake+Tekapo",
+        "stay": {
+            "zh": "蒂卡波",
+            "en": "Tekapo"
+        },
+        "zh": {
+            "title": "⭐ 蒂卡波 全日活動",
+            "timeline": [
+                [
+                    "白天",
+                    "湖區自由行程",
+                    "市區車程",
+                    "",
+                    "",
+                    "全日彈性安排，保留晚間觀星與拍攝窗口。"
+                ],
+                [
+                    "傍晚",
+                    "觀星前準備",
+                    "市區車程"
+                ],
+                [
+                    "晚上",
+                    "星空窗觀測（Stargazing Window）",
+                    "車程 10 分"
+                ],
+                [
+                    "夜間",
+                    "返回住宿休息",
+                    "市區車程"
+                ]
+            ]
+        },
+        "en": {
+            "title": "⭐ Tekapo Full Day",
+            "timeline": [
+                [
+                    "Daytime",
+                    "Free schedule around the lake",
+                    "Town drive",
+                    "",
+                    "",
+                    "Keep daytime flexible and preserve a clear night-sky window."
+                ],
+                [
+                    "Dusk",
+                    "Prepare for stargazing",
+                    "Town drive"
+                ],
+                [
+                    "Evening",
+                    "Stargazing Window",
+                    "10 min drive"
+                ],
+                [
+                    "Night",
+                    "Return to stay",
+                    "Town drive"
+                ]
+            ]
+        }
+    },
+    {
+        "date": "Day 12",
+        "city": {
+            "zh": "奧克蘭",
+            "en": "Auckland"
+        },
+        "mapUrl": "Christchurch+Airport",
+        "drive": "3 hr",
+        "stay": {
+            "zh": "奧克蘭",
+            "en": "Auckland"
+        },
+        "zh": {
+            "title": "🚗 蒂卡波 → 基督城 → 奧克蘭",
+            "timeline": [
+                [
+                    "08:30",
+                    "由蒂卡波出發前往基督城",
+                    "3 小時 車程",
+                    "",
+                    "",
+                    "務必 08:30 準時出發，預留還車與報到時間。"
+                ],
+                [
+                    "中午前",
+                    "抵達 基督城 機場辦理還車與報到",
+                    "機場步行"
+                ],
+                [
+                    "下午/晚上",
+                    "基督城飛往奧克蘭",
+                    "國內線航程"
+                ],
+                [
+                    "夜間",
+                    "入住奧克蘭",
+                    "市區車程"
+                ]
+            ]
+        },
+        "en": {
+            "title": "🚗 Tekapo → CHC → AKL",
+            "timeline": [
+                [
+                    "08:30",
+                    "Leave Tekapo for Christchurch",
+                    "3 hr drive",
+                    "",
+                    "",
+                    "Leave at 08:30 sharp and keep buffer for return and check-in."
+                ],
+                [
+                    "Before noon",
+                    "Arrive CHC for car return and check-in",
+                    "Airport walk"
+                ],
+                [
+                    "Afternoon/Evening",
+                    "Fly from CHC to AKL",
+                    "Domestic flight"
+                ],
+                [
+                    "Night",
+                    "Check in at Auckland",
+                    "Town drive"
+                ]
+            ]
+        }
+    },
+    {
+        "date": "Day 13",
+        "city": {
+            "zh": "台北",
+            "en": "Taipei"
+        },
+        "mapUrl": "Taipei+101",
+        "stay": {
+            "zh": "返程日（不住宿）",
+            "en": "Return day (no stay)"
+        },
+        "zh": {
+            "title": "✈️ 奧克蘭返台",
+            "timeline": [
+                [
+                    "09:40",
+                    "奧克蘭起飛（NZ77）",
+                    "國際線航程",
+                    "",
+                    "",
+                    "出發前確認行李、證件與退稅資料。"
+                ],
+                [
+                    "17:05",
+                    "抵達台北",
+                    ""
+                ]
+            ]
+        },
+        "en": {
+            "title": "✈️ Auckland to Taipei",
+            "timeline": [
+                [
+                    "09:40",
+                    "Depart AKL on NZ77",
+                    "International flight",
+                    "",
+                    "",
+                    "Double-check baggage, travel documents, and tax-refund paperwork."
+                ],
+                [
+                    "17:05",
+                    "Arrive in Taipei",
+                    ""
+                ]
+            ]
+        }
+    }
+];
 
         const MAX_ITINERARY_DAYS = 40;
         const MAX_TIMELINE_ITEMS = 40;
+
+        function normalizeCoordinatePair(input) {
+            if (!input) return undefined;
+            let lat;
+            let lon;
+
+            if (Array.isArray(input) && input.length >= 2) {
+                lat = Number(input[0]);
+                lon = Number(input[1]);
+            } else if (typeof input === 'object') {
+                lat = Number(input.lat ?? input.latitude);
+                lon = Number(input.lon ?? input.lng ?? input.longitude);
+            } else {
+                return undefined;
+            }
+
+            if (!Number.isFinite(lat) || !Number.isFinite(lon)) return undefined;
+            if (lat < -90 || lat > 90 || lon < -180 || lon > 180) return undefined;
+            return {
+                lat: Number(lat.toFixed(6)),
+                lon: Number(lon.toFixed(6))
+            };
+        }
+
+        function parseCoordinatesFromText(text) {
+            if (typeof text !== 'string' || !text.trim()) return undefined;
+            const match = text.match(/(-?\d{1,2}(?:\.\d+)?)\s*[,，]\s*(-?\d{1,3}(?:\.\d+)?)/);
+            if (!match) return undefined;
+            return normalizeCoordinatePair({ lat: match[1], lon: match[2] });
+        }
+
+        function stripCoordinatesFromCityLabel(text) {
+            if (typeof text !== 'string') return '';
+            return text
+                .replace(/\s*[\(\[]\s*-?\d{1,2}(?:\.\d+)?\s*[,，]\s*-?\d{1,3}(?:\.\d+)?\s*[\)\]]\s*$/g, '')
+                .replace(/\s*-?\d{1,2}(?:\.\d+)?\s*[,，]\s*-?\d{1,3}(?:\.\d+)?\s*$/g, '')
+                .trim();
+        }
+
+        function inferAccommodationFromSource(dayLike, langCode = 'zh') {
+            if (!dayLike) return langCode === 'zh' ? '待確認' : 'TBD';
+
+            const explicitStay = typeof dayLike?.stay?.[langCode] === 'string'
+                ? dayLike.stay[langCode].trim()
+                : '';
+            if (explicitStay) return explicitStay;
+
+            const scanText = [];
+            const collectTexts = (timeline = []) => {
+                for (let i = timeline.length - 1; i >= 0; i--) {
+                    const item = timeline[i] || [];
+                    scanText.push(`${item[1] || ""} ${item[2] || ""}`.trim());
+                }
+            };
+            collectTexts(dayLike.zh?.timeline || []);
+            collectTexts(dayLike.en?.timeline || []);
+            const allText = scanText.join(" | ");
+
+            const cityMatchers = [
+                { zh: "皇后鎮", en: "Queenstown", re: /(皇后鎮|queenstown)/i },
+                { zh: "瓦納卡", en: "Wanaka", re: /(瓦納卡|wanaka)/i },
+                { zh: "奧瑪魯", en: "Oamaru", re: /(奧瑪魯|oamaru)/i },
+                { zh: "特威澤爾", en: "Twizel", re: /(特威澤爾|twizel)/i },
+                { zh: "蒂卡波", en: "Tekapo", re: /(蒂卡波|tekapo)/i },
+                { zh: "奧克蘭", en: "Auckland", re: /(奧克蘭|auckland|akl)/i },
+                { zh: "基督城", en: "Christchurch", re: /(基督城|christchurch|chc)/i },
+                { zh: "台北", en: "Taipei", re: /(台北|taipei|tpe)/i }
+            ];
+
+            if (/(過夜航班|overnight flight|rest on board|on board)/i.test(allText)) {
+                return langCode === 'zh' ? '過夜航班' : 'Overnight Flight';
+            }
+            if (/(旅程結束|end of trip|return day)/i.test(allText)) {
+                return langCode === 'zh' ? '返程日（不安排住宿）' : 'Return day (no stay)';
+            }
+
+            for (const text of scanText) {
+                if (!text) continue;
+                const match = cityMatchers.find((city) => city.re.test(text));
+                if (match) return langCode === 'zh' ? match.zh : match.en;
+            }
+
+            const fallbackCity = dayLike.city?.[langCode] || dayLike.city?.zh || dayLike.city?.en || '';
+            if (!fallbackCity) return langCode === 'zh' ? '待確認' : 'TBD';
+            return fallbackCity.split('/')[0].trim();
+        }
 
         function normalizeTimelineItem(item, fallbackItem = []) {
             const source = Array.isArray(item) ? item : [];
@@ -1507,6 +2368,16 @@
             const normalizedTimeline = sourceTimeline
                 .slice(0, MAX_TIMELINE_ITEMS)
                 .map((item, idx) => normalizeTimelineItem(item, fallbackTimeline[idx] || []));
+            const legacyNote = sanitizeTextInput(langSection?.note ?? fallbackSection?.note ?? "", { maxLength: 280, allowLineBreaks: true });
+
+            // Migrate legacy day-level note into the first timeline item's description.
+            if (legacyNote && normalizedTimeline.length) {
+                const firstDesc = normalizedTimeline[0][5] || "";
+                const alreadyMerged = typeof firstDesc === "string" && firstDesc.includes(legacyNote);
+                normalizedTimeline[0][5] = alreadyMerged
+                    ? firstDesc
+                    : (firstDesc ? `${legacyNote}\n${firstDesc}` : legacyNote);
+            }
 
             return {
                 title: sanitizeTextInput(langSection?.title ?? fallbackSection?.title ?? "", { maxLength: 100 }),
@@ -1516,6 +2387,15 @@
 
         function normalizeItineraryDay(day, fallbackDay = {}, index = 0) {
             const safeMapUrl = sanitizeMapQuery(day?.mapUrl ?? fallbackDay?.mapUrl ?? "");
+            const rawCityZh = day?.city?.zh ?? fallbackDay?.city?.zh ?? "";
+            const rawCityEn = day?.city?.en ?? fallbackDay?.city?.en ?? "";
+            const safeMapQuery = sanitizeMapQuery(day?.mapQuery ?? fallbackDay?.mapQuery ?? safeMapUrl);
+            const safeCustomImg = sanitizeImageUrl(day?.customImg ?? fallbackDay?.customImg ?? "");
+            const safeCoords = normalizeCoordinatePair(day?.coords ?? fallbackDay?.coords)
+                || parseCoordinatesFromText(rawCityEn)
+                || parseCoordinatesFromText(rawCityZh)
+                || parseCoordinatesFromText(safeMapQuery)
+                || parseCoordinatesFromText(safeMapUrl);
             const safeZh = normalizeLangSection(day?.zh, fallbackDay?.zh || {});
             const safeEn = normalizeLangSection(day?.en, fallbackDay?.en || {});
             const fallbackTimeline = safeZh.timeline.length ? safeZh.timeline : safeEn.timeline;
@@ -1523,19 +2403,35 @@
             if (!safeZh.timeline.length && fallbackTimeline.length) safeZh.timeline = fallbackTimeline.map(item => [...item]);
             if (!safeEn.timeline.length && fallbackTimeline.length) safeEn.timeline = fallbackTimeline.map(item => [...item]);
 
+            let safeStayZh = sanitizeTextInput(
+                day?.stay?.zh ?? fallbackDay?.stay?.zh ?? inferAccommodationFromSource(day || fallbackDay, 'zh'),
+                { maxLength: 60 }
+            );
+            let safeStayEn = sanitizeTextInput(
+                day?.stay?.en ?? fallbackDay?.stay?.en ?? inferAccommodationFromSource(day || fallbackDay, 'en'),
+                { maxLength: 60 }
+            );
+            if (!safeStayZh && safeStayEn) safeStayZh = safeStayEn;
+            if (!safeStayEn && safeStayZh) safeStayEn = safeStayZh;
+
             return {
                 date: sanitizeTextInput(day?.date ?? fallbackDay?.date ?? `Day ${String(index + 1).padStart(2, "0")}`, { maxLength: 24 }),
                 actualDate: /^\d{4}-\d{2}-\d{2}$/.test(day?.actualDate || "")
                     ? day.actualDate
                     : (/^\d{4}-\d{2}-\d{2}$/.test(fallbackDay?.actualDate || "") ? fallbackDay.actualDate : undefined),
                 city: {
-                    zh: sanitizeTextInput(day?.city?.zh ?? fallbackDay?.city?.zh ?? "", { maxLength: 40 }),
-                    en: sanitizeTextInput(day?.city?.en ?? fallbackDay?.city?.en ?? "", { maxLength: 40 })
+                    zh: sanitizeTextInput(stripCoordinatesFromCityLabel(rawCityZh), { maxLength: 40 }),
+                    en: sanitizeTextInput(stripCoordinatesFromCityLabel(rawCityEn), { maxLength: 40 })
                 },
                 mapUrl: safeMapUrl,
-                mapQuery: sanitizeMapQuery(day?.mapQuery ?? fallbackDay?.mapQuery ?? safeMapUrl),
-                customImg: sanitizeImageUrl(day?.customImg ?? fallbackDay?.customImg ?? ""),
+                mapQuery: safeMapQuery,
+                customImg: safeCustomImg,
                 drive: sanitizeTextInput(day?.drive ?? fallbackDay?.drive ?? "", { maxLength: 40 }),
+                stay: {
+                    zh: safeStayZh,
+                    en: safeStayEn
+                },
+                coords: safeCoords ? { lat: safeCoords.lat, lon: safeCoords.lon } : undefined,
                 zh: safeZh,
                 en: safeEn
             };
@@ -1579,6 +2475,8 @@
                 if (!defDay) {
                     day.en.title = day.zh.title;
                     day.city.en = day.city.zh;
+                    day.stay = day.stay || {};
+                    day.stay.en = day.stay.zh || day.city.zh;
                     day.en.timeline = JSON.parse(JSON.stringify(day.zh.timeline));
                     return;
                 }
@@ -1588,10 +2486,15 @@
                 if (day.zh.title !== defDay.zh.title) {
                     day.en.title = day.zh.title;
                 }
-                
+
                 // Sync city only if changed from default
                 if (day.city.zh !== defDay.city.zh) {
                     day.city.en = day.city.zh;
+                }
+
+                if ((day.stay?.zh || "") !== (defDay.stay?.zh || "")) {
+                    day.stay = day.stay || {};
+                    day.stay.en = day.stay.zh;
                 }
 
                 // Granular timeline sync
@@ -1631,6 +2534,7 @@
             const normalized = normalizeItineraryPayload(itinerary, DEFAULT_ITINERARY);
             if (!normalized) return;
             itinerary = normalized;
+            syncCustomCityCoordsFromItinerary({ persist: true, mergeStored: true });
             localStorage.setItem('itinerary_custom', JSON.stringify(itinerary));
         }
 
@@ -1658,6 +2562,8 @@
             let safeValue = sanitizeTextInput(value, { maxLength: 140, allowLineBreaks: true });
             if (field === 'drive') {
                 safeValue = sanitizeTextInput(value, { maxLength: 40 });
+            } else if (field === 'stay') {
+                safeValue = sanitizeTextInput(value, { maxLength: 60 });
             } else if (subfield === 'title') {
                 safeValue = sanitizeTextInput(value, { maxLength: 100 });
             } else if (field === 'city') {
@@ -1700,14 +2606,15 @@
         }
 
         function addTimelineItem(dayIdx, insertIdx) {
-            const newItem = ["09:00", "New Activity", "1 hr drive", "", "", ""]; // [time, title, transition, mapQuery, customImg, description]
+            const newZhItem = ["09:00", "新行程", "1 hr 車程", "", "", ""];
+            const newEnItem = ["09:00", "New Activity", "1 hr drive", "", "", ""];
             
             if (insertIdx !== undefined) {
-                itinerary[dayIdx].zh.timeline.splice(insertIdx, 0, [...newItem]);
-                itinerary[dayIdx].en.timeline.splice(insertIdx, 0, [...newItem]);
+                itinerary[dayIdx].zh.timeline.splice(insertIdx, 0, [...newZhItem]);
+                itinerary[dayIdx].en.timeline.splice(insertIdx, 0, [...newEnItem]);
             } else {
-                itinerary[dayIdx].zh.timeline.push([...newItem]);
-                itinerary[dayIdx].en.timeline.push([...newItem]);
+                itinerary[dayIdx].zh.timeline.push([...newZhItem]);
+                itinerary[dayIdx].en.timeline.push([...newEnItem]);
             }
             saveItinerary();
             updateUI();
@@ -1998,16 +2905,180 @@
             "Christchurch": { lat: -43.5321, lon: 172.6362 },
             "Taipei": { lat: 25.0330, lon: 121.5654 }
         };
+        const BUILTIN_CITY_KEYS = new Set(Object.keys(COORDS));
+        let customCityCoords = {};
+
+        function getPrimaryCityLabel(value = "") {
+            const cleaned = stripCoordinatesFromCityLabel(String(value || ""))
+                .split('/')[0]
+                .trim();
+            return sanitizeTextInput(cleaned, { maxLength: 60 });
+        }
+
+        function getCityLookupTokens(city = "") {
+            const cleaned = stripCoordinatesFromCityLabel(String(city || ""));
+            return cleaned
+                .split(/[\/|]/)
+                .map(token => token.trim())
+                .filter(Boolean);
+        }
 
         function getCityKeyFromName(city = "") {
-            if (!city) return "";
-            return Object.keys(COORDS).find(k => city.toLowerCase().includes(k.toLowerCase())) || "";
+            const tokens = getCityLookupTokens(city);
+            if (!tokens.length) return "";
+            const keyEntries = Object.keys(COORDS).map(key => ({
+                key,
+                normalized: key.toLowerCase()
+            }));
+            const sortedByLength = [...keyEntries].sort((a, b) => b.normalized.length - a.normalized.length);
+
+            for (const token of tokens) {
+                const normalizedToken = token.toLowerCase();
+                const exact = keyEntries.find(entry => entry.normalized === normalizedToken);
+                if (exact) return exact.key;
+            }
+
+            for (const token of tokens) {
+                const normalizedToken = token.toLowerCase();
+                const fuzzy = sortedByLength.find(entry =>
+                    normalizedToken.includes(entry.normalized) || entry.normalized.includes(normalizedToken)
+                );
+                if (fuzzy) return fuzzy.key;
+            }
+            return "";
+        }
+
+        function loadCustomCityCoordsFromStorage() {
+            try {
+                const raw = localStorage.getItem(CUSTOM_CITY_COORDS_STORAGE_KEY);
+                if (!raw) return {};
+                const parsed = JSON.parse(raw);
+                return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {};
+            } catch (error) {
+                console.warn('Failed to parse custom city coordinates from storage.', error);
+                return {};
+            }
+        }
+
+        function saveCustomCityCoordsToStorage(customMap) {
+            localStorage.setItem(CUSTOM_CITY_COORDS_STORAGE_KEY, JSON.stringify(customMap || {}));
+        }
+
+        function normalizeCustomCityCoordsMap(rawMap) {
+            const normalized = {};
+            if (!rawMap || typeof rawMap !== 'object' || Array.isArray(rawMap)) return normalized;
+
+            Object.entries(rawMap).forEach(([rawKey, rawValue]) => {
+                const cityKey = sanitizeTextInput(stripCoordinatesFromCityLabel(rawKey || ""), { maxLength: 60 });
+                if (!cityKey) return;
+
+                const coord = normalizeCoordinatePair(rawValue);
+                if (!coord) return;
+
+                const zhLabel = sanitizeTextInput(rawValue?.zh || "", { maxLength: 40 });
+                const enLabel = sanitizeTextInput(rawValue?.en || "", { maxLength: 40 });
+
+                normalized[cityKey] = {
+                    lat: coord.lat,
+                    lon: coord.lon,
+                    zh: zhLabel,
+                    en: enLabel
+                };
+            });
+            return normalized;
+        }
+
+        function mergeCustomCityCoordsMaps(...maps) {
+            return maps.reduce((acc, map) => {
+                if (!map || typeof map !== 'object') return acc;
+                Object.entries(map).forEach(([key, value]) => {
+                    acc[key] = value;
+                });
+                return acc;
+            }, {});
+        }
+
+        function applyCustomCityCoordsMap(rawMap, options = {}) {
+            const { persist = true } = options;
+            const normalized = normalizeCustomCityCoordsMap(rawMap);
+            customCityCoords = normalized;
+
+            Object.entries(customCityCoords).forEach(([cityKey, meta]) => {
+                COORDS[cityKey] = { lat: meta.lat, lon: meta.lon };
+                if (meta.zh) translations.zh.cities[cityKey] = meta.zh;
+            });
+
+            if (persist) saveCustomCityCoordsToStorage(customCityCoords);
+            return customCityCoords;
+        }
+
+        function buildDerivedCustomCityCoordsFromItinerary(days = itinerary) {
+            const derived = {};
+            if (!Array.isArray(days)) return derived;
+
+            days.forEach((day, index) => {
+                const coord = normalizeCoordinatePair(day?.coords)
+                    || parseCoordinatesFromText(day?.city?.en || "")
+                    || parseCoordinatesFromText(day?.city?.zh || "")
+                    || parseCoordinatesFromText(day?.mapQuery || "")
+                    || parseCoordinatesFromText(day?.mapUrl || "");
+                if (!coord) return;
+
+                const primaryEn = getPrimaryCityLabel(day?.city?.en || "");
+                const primaryZh = getPrimaryCityLabel(day?.city?.zh || "");
+                const existingKey = getCityKeyFromName(primaryEn || primaryZh || "");
+                const cityKey = existingKey || primaryEn || primaryZh || `Custom City ${index + 1}`;
+                if (!cityKey || BUILTIN_CITY_KEYS.has(cityKey)) return;
+
+                derived[cityKey] = {
+                    lat: coord.lat,
+                    lon: coord.lon,
+                    zh: primaryZh || cityKey,
+                    en: primaryEn || cityKey
+                };
+            });
+            return derived;
+        }
+
+        function syncCustomCityCoordsFromItinerary(options = {}) {
+            const { persist = true, mergeStored = true } = options;
+            const stored = mergeStored ? loadCustomCityCoordsFromStorage() : {};
+            const derived = buildDerivedCustomCityCoordsFromItinerary(itinerary);
+            const merged = mergeCustomCityCoordsMaps(
+                normalizeCustomCityCoordsMap(stored),
+                normalizeCustomCityCoordsMap(customCityCoords),
+                derived
+            );
+            applyCustomCityCoordsMap(merged, { persist });
+        }
+
+        function buildItineraryExportPayload() {
+            return {
+                itinerary,
+                customCoords: customCityCoords
+            };
+        }
+
+        function parseImportedItineraryPayload(input) {
+            if (Array.isArray(input)) {
+                return { itineraryData: input, customCoordsData: {} };
+            }
+            if (input && typeof input === 'object' && Array.isArray(input.itinerary)) {
+                return {
+                    itineraryData: input.itinerary,
+                    customCoordsData: input.customCoords || input.cityCoords || input.coords || {}
+                };
+            }
+            return { itineraryData: null, customCoordsData: null };
         }
 
         function getDisplayCityName(cityKey, lang = currentLang) {
             if (!cityKey) return "";
             return lang === 'zh' ? (translations.zh.cities[cityKey] || cityKey) : cityKey;
         }
+
+        applyCustomCityCoordsMap(loadCustomCityCoordsFromStorage(), { persist: false });
+        syncCustomCityCoordsFromItinerary({ persist: false, mergeStored: true });
 
         function getAuroraCandidateCities() {
             const found = new Set();
@@ -2016,7 +3087,9 @@
                 if (cityKey && !["Auckland", "Taipei"].includes(cityKey)) found.add(cityKey);
             });
             const ordered = AURORA_CITY_PRIORITY.filter(city => found.has(city));
-            return ordered.length ? ordered : ["Tekapo"];
+            const custom = [...found].filter(city => !AURORA_CITY_PRIORITY.includes(city));
+            const merged = [...ordered, ...custom];
+            return merged.length ? merged : ["Tekapo"];
         }
 
         function getSkyConditionsStops() {
@@ -2154,7 +3227,7 @@
 
             itinerary.forEach((day, idx) => {
                 const cityStr = day.city.en || "Queenstown";
-                const cityKey = Object.keys(COORDS).find(k => cityStr.toLowerCase().includes(k.toLowerCase()));
+                const cityKey = getCityKeyFromName(cityStr);
                 if (cityKey && cityKey !== 'Auckland' && cityKey !== 'Taipei') {
                     if (isCuteMapMode) {
                         if (CUTE_COORDS[cityKey]) points.push({ ...CUTE_COORDS[cityKey], label: cityKey, dayIdx: idx });
@@ -2225,7 +3298,7 @@
                 leafletMap.fitBounds(latLons, { padding: [30, 30] });
             } else if (itinerary[dayIdx]) {
                 const cityStr = itinerary[dayIdx].city.en;
-                const cityKey = Object.keys(COORDS).find(k => cityStr.toLowerCase().includes(k.toLowerCase()));
+                const cityKey = getCityKeyFromName(cityStr);
                 if (cityKey && COORDS[cityKey]) {
                     leafletMap.flyTo([COORDS[cityKey].lat, COORDS[cityKey].lon], 9, {
                         animate: true,
@@ -3565,6 +4638,14 @@
             }, 300);
         }
 
+        function getAccommodationForDay(dayIndex, langCode = currentLang) {
+            const day = itinerary[dayIndex];
+            if (!day) return langCode === 'zh' ? '待確認' : 'TBD';
+            const explicit = day.stay?.[langCode] || day.stay?.zh || day.stay?.en || "";
+            if (explicit) return explicit;
+            return inferAccommodationFromSource(day, langCode);
+        }
+
         async function executePrint(includePhotos) {
             const ui = translations[currentLang];
             const printArea = document.getElementById('print-area');
@@ -3576,7 +4657,7 @@
             
             itinerary.forEach((day, dayIndex) => {
                 const lang = day[currentLang];
-                const hotel = decryptedHotels ? decryptedHotels[dayIndex] : ui.locked;
+                const hotel = getAccommodationForDay(dayIndex, currentLang);
                 
                 printHtml += `
                     <div class="day-block">
@@ -3674,6 +4755,7 @@
             localStorage.removeItem('nz_trip_start_date');
             localStorage.removeItem('nz_travel_checklist');
             localStorage.removeItem('itinerary_custom');
+            localStorage.removeItem(CUSTOM_CITY_COORDS_STORAGE_KEY);
             
             if (db) {
                 const tx = db.transaction(['memories'], 'readwrite');
@@ -3906,85 +4988,6 @@
             }
         }
 
-        function askPassword() {
-            if (decryptedHotels) return;
-            const ui = translations[currentLang];
-            document.getElementById('modal-title').innerText = currentLang === 'zh' ? '解鎖住宿資訊' : 'Unlock Accommodation';
-            document.getElementById('modal-desc').innerText = currentLang === 'zh' ? '請輸入安全密碼以檢視詳細住宿與定位資訊。' : 'Please enter the security password to view detailed accommodation info.';
-            const submitText = document.getElementById('modal-submit-btn');
-            if (submitText) submitText.innerText = ui.unlockConfirmBtn;
-            document.getElementById('modal-password-input').placeholder = '••••••';
-            document.getElementById('modal-error').style.opacity = '0';
-            document.getElementById('modal-password-input').value = '';
-            
-            const modal = document.getElementById('password-modal');
-            const backdrop = document.getElementById('modal-backdrop');
-            const content = document.getElementById('modal-content');
-            
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-            
-            // Trigger animation
-            requestAnimationFrame(() => {
-                backdrop.classList.remove('opacity-0');
-                content.classList.remove('scale-95', 'opacity-0');
-            });
-            
-            setTimeout(() => document.getElementById('modal-password-input').focus(), 100);
-        }
-
-        function closeModal() {
-            const modal = document.getElementById('password-modal');
-            const backdrop = document.getElementById('modal-backdrop');
-            const content = document.getElementById('modal-content');
-            
-            backdrop.classList.add('opacity-0');
-            content.classList.add('scale-95', 'opacity-0');
-            
-            setTimeout(() => {
-                modal.classList.add('hidden');
-                modal.classList.remove('flex');
-            }, 300);
-        }
-
-        function submitPassword() {
-            const pwd = document.getElementById('modal-password-input').value;
-            if(!pwd) return;
-            
-            try {
-                const bytes = CryptoJS.AES.decrypt(ENCRYPTED_HOTELS, pwd);
-                const decryptedString = bytes.toString(CryptoJS.enc.Utf8);
-                
-                if (decryptedString) {
-                    decryptedHotels = JSON.parse(decryptedString);
-                    if ("vibrate" in navigator) navigator.vibrate([30, 50, 30]); // Haptic: Success double-tap
-                    updateUI();
-                    closeModal();
-                } else {
-                    showModalError();
-                }
-            } catch (e) {
-                showModalError();
-            }
-        }
-        
-        function showModalError() {
-            const err = document.getElementById('modal-error');
-            err.innerText = currentLang === 'zh' ? '密碼錯誤，請重試' : 'Incorrect password, try again';
-            err.style.opacity = '1';
-            const input = document.getElementById('modal-password-input');
-            input.value = '';
-            input.focus();
-            if ("vibrate" in navigator) navigator.vibrate([50, 100, 50]); // Haptic: Error shake
-            
-            // Shake animation loop simulation via transform since keyframe isn't explicitly defined
-            const content = document.getElementById('modal-content');
-            content.style.transform = 'translate(-10px, 0)';
-            setTimeout(() => content.style.transform = 'translate(10px, 0)', 100);
-            setTimeout(() => content.style.transform = 'translate(-10px, 0)', 200);
-            setTimeout(() => content.style.transform = 'translate(0, 0)', 300);
-        }
-
         function toggleLang() {
             currentLang = currentLang === 'zh' ? 'en' : 'zh';
             updateUI();
@@ -4142,7 +5145,7 @@
             const importBtnText = document.getElementById('io-import-btn-text');
             if (copyBtnText) copyBtnText.innerText = ui.ioCopyBtn;
             if (importBtnText) importBtnText.innerText = ui.ioImportBtn;
-            document.getElementById('io-textarea').value = JSON.stringify(itinerary, null, 2);
+            document.getElementById('io-textarea').value = JSON.stringify(buildItineraryExportPayload(), null, 2);
             
             const modal = document.getElementById('io-modal');
             const backdrop = document.getElementById('io-backdrop');
@@ -4189,10 +5192,14 @@
         function importItinerary() {
             try {
                 const raw = document.getElementById('io-textarea').value;
-                const data = JSON.parse(raw);
-                const normalized = normalizeItineraryPayload(data, DEFAULT_ITINERARY);
+                const parsed = JSON.parse(raw);
+                const { itineraryData, customCoordsData } = parseImportedItineraryPayload(parsed);
+                const normalized = normalizeItineraryPayload(itineraryData, DEFAULT_ITINERARY);
                 if (!normalized) throw new Error("Invalid format");
                 itinerary = normalized;
+                const importedCustomMap = normalizeCustomCityCoordsMap(customCoordsData);
+                applyCustomCityCoordsMap(mergeCustomCityCoordsMaps(customCityCoords, importedCustomMap), { persist: true });
+                syncCustomCityCoordsFromItinerary({ persist: true, mergeStored: true });
                 saveItinerary();
                 alert(translations[currentLang].importDone);
                 closeIOModal();
@@ -4215,7 +5222,6 @@
             // ... (rest of function will be updated in next chunk if needed)
             updateVersionBadges();
             document.getElementById('ui-header-title').innerText = ui.header;
-            document.getElementById('ui-unlock-text').innerText = decryptedHotels ? ui.unlockDone : ui.unlockBtn;
             if (document.getElementById('ui-print-btn')) {
                 document.getElementById('ui-print-btn').innerText = ui.printBtn;
             }
@@ -4801,7 +5807,7 @@
         function renderDay(container, ui) {
             const day = itinerary[activeDayIndex];
             const lang = day[currentLang];
-            const hotel = decryptedHotels ? decryptedHotels[activeDayIndex] : ui.locked;
+            const hotel = getAccommodationForDay(activeDayIndex, currentLang);
 
             // Check if it's a domestic flight day
             let flightRoute = null;
@@ -4931,7 +5937,7 @@
                                 <div class="w-10 h-10 bg-indigo-600 text-white rounded-xl flex items-center justify-center"><i class="fas fa-bed"></i></div>
                                 <div>
                                     <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">${ui.hotelLabel}</p>
-                                    <p class="font-bold text-sm ${decryptedHotels ? 'text-indigo-800' : 'text-slate-400 italic'}">${hotel}</p>
+                                    <p contenteditable="${isEditMode}" data-edit-day="${activeDayIndex}" data-edit-field="stay" data-edit-subfield="${currentLang}" class="font-bold text-sm text-indigo-800 outline-none focus:bg-white/60 rounded px-1">${hotel}</p>
                                 </div>
                             </div>
                             <a href="${buildGoogleMapsSearchUrl(day.mapQuery || day.mapUrl)}" target="_blank" class="bg-slate-900 text-white p-5 rounded-3xl flex items-center justify-center gap-2 font-bold text-sm"><i class="fas fa-location-arrow text-blue-400"></i> MAP</a>
@@ -5162,14 +6168,11 @@
             'sync-zh-en': () => syncAllZhToEn(),
             'export-html': () => exportUpdatedHTML(),
             'reset-all-data': () => resetAllData(),
-            'unlock-hotels': () => askPassword(),
             'open-date-modal': () => openDateModal(),
             'open-drawer': () => toggleDrawer(true),
             'close-drawer': () => toggleDrawer(false),
             'toggle-lang': () => toggleLang(),
             'toggle-map-mode': () => toggleMapMode(),
-            'close-password-modal': () => closeModal(),
-            'submit-password': () => submitPassword(),
             'close-print-modal': () => closePrintModal(),
             'execute-print-with-photos': () => executePrint(true),
             'execute-print-only': () => executePrint(false),
@@ -5234,10 +6237,6 @@
                     return;
                 }
             }
-            if (event.key !== 'Enter') return;
-            const target = event.target;
-            if (!target || target.id !== 'modal-password-input') return;
-            submitPassword();
         }
 
         document.addEventListener('input', handleGlobalUIInput);
