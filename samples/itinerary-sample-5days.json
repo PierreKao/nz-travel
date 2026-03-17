@@ -1,0 +1,370 @@
+{
+  "itinerary": [
+    {
+      "date": "Day 01",
+      "actualDate": "2026-07-10",
+      "city": {
+        "zh": "基督城",
+        "en": "Christchurch"
+      },
+      "mapUrl": "Christchurch+Airport",
+      "stay": {
+        "zh": "基督城",
+        "en": "Christchurch"
+      },
+      "zh": {
+        "title": "✈️ 抵達基督城",
+        "timeline": [
+          [
+            "上午",
+            "抵達機場與取車",
+            "機場步行",
+            "",
+            "",
+            "範例5天：第1天描述"
+          ],
+          [
+            "下午",
+            "植物園與市區散步",
+            "15 分 車程",
+            "",
+            "",
+            ""
+          ],
+          [
+            "晚上",
+            "河畔晚餐",
+            "步行",
+            "",
+            "",
+            ""
+          ]
+        ]
+      },
+      "en": {
+        "title": "✈️ Arrive in Christchurch",
+        "timeline": [
+          [
+            "Morning",
+            "Airport arrival and rental pickup",
+            "Airport walk",
+            "",
+            "",
+            "Sample 5-day: day 1 description"
+          ],
+          [
+            "Afternoon",
+            "Botanic Gardens and city walk",
+            "15 min drive",
+            "",
+            "",
+            ""
+          ],
+          [
+            "Evening",
+            "Riverside dinner",
+            "Walk",
+            "",
+            "",
+            ""
+          ]
+        ]
+      }
+    },
+    {
+      "date": "Day 02",
+      "actualDate": "2026-07-11",
+      "city": {
+        "zh": "蒂卡波",
+        "en": "Tekapo"
+      },
+      "mapUrl": "Lake+Tekapo",
+      "drive": "3 hr",
+      "stay": {
+        "zh": "蒂卡波",
+        "en": "Tekapo"
+      },
+      "zh": {
+        "title": "🚗 基督城 → 蒂卡波",
+        "timeline": [
+          [
+            "上午",
+            "前往蒂卡波",
+            "3 小時 車程",
+            "",
+            "",
+            ""
+          ],
+          [
+            "下午",
+            "好牧羊人教堂",
+            "10 分 車程",
+            "",
+            "",
+            ""
+          ],
+          [
+            "晚上",
+            "湖區觀星",
+            "10 分 車程",
+            "",
+            "",
+            ""
+          ]
+        ]
+      },
+      "en": {
+        "title": "🚗 Christchurch → Tekapo",
+        "timeline": [
+          [
+            "Morning",
+            "Drive to Tekapo",
+            "3 hr drive",
+            "",
+            "",
+            ""
+          ],
+          [
+            "Afternoon",
+            "Church of the Good Shepherd",
+            "10 min drive",
+            "",
+            "",
+            ""
+          ],
+          [
+            "Evening",
+            "Stargazing by the lake",
+            "10 min drive",
+            "",
+            "",
+            ""
+          ]
+        ]
+      }
+    },
+    {
+      "date": "Day 03",
+      "actualDate": "2026-07-12",
+      "city": {
+        "zh": "庫克山/特威澤爾",
+        "en": "Mt Cook/Twizel"
+      },
+      "mapUrl": "Hooker+Valley+Track",
+      "drive": "1.5 hr",
+      "stay": {
+        "zh": "特威澤爾",
+        "en": "Twizel"
+      },
+      "zh": {
+        "title": "⛰️ 庫克山健行日",
+        "timeline": [
+          [
+            "上午",
+            "前往庫克山國家公園",
+            "1.5 小時 車程",
+            "",
+            "",
+            ""
+          ],
+          [
+            "下午",
+            "Hooker Valley Track",
+            "步行",
+            "",
+            "",
+            "範例5天：健行行程"
+          ],
+          [
+            "晚上",
+            "返回特威澤爾",
+            "1 小時 車程",
+            "",
+            "",
+            ""
+          ]
+        ]
+      },
+      "en": {
+        "title": "⛰️ Mt Cook Hiking Day",
+        "timeline": [
+          [
+            "Morning",
+            "Drive to Mt Cook National Park",
+            "1.5 hr drive",
+            "",
+            "",
+            ""
+          ],
+          [
+            "Afternoon",
+            "Hooker Valley Track",
+            "Walk",
+            "",
+            "",
+            "Sample 5-day: hiking route"
+          ],
+          [
+            "Evening",
+            "Return to Twizel",
+            "1 hr drive",
+            "",
+            "",
+            ""
+          ]
+        ]
+      }
+    },
+    {
+      "date": "Day 04",
+      "actualDate": "2026-07-13",
+      "city": {
+        "zh": "皇后鎮",
+        "en": "Queenstown"
+      },
+      "mapUrl": "Skyline+Queenstown",
+      "drive": "2.5 hr",
+      "stay": {
+        "zh": "皇后鎮",
+        "en": "Queenstown"
+      },
+      "zh": {
+        "title": "🚠 特威澤爾 → 皇后鎮",
+        "timeline": [
+          [
+            "上午",
+            "前往皇后鎮",
+            "2.5 小時 車程",
+            "",
+            "",
+            ""
+          ],
+          [
+            "下午",
+            "湖畔散步與喝咖啡",
+            "步行",
+            "",
+            "",
+            ""
+          ],
+          [
+            "晚上",
+            "Skyline 夜景",
+            "纜車",
+            "",
+            "",
+            ""
+          ]
+        ]
+      },
+      "en": {
+        "title": "🚠 Twizel → Queenstown",
+        "timeline": [
+          [
+            "Morning",
+            "Drive to Queenstown",
+            "2.5 hr drive",
+            "",
+            "",
+            ""
+          ],
+          [
+            "Afternoon",
+            "Lakefront walk and coffee",
+            "Walk",
+            "",
+            "",
+            ""
+          ],
+          [
+            "Evening",
+            "Skyline night view",
+            "Gondola",
+            "",
+            "",
+            ""
+          ]
+        ]
+      }
+    },
+    {
+      "date": "Day 05",
+      "actualDate": "2026-07-14",
+      "city": {
+        "zh": "皇后鎮",
+        "en": "Queenstown"
+      },
+      "mapUrl": "Arrowtown+New+Zealand",
+      "stay": {
+        "zh": "返程日（不住宿）",
+        "en": "Return day (no stay)"
+      },
+      "zh": {
+        "title": "🧳 皇后鎮收尾與返程",
+        "timeline": [
+          [
+            "上午",
+            "箭鎮散步",
+            "30 分 車程",
+            "",
+            "",
+            ""
+          ],
+          [
+            "下午",
+            "市區採買與還車",
+            "市區車程",
+            "",
+            "",
+            ""
+          ],
+          [
+            "晚上",
+            "前往機場",
+            "20 分 車程",
+            "",
+            "",
+            "範例5天：最終日"
+          ]
+        ]
+      },
+      "en": {
+        "title": "🧳 Queenstown Wrap-up and Departure",
+        "timeline": [
+          [
+            "Morning",
+            "Arrowtown stroll",
+            "30 min drive",
+            "",
+            "",
+            ""
+          ],
+          [
+            "Afternoon",
+            "Town shopping and car return",
+            "Town drive",
+            "",
+            "",
+            ""
+          ],
+          [
+            "Evening",
+            "Transfer to airport",
+            "20 min drive",
+            "",
+            "",
+            "Sample 5-day: final day"
+          ]
+        ]
+      }
+    }
+  ],
+  "customCoords": {
+    "Sample Dark Sky Spot": {
+      "lat": -44.0123,
+      "lon": 170.4801,
+      "zh": "範例觀星點",
+      "en": "Sample Stargazing Spot"
+    }
+  }
+}

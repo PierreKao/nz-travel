@@ -1,0 +1,1093 @@
+{
+  "itinerary": [
+    {
+      "date": "Day 01",
+      "actualDate": "2026-08-01",
+      "city": {
+        "zh": "基督城",
+        "en": "Christchurch"
+      },
+      "mapUrl": "Christchurch+Airport",
+      "stay": {
+        "zh": "基督城",
+        "en": "Christchurch"
+      },
+      "zh": {
+        "title": "✈️ 抵達基督城",
+        "timeline": [
+          [
+            "上午",
+            "抵達機場與取車",
+            "車程",
+            "",
+            "",
+            "範例15天：首日描述"
+          ],
+          [
+            "下午",
+            "市區散步與採買",
+            "步行/短程車程",
+            "",
+            "",
+            ""
+          ],
+          [
+            "晚上",
+            "河畔晚餐",
+            "步行/市區車程",
+            "",
+            "",
+            ""
+          ]
+        ]
+      },
+      "en": {
+        "title": "✈️ Arrive in Christchurch",
+        "timeline": [
+          [
+            "Morning",
+            "Airport arrival and car pickup",
+            "Drive",
+            "",
+            "",
+            "Sample 15-day: first day description"
+          ],
+          [
+            "Afternoon",
+            "City walk and groceries",
+            "Walk / short drive",
+            "",
+            "",
+            ""
+          ],
+          [
+            "Evening",
+            "Riverside dinner",
+            "Walk / town drive",
+            "",
+            "",
+            ""
+          ]
+        ]
+      }
+    },
+    {
+      "date": "Day 02",
+      "actualDate": "2026-08-02",
+      "city": {
+        "zh": "阿卡羅阿",
+        "en": "Akaroa"
+      },
+      "mapUrl": "Akaroa+Harbour",
+      "drive": "1.5 hr",
+      "stay": {
+        "zh": "阿卡羅阿",
+        "en": "Akaroa"
+      },
+      "zh": {
+        "title": "🌊 基督城 → 阿卡羅阿",
+        "timeline": [
+          [
+            "上午",
+            "前往阿卡羅阿",
+            "1.5 hr 車程",
+            "",
+            "",
+            ""
+          ],
+          [
+            "下午",
+            "港灣散步",
+            "步行/短程車程",
+            "",
+            "",
+            ""
+          ],
+          [
+            "晚上",
+            "海鮮晚餐",
+            "步行/市區車程",
+            "",
+            "",
+            ""
+          ]
+        ]
+      },
+      "en": {
+        "title": "🌊 Christchurch → Akaroa",
+        "timeline": [
+          [
+            "Morning",
+            "Drive to Akaroa",
+            "1.5 hr drive",
+            "",
+            "",
+            ""
+          ],
+          [
+            "Afternoon",
+            "Harbour walk",
+            "Walk / short drive",
+            "",
+            "",
+            ""
+          ],
+          [
+            "Evening",
+            "Seafood dinner",
+            "Walk / town drive",
+            "",
+            "",
+            ""
+          ]
+        ]
+      }
+    },
+    {
+      "date": "Day 03",
+      "actualDate": "2026-08-03",
+      "city": {
+        "zh": "蒂卡波",
+        "en": "Tekapo"
+      },
+      "mapUrl": "Lake+Tekapo",
+      "drive": "3.5 hr",
+      "stay": {
+        "zh": "蒂卡波",
+        "en": "Tekapo"
+      },
+      "zh": {
+        "title": "🚗 阿卡羅阿 → 蒂卡波",
+        "timeline": [
+          [
+            "上午",
+            "長程移動前往蒂卡波",
+            "3.5 hr 車程",
+            "",
+            "",
+            ""
+          ],
+          [
+            "下午",
+            "教堂與湖畔拍照",
+            "步行/短程車程",
+            "",
+            "",
+            ""
+          ],
+          [
+            "晚上",
+            "星空暖身觀測",
+            "步行/市區車程",
+            "",
+            "",
+            ""
+          ]
+        ]
+      },
+      "en": {
+        "title": "🚗 Akaroa → Tekapo",
+        "timeline": [
+          [
+            "Morning",
+            "Long drive to Tekapo",
+            "3.5 hr drive",
+            "",
+            "",
+            ""
+          ],
+          [
+            "Afternoon",
+            "Church and lake photos",
+            "Walk / short drive",
+            "",
+            "",
+            ""
+          ],
+          [
+            "Evening",
+            "Warm-up stargazing",
+            "Walk / town drive",
+            "",
+            "",
+            ""
+          ]
+        ]
+      }
+    },
+    {
+      "date": "Day 04",
+      "actualDate": "2026-08-04",
+      "city": {
+        "zh": "蒂卡波",
+        "en": "Tekapo"
+      },
+      "mapUrl": "Mount+John+University+Observatory",
+      "stay": {
+        "zh": "蒂卡波",
+        "en": "Tekapo"
+      },
+      "zh": {
+        "title": "⭐ 蒂卡波全日",
+        "timeline": [
+          [
+            "上午",
+            "咖啡慢步調",
+            "車程",
+            "",
+            "",
+            ""
+          ],
+          [
+            "下午",
+            "Mt John 觀景",
+            "步行/短程車程",
+            "",
+            "",
+            ""
+          ],
+          [
+            "晚上",
+            "夜間觀星",
+            "步行/市區車程",
+            "",
+            "",
+            ""
+          ]
+        ]
+      },
+      "en": {
+        "title": "⭐ Tekapo Full Day",
+        "timeline": [
+          [
+            "Morning",
+            "Slow cafe morning",
+            "Drive",
+            "",
+            "",
+            ""
+          ],
+          [
+            "Afternoon",
+            "Mt John lookout",
+            "Walk / short drive",
+            "",
+            "",
+            ""
+          ],
+          [
+            "Evening",
+            "Night stargazing",
+            "Walk / town drive",
+            "",
+            "",
+            ""
+          ]
+        ]
+      }
+    },
+    {
+      "date": "Day 05",
+      "actualDate": "2026-08-05",
+      "city": {
+        "zh": "庫克山/特威澤爾",
+        "en": "Mt Cook/Twizel"
+      },
+      "mapUrl": "Hooker+Valley+Track",
+      "drive": "1.25 hr",
+      "stay": {
+        "zh": "特威澤爾",
+        "en": "Twizel"
+      },
+      "zh": {
+        "title": "⛰️ 蒂卡波 → 庫克山健行",
+        "timeline": [
+          [
+            "上午",
+            "前往庫克山園區",
+            "1.25 hr 車程",
+            "",
+            "",
+            ""
+          ],
+          [
+            "下午",
+            "Hooker Valley Track",
+            "步行/短程車程",
+            "",
+            "",
+            ""
+          ],
+          [
+            "晚上",
+            "返回特威澤爾",
+            "步行/市區車程",
+            "",
+            "",
+            ""
+          ]
+        ]
+      },
+      "en": {
+        "title": "⛰️ Tekapo → Mt Cook Hike",
+        "timeline": [
+          [
+            "Morning",
+            "Drive to Mt Cook area",
+            "1.25 hr drive",
+            "",
+            "",
+            ""
+          ],
+          [
+            "Afternoon",
+            "Hooker Valley Track",
+            "Walk / short drive",
+            "",
+            "",
+            ""
+          ],
+          [
+            "Evening",
+            "Return to Twizel",
+            "Walk / town drive",
+            "",
+            "",
+            ""
+          ]
+        ]
+      }
+    },
+    {
+      "date": "Day 06",
+      "actualDate": "2026-08-06",
+      "city": {
+        "zh": "瓦納卡",
+        "en": "Wanaka"
+      },
+      "mapUrl": "That+Wanaka+Tree",
+      "drive": "2.5 hr",
+      "stay": {
+        "zh": "瓦納卡",
+        "en": "Wanaka"
+      },
+      "zh": {
+        "title": "📷 特威澤爾 → 瓦納卡",
+        "timeline": [
+          [
+            "上午",
+            "前往瓦納卡",
+            "2.5 hr 車程",
+            "",
+            "",
+            ""
+          ],
+          [
+            "下午",
+            "湖邊孤獨樹",
+            "步行/短程車程",
+            "",
+            "",
+            ""
+          ],
+          [
+            "晚上",
+            "主街晚餐",
+            "步行/市區車程",
+            "",
+            "",
+            ""
+          ]
+        ]
+      },
+      "en": {
+        "title": "📷 Twizel → Wanaka",
+        "timeline": [
+          [
+            "Morning",
+            "Drive to Wanaka",
+            "2.5 hr drive",
+            "",
+            "",
+            ""
+          ],
+          [
+            "Afternoon",
+            "That Wanaka Tree",
+            "Walk / short drive",
+            "",
+            "",
+            ""
+          ],
+          [
+            "Evening",
+            "Main street dinner",
+            "Walk / town drive",
+            "",
+            "",
+            ""
+          ]
+        ]
+      }
+    },
+    {
+      "date": "Day 07",
+      "actualDate": "2026-08-07",
+      "city": {
+        "zh": "瓦納卡",
+        "en": "Wanaka"
+      },
+      "mapUrl": "Puzzling+World+Wanaka",
+      "stay": {
+        "zh": "瓦納卡",
+        "en": "Wanaka"
+      },
+      "zh": {
+        "title": "🪁 瓦納卡全日",
+        "timeline": [
+          [
+            "上午",
+            "Puzzling World",
+            "車程",
+            "",
+            "",
+            ""
+          ],
+          [
+            "下午",
+            "湖畔放空",
+            "步行/短程車程",
+            "",
+            "",
+            ""
+          ],
+          [
+            "晚上",
+            "補給採買",
+            "步行/市區車程",
+            "",
+            "",
+            ""
+          ]
+        ]
+      },
+      "en": {
+        "title": "🪁 Wanaka Full Day",
+        "timeline": [
+          [
+            "Morning",
+            "Puzzling World",
+            "Drive",
+            "",
+            "",
+            ""
+          ],
+          [
+            "Afternoon",
+            "Lakefront relax",
+            "Walk / short drive",
+            "",
+            "",
+            ""
+          ],
+          [
+            "Evening",
+            "Supply run",
+            "Walk / town drive",
+            "",
+            "",
+            ""
+          ]
+        ]
+      }
+    },
+    {
+      "date": "Day 08",
+      "actualDate": "2026-08-08",
+      "city": {
+        "zh": "皇后鎮",
+        "en": "Queenstown"
+      },
+      "mapUrl": "Queenstown+Gardens",
+      "drive": "1 hr",
+      "stay": {
+        "zh": "皇后鎮",
+        "en": "Queenstown"
+      },
+      "zh": {
+        "title": "🏙️ 瓦納卡 → 皇后鎮",
+        "timeline": [
+          [
+            "上午",
+            "經 Crown Range 前往皇后鎮",
+            "1 hr 車程",
+            "",
+            "",
+            ""
+          ],
+          [
+            "下午",
+            "花園散步",
+            "步行/短程車程",
+            "",
+            "",
+            ""
+          ],
+          [
+            "晚上",
+            "Skyline 夜景",
+            "步行/市區車程",
+            "",
+            "",
+            ""
+          ]
+        ]
+      },
+      "en": {
+        "title": "🏙️ Wanaka → Queenstown",
+        "timeline": [
+          [
+            "Morning",
+            "Drive via Crown Range",
+            "1 hr drive",
+            "",
+            "",
+            ""
+          ],
+          [
+            "Afternoon",
+            "Garden walk",
+            "Walk / short drive",
+            "",
+            "",
+            ""
+          ],
+          [
+            "Evening",
+            "Skyline night view",
+            "Walk / town drive",
+            "",
+            "",
+            ""
+          ]
+        ]
+      }
+    },
+    {
+      "date": "Day 09",
+      "actualDate": "2026-08-09",
+      "city": {
+        "zh": "皇后鎮",
+        "en": "Queenstown"
+      },
+      "mapUrl": "Arrowtown+New+Zealand",
+      "stay": {
+        "zh": "皇后鎮",
+        "en": "Queenstown"
+      },
+      "zh": {
+        "title": "🚠 皇后鎮冒險日",
+        "timeline": [
+          [
+            "上午",
+            "箭鎮散步",
+            "車程",
+            "",
+            "",
+            ""
+          ],
+          [
+            "下午",
+            "皇后鎮自由活動",
+            "步行/短程車程",
+            "",
+            "",
+            ""
+          ],
+          [
+            "晚上",
+            "湖邊酒吧",
+            "步行/市區車程",
+            "",
+            "",
+            ""
+          ]
+        ]
+      },
+      "en": {
+        "title": "🚠 Queenstown Adventure Day",
+        "timeline": [
+          [
+            "Morning",
+            "Arrowtown stroll",
+            "Drive",
+            "",
+            "",
+            ""
+          ],
+          [
+            "Afternoon",
+            "Free time in town",
+            "Walk / short drive",
+            "",
+            "",
+            ""
+          ],
+          [
+            "Evening",
+            "Lakefront bar",
+            "Walk / town drive",
+            "",
+            "",
+            ""
+          ]
+        ]
+      }
+    },
+    {
+      "date": "Day 10",
+      "actualDate": "2026-08-10",
+      "city": {
+        "zh": "蒂阿瑙",
+        "en": "Te Anau"
+      },
+      "mapUrl": "Te+Anau+Lakefront",
+      "drive": "2 hr",
+      "stay": {
+        "zh": "蒂阿瑙",
+        "en": "Te Anau"
+      },
+      "zh": {
+        "title": "🛶 皇后鎮 → 蒂阿瑙",
+        "timeline": [
+          [
+            "上午",
+            "前往蒂阿瑙",
+            "2 hr 車程",
+            "",
+            "",
+            ""
+          ],
+          [
+            "下午",
+            "湖邊步道",
+            "步行/短程車程",
+            "",
+            "",
+            ""
+          ],
+          [
+            "晚上",
+            "隔日行程準備",
+            "步行/市區車程",
+            "",
+            "",
+            ""
+          ]
+        ]
+      },
+      "en": {
+        "title": "🛶 Queenstown → Te Anau",
+        "timeline": [
+          [
+            "Morning",
+            "Drive to Te Anau",
+            "2 hr drive",
+            "",
+            "",
+            ""
+          ],
+          [
+            "Afternoon",
+            "Lakefront trail",
+            "Walk / short drive",
+            "",
+            "",
+            ""
+          ],
+          [
+            "Evening",
+            "Prep for next day",
+            "Walk / town drive",
+            "",
+            "",
+            ""
+          ]
+        ]
+      }
+    },
+    {
+      "date": "Day 11",
+      "actualDate": "2026-08-11",
+      "city": {
+        "zh": "米佛峽灣/蒂阿瑙",
+        "en": "Milford Sound/Te Anau"
+      },
+      "mapUrl": "Milford+Sound",
+      "drive": "4 hr x2",
+      "stay": {
+        "zh": "蒂阿瑙",
+        "en": "Te Anau"
+      },
+      "zh": {
+        "title": "⛴️ 米佛峽灣來回",
+        "timeline": [
+          [
+            "上午",
+            "清晨出發前往米佛",
+            "4 hr x2 車程",
+            "",
+            "",
+            ""
+          ],
+          [
+            "下午",
+            "峽灣遊船",
+            "步行/短程車程",
+            "",
+            "",
+            ""
+          ],
+          [
+            "晚上",
+            "返回蒂阿瑙",
+            "步行/市區車程",
+            "",
+            "",
+            ""
+          ]
+        ]
+      },
+      "en": {
+        "title": "⛴️ Milford Sound Round Trip",
+        "timeline": [
+          [
+            "Morning",
+            "Early drive to Milford",
+            "4 hr x2 drive",
+            "",
+            "",
+            ""
+          ],
+          [
+            "Afternoon",
+            "Milford cruise",
+            "Walk / short drive",
+            "",
+            "",
+            ""
+          ],
+          [
+            "Evening",
+            "Drive back to Te Anau",
+            "Walk / town drive",
+            "",
+            "",
+            ""
+          ]
+        ]
+      }
+    },
+    {
+      "date": "Day 12",
+      "actualDate": "2026-08-12",
+      "city": {
+        "zh": "但尼丁",
+        "en": "Dunedin"
+      },
+      "mapUrl": "Dunedin+Railway+Station",
+      "drive": "4 hr",
+      "stay": {
+        "zh": "但尼丁",
+        "en": "Dunedin"
+      },
+      "zh": {
+        "title": "🏛️ 蒂阿瑙 → 但尼丁",
+        "timeline": [
+          [
+            "上午",
+            "長程移動前往但尼丁",
+            "4 hr 車程",
+            "",
+            "",
+            ""
+          ],
+          [
+            "下午",
+            "火車站與市區散步",
+            "步行/短程車程",
+            "",
+            "",
+            ""
+          ],
+          [
+            "晚上",
+            "八角廣場晚餐",
+            "步行/市區車程",
+            "",
+            "",
+            ""
+          ]
+        ]
+      },
+      "en": {
+        "title": "🏛️ Te Anau → Dunedin",
+        "timeline": [
+          [
+            "Morning",
+            "Long drive to Dunedin",
+            "4 hr drive",
+            "",
+            "",
+            ""
+          ],
+          [
+            "Afternoon",
+            "Railway station walk",
+            "Walk / short drive",
+            "",
+            "",
+            ""
+          ],
+          [
+            "Evening",
+            "Dinner near The Octagon",
+            "Walk / town drive",
+            "",
+            "",
+            ""
+          ]
+        ]
+      }
+    },
+    {
+      "date": "Day 13",
+      "actualDate": "2026-08-13",
+      "city": {
+        "zh": "但尼丁",
+        "en": "Dunedin"
+      },
+      "mapUrl": "Otago+Peninsula",
+      "stay": {
+        "zh": "但尼丁",
+        "en": "Dunedin"
+      },
+      "zh": {
+        "title": "🐧 奧塔哥半島生態日",
+        "timeline": [
+          [
+            "上午",
+            "前往半島觀景",
+            "車程",
+            "",
+            "",
+            ""
+          ],
+          [
+            "下午",
+            "海岸步道",
+            "步行/短程車程",
+            "",
+            "",
+            ""
+          ],
+          [
+            "晚上",
+            "回市區休息",
+            "步行/市區車程",
+            "",
+            "",
+            ""
+          ]
+        ]
+      },
+      "en": {
+        "title": "🐧 Otago Peninsula Nature Day",
+        "timeline": [
+          [
+            "Morning",
+            "Drive to peninsula",
+            "Drive",
+            "",
+            "",
+            ""
+          ],
+          [
+            "Afternoon",
+            "Coastal trail",
+            "Walk / short drive",
+            "",
+            "",
+            ""
+          ],
+          [
+            "Evening",
+            "Return to city",
+            "Walk / town drive",
+            "",
+            "",
+            ""
+          ]
+        ]
+      }
+    },
+    {
+      "date": "Day 14",
+      "actualDate": "2026-08-14",
+      "city": {
+        "zh": "奧瑪魯",
+        "en": "Oamaru"
+      },
+      "mapUrl": "Oamaru+Blue+Penguin+Colony",
+      "drive": "1.5 hr",
+      "stay": {
+        "zh": "奧瑪魯",
+        "en": "Oamaru"
+      },
+      "zh": {
+        "title": "🐟 但尼丁 → 奧瑪魯",
+        "timeline": [
+          [
+            "上午",
+            "前往奧瑪魯",
+            "1.5 hr 車程",
+            "",
+            "",
+            ""
+          ],
+          [
+            "下午",
+            "維多利亞老街區",
+            "步行/短程車程",
+            "",
+            "",
+            ""
+          ],
+          [
+            "晚上",
+            "藍企鵝歸巢",
+            "步行/市區車程",
+            "",
+            "",
+            ""
+          ]
+        ]
+      },
+      "en": {
+        "title": "🐟 Dunedin → Oamaru",
+        "timeline": [
+          [
+            "Morning",
+            "Drive to Oamaru",
+            "1.5 hr drive",
+            "",
+            "",
+            ""
+          ],
+          [
+            "Afternoon",
+            "Victorian precinct",
+            "Walk / short drive",
+            "",
+            "",
+            ""
+          ],
+          [
+            "Evening",
+            "Blue penguin viewing",
+            "Walk / town drive",
+            "",
+            "",
+            ""
+          ]
+        ]
+      }
+    },
+    {
+      "date": "Day 15",
+      "actualDate": "2026-08-15",
+      "city": {
+        "zh": "基督城",
+        "en": "Christchurch"
+      },
+      "mapUrl": "Christchurch+International+Airport",
+      "drive": "3 hr",
+      "stay": {
+        "zh": "返程日（不住宿）",
+        "en": "Return day (no stay)"
+      },
+      "zh": {
+        "title": "✈️ 奧瑪魯 → 基督城返程",
+        "timeline": [
+          [
+            "上午",
+            "前往基督城機場",
+            "3 hr 車程",
+            "",
+            "",
+            ""
+          ],
+          [
+            "下午",
+            "還車與報到",
+            "步行/短程車程",
+            "",
+            "",
+            ""
+          ],
+          [
+            "晚上",
+            "行程結束",
+            "步行/市區車程",
+            "",
+            "",
+            "範例15天：最終日描述"
+          ]
+        ]
+      },
+      "en": {
+        "title": "✈️ Oamaru → Christchurch Departure",
+        "timeline": [
+          [
+            "Morning",
+            "Drive to CHC airport",
+            "3 hr drive",
+            "",
+            "",
+            ""
+          ],
+          [
+            "Afternoon",
+            "Car return and check-in",
+            "Walk / short drive",
+            "",
+            "",
+            ""
+          ],
+          [
+            "Evening",
+            "Trip complete",
+            "Walk / town drive",
+            "",
+            "",
+            "Sample 15-day: final day description"
+          ]
+        ]
+      }
+    }
+  ],
+  "customCoords": {
+    "Sample Photo Spot": {
+      "lat": -45.029,
+      "lon": 168.662,
+      "zh": "範例攝影點",
+      "en": "Sample Photo Spot"
+    },
+    "Sample Night Point": {
+      "lat": -43.734,
+      "lon": 170.1,
+      "zh": "範例夜拍點",
+      "en": "Sample Night Point"
+    }
+  }
+}

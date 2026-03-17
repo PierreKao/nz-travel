@@ -407,7 +407,7 @@
     <header class="bg-white/70 backdrop-blur-md border-b sticky top-0 z-50 px-3 py-2 sm:px-6 sm:py-3 flex justify-between items-center shadow-sm">
         <div data-ui-action="go-overview" class="cursor-pointer shrink-0">
                 <span id="ui-header-title">紐西蘭南島 · 冬季自駕</span>
-            <p id="app-version-badge-header" class="text-[10px] text-blue-600 font-bold uppercase tracking-widest">Winter Adventure · v1.3.2</p>
+            <p id="app-version-badge-header" class="text-[10px] text-blue-600 font-bold uppercase tracking-widest">Winter Adventure · v1.3.3</p>
         </div>
         
         <div class="flex items-center gap-1 sm:gap-3">
@@ -497,7 +497,7 @@
                 </div>
 
                 <div class="mt-12 pt-8 border-t border-slate-100">
-                    <p id="app-version-badge-drawer" class="text-[10px] text-slate-400 font-bold uppercase tracking-wider text-center">New Zealand Travel · v1.3.2</p>
+                    <p id="app-version-badge-drawer" class="text-[10px] text-slate-400 font-bold uppercase tracking-wider text-center">New Zealand Travel · v1.3.3</p>
                 </div>
             </div>
         </div>
@@ -770,7 +770,7 @@
         `;
         document.body.insertAdjacentHTML('beforeend', milkyWayWindowModalHTML);
 
-        const APP_VERSION = "1.3.2";
+        const APP_VERSION = "1.3.3";
         const AIR_NZ_BOOKING_URL = "https://www.airnewzealand.co.nz/book";
 
         let currentLang = 'zh';
@@ -3059,14 +3059,62 @@
             };
         }
 
+        function parseJsonWithImportFallback(rawText = "") {
+            const raw = String(rawText ?? "").replace(/^\uFEFF/, "");
+            const normalized = raw.trim();
+            const candidates = [];
+
+            if (normalized) candidates.push(normalized);
+
+            const fencedBlocks = [...raw.matchAll(/```(?:json)?\s*([\s\S]*?)\s*```/gi)]
+                .map(match => (match[1] || "").trim())
+                .filter(Boolean);
+            candidates.push(...fencedBlocks);
+
+            const firstJsonStart = normalized.search(/[\[{]/);
+            if (firstJsonStart >= 0) {
+                const startChar = normalized[firstJsonStart];
+                const endChar = startChar === '{' ? '}' : ']';
+                const endIndex = normalized.lastIndexOf(endChar);
+                if (endIndex > firstJsonStart) {
+                    candidates.push(normalized.slice(firstJsonStart, endIndex + 1).trim());
+                }
+            }
+
+            const uniqueCandidates = [...new Set(candidates)];
+            let lastError = null;
+            for (const candidate of uniqueCandidates) {
+                try {
+                    return JSON.parse(candidate);
+                } catch (error) {
+                    lastError = error;
+                }
+            }
+            throw lastError || new Error("Invalid JSON");
+        }
+
         function parseImportedItineraryPayload(input) {
             if (Array.isArray(input)) {
                 return { itineraryData: input, customCoordsData: {} };
             }
-            if (input && typeof input === 'object' && Array.isArray(input.itinerary)) {
+            if (input && typeof input === 'object') {
+                const itineraryData = Array.isArray(input.itinerary) ? input.itinerary
+                    : Array.isArray(input.days) ? input.days
+                    : Array.isArray(input.data?.itinerary) ? input.data.itinerary
+                    : Array.isArray(input.data?.days) ? input.data.days
+                    : null;
+                if (!itineraryData) return { itineraryData: null, customCoordsData: null };
+
                 return {
-                    itineraryData: input.itinerary,
-                    customCoordsData: input.customCoords || input.cityCoords || input.coords || {}
+                    itineraryData,
+                    customCoordsData: input.customCoords
+                        || input.cityCoords
+                        || input.coords
+                        || input.customCityCoords
+                        || input.data?.customCoords
+                        || input.data?.cityCoords
+                        || input.data?.coords
+                        || {}
                 };
             }
             return { itineraryData: null, customCoordsData: null };
@@ -5190,23 +5238,43 @@
         }
 
         function importItinerary() {
+            const ui = translations[currentLang];
+            const raw = document.getElementById('io-textarea').value;
+            let normalized = null;
+            let customCoordsData = {};
+
             try {
-                const raw = document.getElementById('io-textarea').value;
-                const parsed = JSON.parse(raw);
-                const { itineraryData, customCoordsData } = parseImportedItineraryPayload(parsed);
-                const normalized = normalizeItineraryPayload(itineraryData, DEFAULT_ITINERARY);
+                const parsed = parseJsonWithImportFallback(raw);
+                const importPayload = parseImportedItineraryPayload(parsed);
+                customCoordsData = importPayload.customCoordsData || {};
+                normalized = normalizeItineraryPayload(importPayload.itineraryData, DEFAULT_ITINERARY);
                 if (!normalized) throw new Error("Invalid format");
+            } catch (e) {
+                alert(ui.importError);
+                return;
+            }
+
+            try {
                 itinerary = normalized;
                 const importedCustomMap = normalizeCustomCityCoordsMap(customCoordsData);
                 applyCustomCityCoordsMap(mergeCustomCityCoordsMaps(customCityCoords, importedCustomMap), { persist: true });
                 syncCustomCityCoordsFromItinerary({ persist: true, mergeStored: true });
                 saveItinerary();
-                alert(translations[currentLang].importDone);
+            } catch (e) {
+                console.error('Failed to apply imported itinerary.', e);
+                alert(ui.importError);
+                return;
+            }
+
+            // UI refresh issues should not flip a successful import into an error alert.
+            try {
                 closeIOModal();
                 updateUI();
             } catch (e) {
-                alert(translations[currentLang].importError);
+                console.warn('Import succeeded but UI refresh encountered an issue.', e);
             }
+
+            alert(ui.importDone);
         }
 
         function updateVersionBadges() {
@@ -5216,8 +5284,23 @@
             if (drawerBadge) drawerBadge.innerText = `New Zealand Travel · v${APP_VERSION}`;
         }
 
+        function normalizeActiveSelectionForCurrentItinerary() {
+            if (!Array.isArray(itinerary) || itinerary.length === 0) {
+                activeDayIndex = -1;
+                return;
+            }
+            if (activeDayIndex < -2) {
+                activeDayIndex = -1;
+                return;
+            }
+            if (activeDayIndex >= itinerary.length) {
+                activeDayIndex = itinerary.length - 1;
+            }
+        }
+
 
         function updateUI() {
+            normalizeActiveSelectionForCurrentItinerary();
             const ui = translations[currentLang];
             // ... (rest of function will be updated in next chunk if needed)
             updateVersionBadges();

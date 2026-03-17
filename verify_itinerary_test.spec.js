@@ -100,6 +100,108 @@ test.describe('Itinerary editor real-flow E2E', () => {
         await expect(page.locator('#content-display h2').first()).toContainText(newTitle);
     });
 
+    test('import 支援 markdown code block JSON（含 customCoords）', async ({ page }) => {
+        const dialogs = [];
+        page.on('dialog', async (dialog) => {
+            dialogs.push(dialog.message());
+            await dialog.accept();
+        });
+
+        await openApp(page);
+        await page.locator('#edit-mode-btn').click();
+        await page.locator('[data-ui-action="open-io-modal"]').first().click();
+        await expect(page.locator('#io-modal')).toHaveClass(/flex/);
+
+        const importPayload = {
+            itinerary: [
+                {
+                    date: 'Day 01',
+                    actualDate: '2026-07-01',
+                    city: { zh: '蒂卡波', en: 'Tekapo' },
+                    mapUrl: 'Lake+Tekapo',
+                    stay: { zh: '蒂卡波', en: 'Tekapo' },
+                    zh: { title: '🧪 匯入測試日', timeline: [['上午', '測試活動', '30 分 車程', '', '', '來自 code fence']] },
+                    en: { title: '🧪 Import Test Day', timeline: [['Morning', 'Import test activity', '30 min drive', '', '', 'from markdown code fence']] }
+                }
+            ],
+            customCoords: {
+                'Test Custom Spot': { lat: -44.01, lon: 170.5, zh: '測試觀星點', en: 'Test Spot' }
+            }
+        };
+        const wrappedJson = `Please import this payload:\n\`\`\`json\n${JSON.stringify(importPayload, null, 2)}\n\`\`\`\nThanks!`;
+
+        await page.locator('#io-textarea').fill(wrappedJson);
+        await page.locator('[data-ui-action="import-itinerary"]').click();
+
+        await expect.poll(async () => {
+            return page.locator('#io-modal').getAttribute('class');
+        }).toContain('hidden');
+
+        await expect.poll(async () => {
+            return page.evaluate(() => {
+                const saved = JSON.parse(localStorage.getItem('itinerary_custom') || '[]');
+                return saved[0]?.zh?.title || '';
+            });
+        }).toBe('🧪 匯入測試日');
+
+        await expect.poll(async () => {
+            return page.evaluate(() => {
+                const coords = JSON.parse(localStorage.getItem('nz_travel_custom_city_coords') || '{}');
+                return coords['Test Custom Spot']?.lat;
+            });
+        }).toBe(-44.01);
+
+        expect(dialogs.length).toBe(1);
+        expect(dialogs[0]).toContain('導入成功');
+    });
+
+    test('匯入較短行程時會自動校正目前天數並刷新畫面', async ({ page }) => {
+        const dialogs = [];
+        page.on('dialog', async (dialog) => {
+            dialogs.push(dialog.message());
+            await dialog.accept();
+        });
+
+        await openApp(page);
+        await page.locator('#edit-mode-btn').click();
+
+        const dayButtons = page.locator('#nav-container .day-btn');
+        const totalButtons = await dayButtons.count();
+        await dayButtons.nth(totalButtons - 1).click();
+
+        const shortPayload = [
+            {
+                date: 'Day 01',
+                actualDate: '2026-07-01',
+                city: { zh: '基督城', en: 'Christchurch' },
+                mapUrl: 'Christchurch+Airport',
+                stay: { zh: '基督城', en: 'Christchurch' },
+                zh: { title: '✅ 匯入後刷新成功', timeline: [['上午', '短行程測試', '步行', '', '', 'Auto refresh check']] },
+                en: { title: '✅ Import Refresh Works', timeline: [['Morning', 'Short itinerary test', 'Walk', '', '', 'Auto refresh check']] }
+            }
+        ];
+
+        await page.locator('[data-ui-action="open-io-modal"]').first().click();
+        await expect(page.locator('#io-modal')).toHaveClass(/flex/);
+        await page.locator('#io-textarea').fill(JSON.stringify(shortPayload, null, 2));
+        await page.locator('[data-ui-action="import-itinerary"]').click();
+
+        await expect.poll(async () => {
+            return page.locator('#io-modal').getAttribute('class');
+        }).toContain('hidden');
+
+        await expect.poll(async () => {
+            return page.locator('#content-display h2').first().innerText();
+        }).toContain('匯入後刷新成功');
+
+        await expect.poll(async () => {
+            return page.locator('#nav-container .day-btn').count();
+        }).toBe(3);
+
+        expect(dialogs.length).toBe(1);
+        expect(dialogs[0]).toContain('導入成功');
+    });
+
     test('sky conditions 互動（展開、切換 stop、收合）', async ({ page }) => {
         await openApp(page);
 

@@ -1,0 +1,376 @@
+{
+  "itinerary": [
+    {
+      "date": "Day 01",
+      "actualDate": "2026-09-10",
+      "city": {
+        "zh": "雪梨",
+        "en": "Sydney"
+      },
+      "mapUrl": "Sydney+Airport",
+      "stay": {
+        "zh": "雪梨",
+        "en": "Sydney"
+      },
+      "zh": {
+        "title": "✈️ 抵達雪梨",
+        "timeline": [
+          [
+            "上午",
+            "抵達 SYD、入境與取行李",
+            "機場步行",
+            "",
+            "",
+            "澳洲5日範例：首日匯入測試"
+          ],
+          [
+            "下午",
+            "Circular Quay 與岩石區散步",
+            "30 分 車程",
+            "",
+            "",
+            ""
+          ],
+          [
+            "晚上",
+            "雪梨港邊晚餐",
+            "步行",
+            "",
+            "",
+            ""
+          ]
+        ]
+      },
+      "en": {
+        "title": "✈️ Arrive in Sydney",
+        "timeline": [
+          [
+            "Morning",
+            "Arrive at SYD and clear immigration",
+            "Airport walk",
+            "",
+            "",
+            "Australia 5-day sample: day 1 import note"
+          ],
+          [
+            "Afternoon",
+            "Walk around Circular Quay and The Rocks",
+            "30 min drive",
+            "",
+            "",
+            ""
+          ],
+          [
+            "Evening",
+            "Dinner near Sydney Harbour",
+            "Walk",
+            "",
+            "",
+            ""
+          ]
+        ]
+      }
+    },
+    {
+      "date": "Day 02",
+      "actualDate": "2026-09-11",
+      "city": {
+        "zh": "雪梨/藍山",
+        "en": "Sydney/Blue Mountains"
+      },
+      "mapUrl": "Blue+Mountains+National+Park",
+      "drive": "2 hr",
+      "stay": {
+        "zh": "雪梨",
+        "en": "Sydney"
+      },
+      "zh": {
+        "title": "🏞️ 雪梨往返藍山",
+        "timeline": [
+          [
+            "上午",
+            "前往 Echo Point",
+            "2 小時 車程",
+            "",
+            "",
+            ""
+          ],
+          [
+            "下午",
+            "Three Sisters 與步道",
+            "步行",
+            "",
+            "",
+            ""
+          ],
+          [
+            "晚上",
+            "返回雪梨",
+            "2 小時 車程",
+            "",
+            "",
+            ""
+          ]
+        ]
+      },
+      "en": {
+        "title": "🏞️ Sydney Day Trip to Blue Mountains",
+        "timeline": [
+          [
+            "Morning",
+            "Drive to Echo Point",
+            "2 hr drive",
+            "",
+            "",
+            ""
+          ],
+          [
+            "Afternoon",
+            "Three Sisters and short trails",
+            "Walk",
+            "",
+            "",
+            ""
+          ],
+          [
+            "Evening",
+            "Drive back to Sydney",
+            "2 hr drive",
+            "",
+            "",
+            ""
+          ]
+        ]
+      }
+    },
+    {
+      "date": "Day 03",
+      "actualDate": "2026-09-12",
+      "city": {
+        "zh": "坎培拉",
+        "en": "Canberra"
+      },
+      "mapUrl": "Canberra+Parliament+House",
+      "drive": "3.5 hr",
+      "stay": {
+        "zh": "坎培拉",
+        "en": "Canberra"
+      },
+      "zh": {
+        "title": "🚗 雪梨 → 坎培拉",
+        "timeline": [
+          [
+            "上午",
+            "離開雪梨前往坎培拉",
+            "3.5 小時 車程",
+            "",
+            "",
+            ""
+          ],
+          [
+            "下午",
+            "國會大廈與湖區散步",
+            "市區車程",
+            "",
+            "",
+            ""
+          ],
+          [
+            "晚上",
+            "市中心晚餐",
+            "步行",
+            "",
+            "",
+            ""
+          ]
+        ]
+      },
+      "en": {
+        "title": "🚗 Sydney → Canberra",
+        "timeline": [
+          [
+            "Morning",
+            "Leave Sydney for Canberra",
+            "3.5 hr drive",
+            "",
+            "",
+            ""
+          ],
+          [
+            "Afternoon",
+            "Parliament House and lake area walk",
+            "Town drive",
+            "",
+            "",
+            ""
+          ],
+          [
+            "Evening",
+            "Dinner in city center",
+            "Walk",
+            "",
+            "",
+            ""
+          ]
+        ]
+      }
+    },
+    {
+      "date": "Day 04",
+      "actualDate": "2026-09-13",
+      "city": {
+        "zh": "墨爾本",
+        "en": "Melbourne"
+      },
+      "mapUrl": "Melbourne+CBD",
+      "stay": {
+        "zh": "墨爾本",
+        "en": "Melbourne"
+      },
+      "zh": {
+        "title": "✈️ 坎培拉 → 墨爾本",
+        "timeline": [
+          [
+            "上午",
+            "國內線前往墨爾本",
+            "航程",
+            "",
+            "",
+            ""
+          ],
+          [
+            "下午",
+            "巷弄咖啡與塗鴉街",
+            "步行/電車",
+            "",
+            "",
+            ""
+          ],
+          [
+            "晚上",
+            "Yarra 河畔散步",
+            "步行",
+            "",
+            "",
+            ""
+          ]
+        ]
+      },
+      "en": {
+        "title": "✈️ Canberra → Melbourne",
+        "timeline": [
+          [
+            "Morning",
+            "Domestic flight to Melbourne",
+            "Flight",
+            "",
+            "",
+            ""
+          ],
+          [
+            "Afternoon",
+            "Laneway cafes and street art",
+            "Walk / tram",
+            "",
+            "",
+            ""
+          ],
+          [
+            "Evening",
+            "Yarra River walk",
+            "Walk",
+            "",
+            "",
+            ""
+          ]
+        ]
+      }
+    },
+    {
+      "date": "Day 05",
+      "actualDate": "2026-09-14",
+      "city": {
+        "zh": "墨爾本/大洋路",
+        "en": "Melbourne/Great Ocean Road"
+      },
+      "mapUrl": "Twelve+Apostles+Victoria",
+      "drive": "3 hr",
+      "stay": {
+        "zh": "返程日（不住宿）",
+        "en": "Return day (no stay)"
+      },
+      "zh": {
+        "title": "🌊 大洋路一日與返程",
+        "timeline": [
+          [
+            "上午",
+            "出發前往大洋路沿線",
+            "3 小時 車程",
+            "",
+            "",
+            ""
+          ],
+          [
+            "下午",
+            "十二門徒岩觀景",
+            "步行",
+            "",
+            "",
+            ""
+          ],
+          [
+            "晚上",
+            "返回機場或市區收尾",
+            "車程",
+            "",
+            "",
+            "澳洲5日範例：最終日描述"
+          ]
+        ]
+      },
+      "en": {
+        "title": "🌊 Great Ocean Road and Departure",
+        "timeline": [
+          [
+            "Morning",
+            "Depart for Great Ocean Road route",
+            "3 hr drive",
+            "",
+            "",
+            ""
+          ],
+          [
+            "Afternoon",
+            "Twelve Apostles viewpoint",
+            "Walk",
+            "",
+            "",
+            ""
+          ],
+          [
+            "Evening",
+            "Return to airport or city wrap-up",
+            "Drive",
+            "",
+            "",
+            "Australia 5-day sample: final day description"
+          ]
+        ]
+      }
+    }
+  ],
+  "customCoords": {
+    "Sydney Observatory Hill": {
+      "lat": -33.8592,
+      "lon": 151.2048,
+      "zh": "雪梨觀景點",
+      "en": "Sydney Viewpoint"
+    },
+    "Great Ocean Road Sunset Point": {
+      "lat": -38.665,
+      "lon": 143.105,
+      "zh": "大洋路日落點",
+      "en": "GOR Sunset Point"
+    }
+  }
+}
