@@ -469,7 +469,7 @@
     <header class="bg-white/70 backdrop-blur-md border-b sticky top-0 z-50 px-3 py-2 sm:px-6 sm:py-3 flex justify-between items-center shadow-sm">
         <div data-ui-action="go-overview" class="cursor-pointer shrink-0">
                 <span id="ui-header-title">紐西蘭南島 · 冬季自駕</span>
-            <p id="app-version-badge-header" class="text-[10px] text-blue-600 font-bold uppercase tracking-widest">Winter Adventure · v1.3.5</p>
+            <p id="app-version-badge-header" class="text-[10px] text-blue-600 font-bold uppercase tracking-widest">Winter Adventure · v1.4.0</p>
         </div>
         
         <div class="flex items-center gap-1 sm:gap-3">
@@ -556,7 +556,7 @@
                 </div>
 
                 <div class="mt-12 pt-8 border-t border-slate-100">
-                    <p id="app-version-badge-drawer" class="text-[10px] text-slate-400 font-bold uppercase tracking-wider text-center">New Zealand Travel · v1.3.5</p>
+                    <p id="app-version-badge-drawer" class="text-[10px] text-slate-400 font-bold uppercase tracking-wider text-center">New Zealand Travel · v1.4.0</p>
                 </div>
             </div>
         </div>
@@ -842,7 +842,7 @@
         `;
         document.body.insertAdjacentHTML('beforeend', milkyWayWindowModalHTML);
 
-        const APP_VERSION = "1.3.5";
+        const APP_VERSION = "1.4.0";
         const AIR_NZ_BOOKING_URL = "https://www.airnewzealand.co.nz/book";
         const PAGE_INDEX = Object.freeze({
             OVERVIEW: -1,
@@ -2441,6 +2441,24 @@
                 .trim();
         }
 
+        function extractDriveFromRouteTitle(title) {
+            if (typeof title !== 'string' || !title.trim()) return '';
+            const match = title.match(/[（(]\s*(\d+(?:\.\d+)?\s*(?:小時|分鐘|hr|hrs|hour|hours|min|mins|minute|minutes)(?:\s*x\s*\d+)?)\s*[)）]/i);
+            return match ? sanitizeTextInput(match[1], { maxLength: 40 }) : '';
+        }
+
+        function stripDriveFromRouteTitle(title) {
+            if (typeof title !== 'string' || !title.trim()) return '';
+            return sanitizeTextInput(
+                title
+                    .replace(/\s*[（(]\s*\d+(?:\.\d+)?\s*(?:小時|分鐘|hr|hrs|hour|hours|min|mins|minute|minutes)(?:\s*x\s*\d+)?\s*[)）]\s*/gi, ' ')
+                    .replace(/\s*→\s*/g, ' → ')
+                    .replace(/\s{2,}/g, ' ')
+                    .trim(),
+                { maxLength: 100 }
+            );
+        }
+
         function inferAccommodationFromSource(dayLike, langCode = 'zh') {
             if (!dayLike) return langCode === 'zh' ? '待確認' : 'TBD';
 
@@ -2538,6 +2556,10 @@
                 || parseCoordinatesFromText(safeMapUrl);
             const safeZh = normalizeLangSection(day?.zh, fallbackDay?.zh || {});
             const safeEn = normalizeLangSection(day?.en, fallbackDay?.en || {});
+            const extractedDriveZh = extractDriveFromRouteTitle(safeZh.title);
+            const extractedDriveEn = extractDriveFromRouteTitle(safeEn.title);
+            if (extractedDriveZh) safeZh.title = stripDriveFromRouteTitle(safeZh.title);
+            if (extractedDriveEn) safeEn.title = stripDriveFromRouteTitle(safeEn.title);
             const fallbackTimeline = safeZh.timeline.length ? safeZh.timeline : safeEn.timeline;
 
             if (!safeZh.timeline.length && fallbackTimeline.length) safeZh.timeline = fallbackTimeline.map(item => [...item]);
@@ -2566,7 +2588,14 @@
                 mapUrl: safeMapUrl,
                 mapQuery: safeMapQuery,
                 customImg: safeCustomImg,
-                drive: sanitizeTextInput(day?.drive ?? fallbackDay?.drive ?? "", { maxLength: 40 }),
+                drive: sanitizeTextInput(
+                    (typeof day?.drive === 'string' ? day.drive.trim() : day?.drive)
+                    || (typeof fallbackDay?.drive === 'string' ? fallbackDay.drive.trim() : fallbackDay?.drive)
+                    || extractedDriveZh
+                    || extractedDriveEn
+                    || "",
+                    { maxLength: 40 }
+                ),
                 stay: {
                     zh: safeStayZh,
                     en: safeStayEn

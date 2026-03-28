@@ -211,6 +211,62 @@ test.describe('Itinerary editor real-flow E2E', () => {
         expect(dialogs[0]).toContain('導入成功');
     });
 
+    test('匯入時會把標題中的路程時間拆到預估時間欄', async ({ page }) => {
+        const dialogs = [];
+        page.on('dialog', async (dialog) => {
+            dialogs.push(dialog.message());
+            await dialog.accept();
+        });
+
+        await openApp(page);
+        await page.locator('#edit-mode-btn').click();
+        await page.locator('[data-ui-action="open-io-modal"]').first().click();
+        await expect(page.locator('#io-modal')).toHaveClass(/flex/);
+
+        const payload = [
+            {
+                date: 'Day 01',
+                actualDate: '2026-07-01',
+                city: { zh: '但尼丁', en: 'Dunedin' },
+                mapUrl: 'Dunedin+Railway+Station',
+                stay: { zh: '但尼丁', en: 'Dunedin' },
+                zh: {
+                    title: '⛪ 米爾頓（1 小時）→ 但尼丁',
+                    timeline: [['上午', '出發前往但尼丁', '1 小時 車程', '', '', '']]
+                },
+                en: {
+                    title: '⛪ Milton (1 hr) → Dunedin',
+                    timeline: [['Morning', 'Drive to Dunedin', '1 hr drive', '', '', '']]
+                }
+            }
+        ];
+
+        await page.locator('#io-textarea').fill(JSON.stringify(payload, null, 2));
+        await page.locator('[data-ui-action="import-itinerary"]').click();
+
+        await expect.poll(async () => {
+            return page.locator('#io-modal').getAttribute('class');
+        }).toContain('hidden');
+
+        await page.locator('#nav-container .day-btn').nth(2).click();
+        await expect(page.locator('#content-display h2').first()).toContainText('⛪ 米爾頓 → 但尼丁');
+        await expect(page.locator('#content-display h2').first()).not.toContainText('1 小時');
+        await expect(page.locator('#content-display')).toContainText('預估車程: 1 小時');
+
+        await expect.poll(async () => {
+            return page.evaluate(() => {
+                const saved = JSON.parse(localStorage.getItem('itinerary_custom') || '[]');
+                return {
+                    title: saved[0]?.zh?.title || '',
+                    drive: saved[0]?.drive || ''
+                };
+            });
+        }).toEqual({ title: '⛪ 米爾頓 → 但尼丁', drive: '1 小時' });
+
+        expect(dialogs.length).toBe(1);
+        expect(dialogs[0]).toContain('導入成功');
+    });
+
     test('匯入較短行程時會自動校正目前天數並刷新畫面', async ({ page }) => {
         const dialogs = [];
         page.on('dialog', async (dialog) => {
