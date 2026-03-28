@@ -56,7 +56,7 @@ test('XSS 安全回歸：匯入 JSON、編輯輸入、貼上內容均不執行 p
         return page.evaluate(() => window.__xssExecuted || 0);
     }).toBe(0);
 
-    await page.locator('#nav-container .day-btn').nth(2).click();
+    await page.locator('#nav-container .day-btn').last().click();
 
     const dayTitleEditable = page.locator('h2[data-edit-day="0"][data-edit-field="zh"][data-edit-subfield="title"]');
     await dayTitleEditable.fill(XSS_PAYLOAD);

@@ -80,7 +80,7 @@ test.describe('Itinerary editor real-flow E2E', () => {
         await page.locator('#edit-mode-btn').click();
         await expect(page.locator('#edit-mode-btn')).toHaveClass(/ring-4/);
 
-        await page.locator('#nav-container .day-btn').nth(3).click();
+        await page.locator('#nav-container .day-btn').nth(4).click();
 
         const newTitle = `E2E Day Title ${Date.now()}`;
         const dayTitleEditable = page.locator('h2[data-edit-day="0"][data-edit-field="zh"][data-edit-subfield="title"]');
@@ -95,7 +95,7 @@ test.describe('Itinerary editor real-flow E2E', () => {
 
         await page.reload({ waitUntil: 'domcontentloaded' });
         await page.waitForFunction(() => document.querySelectorAll('#nav-container .day-btn').length > 2);
-        await page.locator('#nav-container .day-btn').nth(3).click();
+        await page.locator('#nav-container .day-btn').nth(4).click();
 
         await expect(page.locator('#content-display h2').first()).toContainText(newTitle);
     });
@@ -211,6 +211,222 @@ test.describe('Itinerary editor real-flow E2E', () => {
         expect(dialogs[0]).toContain('導入成功');
     });
 
+    test('費用總覽支援匯入、摘要與匯出', async ({ page }) => {
+        const dialogs = [];
+        page.on('dialog', async (dialog) => {
+            dialogs.push(dialog.message());
+            await dialog.accept();
+        });
+
+        await openApp(page);
+        await page.locator('#edit-mode-btn').click();
+        await page.locator('[data-ui-action="open-io-modal"]').first().click();
+
+        const payload = {
+            itinerary: [
+                {
+                    date: 'Day 01',
+                    actualDate: '2026-07-01',
+                    city: { zh: '皇后鎮', en: 'Queenstown' },
+                    mapUrl: 'Queenstown+Airport',
+                    stay: { zh: '皇后鎮', en: 'Queenstown' },
+                    zh: { title: '💰 預算測試', timeline: [['上午', '檢查費用頁', '步行', '', '', '']] },
+                    en: { title: '💰 Budget Test', timeline: [['Morning', 'Open budget page', 'Walk', '', '', '']] }
+                }
+            ],
+            budgetSettings: {
+                baseCurrency: 'TWD',
+                nzdToTwdRate: 20
+            },
+            bookings: [
+                {
+                    id: 'flight_001',
+                    type: 'flight',
+                    title: { zh: '台北 -> 奧克蘭來回', en: 'TPE -> AKL return' },
+                    vendor: 'Air New Zealand',
+                    amount: { currency: 'TWD', total: 18500 },
+                    status: 'paid',
+                    dayStart: 1,
+                    dayEnd: 1,
+                    sharedWith: 2,
+                    notes: 'NZ78 / NZ77'
+                },
+                {
+                    id: 'hotel_001',
+                    type: 'accommodation',
+                    title: { zh: '皇后鎮住宿', en: 'Queenstown stay' },
+                    vendor: 'Holiday Inn',
+                    amount: { currency: 'NZD', total: 420 },
+                    status: 'booked',
+                    dayStart: 1,
+                    dayEnd: 3,
+                    sharedWith: 2,
+                    notes: '2 晚'
+                }
+            ],
+            expenses: [
+                {
+                    id: 'expense_001',
+                    category: 'food',
+                    title: { zh: '超市採買', en: 'Groceries' },
+                    amount: { currency: 'NZD', total: 48.5 },
+                    day: 1,
+                    sharedWith: 2,
+                    notes: '牛奶與早餐'
+                },
+                {
+                    id: 'expense_002',
+                    category: 'accommodation',
+                    title: { zh: '住宿加購早餐', en: 'Hotel breakfast add-on' },
+                    amount: { currency: 'NZD', total: 35 },
+                    day: 2,
+                    sharedWith: 2,
+                    notes: 'late add-on'
+                }
+            ]
+        };
+
+        await page.locator('#io-textarea').fill(JSON.stringify(payload, null, 2));
+        await page.locator('[data-ui-action="import-itinerary"]').click();
+
+        await expect.poll(async () => {
+            return page.locator('#io-modal').getAttribute('class');
+        }).toContain('hidden');
+
+        await expect(page.locator('#nav-container')).toContainText('費用總覽');
+        await page.locator('#nav-container .day-btn').nth(2).click();
+
+        const budgetPanel = page.locator('[data-testid="budget-bookings-panel"]');
+        await expect(page.locator('#content-display')).toContainText('旅費管理');
+        await expect(budgetPanel.locator('[data-budget-kind="booking"][data-budget-id="flight_001"][data-budget-field="title"]')).toHaveValue('台北 - 奧克蘭來回');
+        await expect(budgetPanel.locator('[data-budget-kind="booking"][data-budget-id="hotel_001"][data-budget-field="title"]')).toHaveValue('皇后鎮住宿');
+        await expect(page.locator('[data-testid="budget-expenses-panel"] [data-budget-kind="expense"][data-budget-id="expense_001"][data-budget-field="title"]')).toHaveValue('超市採買');
+        await expect(page.locator('[data-testid="budget-expenses-panel"] [data-budget-kind="expense"][data-budget-id="expense_002"][data-budget-field="title"]')).toHaveValue('住宿加購早餐');
+        await expect(page.locator('[data-budget-summary="grand"]')).toContainText('約 TWD 28,570');
+        await expect(page.locator('[data-budget-summary="paid"]')).toContainText('約 TWD 20,170');
+        await expect(page.locator('[data-budget-summary="unpaid"]')).toContainText('約 TWD 8,400');
+        await expect(page.locator('[data-budget-summary="perPerson"]')).toContainText('約 TWD 14,285');
+
+        await page.locator('[data-action="set-budget-filter"][data-budget-filter="accommodation"]').click();
+        await expect(budgetPanel.locator('[data-budget-kind="booking"][data-budget-id="hotel_001"][data-budget-field="title"]')).toHaveValue('皇后鎮住宿');
+        await expect(page.locator('[data-testid="budget-expenses-panel"] [data-budget-kind="expense"][data-budget-id="expense_002"][data-budget-field="title"]')).toHaveValue('住宿加購早餐');
+        await expect(page.locator('[data-budget-summary="grand"]')).toContainText('約 TWD 9,100');
+
+        await page.locator('[data-action="add-expense-entry"]').click();
+        const latestAccommodationExpenseCategory = page.locator('[data-testid="budget-expenses-panel"] [data-budget-kind="expense"][data-budget-field="category"]').last();
+        await expect(latestAccommodationExpenseCategory).toHaveValue('accommodation');
+        await expect.poll(async () => {
+            return page.evaluate(() => {
+                const saved = JSON.parse(localStorage.getItem('nz_travel_expenses') || '[]');
+                return saved[saved.length - 1]?.category || '';
+            });
+        }).toBe('accommodation');
+        await page.locator('[data-testid="budget-expenses-panel"] [data-action="remove-budget-entry"]').last().click();
+
+        await page.locator('[data-action="set-budget-filter"][data-budget-filter="food"]').click();
+        await expect(page.locator('[data-testid="budget-expenses-panel"] [data-budget-kind="expense"][data-budget-id="expense_001"][data-budget-field="title"]')).toHaveValue('超市採買');
+        await expect(page.locator('[data-budget-summary="grand"]')).toContainText('約 TWD 970');
+
+        await page.locator('[data-action="set-budget-filter"][data-budget-filter="all"]').click();
+
+        await page.locator('[data-budget-kind="expense"][data-budget-id="expense_001"][data-budget-field="total"]').fill('60');
+        const budgetDayInput = page.locator('[data-testid="budget-expenses-panel"] [data-budget-kind="expense"][data-budget-id="expense_001"][data-budget-field="day"]');
+        await budgetDayInput.click();
+        await budgetDayInput.press('ControlOrMeta+A');
+        await budgetDayInput.pressSequentially('12');
+        await expect(budgetDayInput).toHaveValue('12');
+        await budgetDayInput.blur();
+        await expect.poll(async () => {
+            return page.evaluate(() => {
+                const saved = JSON.parse(localStorage.getItem('nz_travel_expenses') || '[]');
+                return {
+                    total: saved[0]?.amount?.total || 0,
+                    day: saved[0]?.day || 0
+                };
+            });
+        }).toEqual({ total: 60, day: 12 });
+
+        await page.locator('[data-ui-action="open-io-modal"]').first().click();
+        const exported = await page.locator('#io-textarea').inputValue();
+        expect(exported).toContain('"bookings"');
+        expect(exported).toContain('"expenses"');
+        expect(exported).toContain('"hotel_001"');
+        expect(exported).toContain('"total": 60');
+
+        expect(dialogs.length).toBe(1);
+        expect(dialogs[0]).toContain('導入成功');
+    });
+
+    test('每日行程可直接新增、修改、刪除今天支出', async ({ page }) => {
+        const dialogs = [];
+        page.on('dialog', async (dialog) => {
+            dialogs.push(dialog.message());
+            await dialog.accept();
+        });
+
+        await openApp(page);
+        await page.locator('#edit-mode-btn').click();
+        await page.locator('[data-ui-action="open-io-modal"]').first().click();
+
+        const payload = {
+            itinerary: [
+                {
+                    date: 'Day 01',
+                    actualDate: '2026-07-01',
+                    city: { zh: '蒂卡波', en: 'Tekapo' },
+                    mapUrl: 'Lake+Tekapo',
+                    stay: { zh: '蒂卡波', en: 'Tekapo' },
+                    zh: { title: '🧾 今日支出測試', timeline: [['上午', '抵達後採買', '步行', '', '', '']] },
+                    en: { title: '🧾 Day Expense Test', timeline: [['Morning', 'Shop after arrival', 'Walk', '', '', '']] }
+                }
+            ],
+            expenses: []
+        };
+
+        await page.locator('#io-textarea').fill(JSON.stringify(payload, null, 2));
+        await page.locator('[data-ui-action="import-itinerary"]').click();
+
+        await expect.poll(async () => page.locator('#io-modal').getAttribute('class')).toContain('hidden');
+
+        await page.locator('#edit-mode-btn').click();
+        await expect(page.locator('#edit-mode-btn')).not.toHaveClass(/ring-4/);
+
+        await page.locator('#nav-container .day-btn').last().click();
+        await expect(page.locator('[data-testid="day-expenses-panel"]')).toContainText('這一天還沒有支出紀錄。');
+
+        await page.locator('[data-action="add-day-expense"]').click();
+        const titleInput = page.locator('[data-testid="day-expenses-panel"] [data-budget-kind="expense"][data-budget-field="title"]').first();
+        await titleInput.fill('Lake Tekapo dinner');
+        await page.locator('[data-testid="day-expenses-panel"] [data-budget-kind="expense"][data-budget-field="total"]').first().fill('42');
+        await page.locator('[data-testid="day-expenses-panel"] [data-budget-kind="expense"][data-budget-field="category"]').first().selectOption('food');
+        await page.locator('[data-testid="day-expenses-panel"] [data-budget-kind="expense"][data-budget-field="notes"]').first().fill('Ramen + drink');
+
+        await expect.poll(async () => {
+            return page.evaluate(() => {
+                const saved = JSON.parse(localStorage.getItem('nz_travel_expenses') || '[]');
+                return saved.map(item => ({
+                    day: item.day,
+                    total: item.amount?.total,
+                    title: item.title?.zh,
+                    notes: item.notes
+                }));
+            });
+        }).toEqual([
+            {
+                day: 1,
+                total: 42,
+                title: 'Lake Tekapo dinner',
+                notes: 'Ramen + drink'
+            }
+        ]);
+
+        await page.locator('[data-testid="day-expenses-panel"] [data-action="remove-budget-entry"]').first().click();
+        await expect(page.locator('[data-testid="day-expenses-panel"]')).toContainText('這一天還沒有支出紀錄。');
+
+        expect(dialogs.length).toBe(1);
+        expect(dialogs[0]).toContain('導入成功');
+    });
+
     test('匯入時會把標題中的路程時間拆到預估時間欄', async ({ page }) => {
         const dialogs = [];
         page.on('dialog', async (dialog) => {
@@ -248,7 +464,7 @@ test.describe('Itinerary editor real-flow E2E', () => {
             return page.locator('#io-modal').getAttribute('class');
         }).toContain('hidden');
 
-        await page.locator('#nav-container .day-btn').nth(2).click();
+        await page.locator('#nav-container .day-btn').last().click();
         await expect(page.locator('#content-display h2').first()).toContainText('⛪ 米爾頓 → 但尼丁');
         await expect(page.locator('#content-display h2').first()).not.toContainText('1 小時');
         await expect(page.locator('#content-display')).toContainText('預估車程: 1 小時');
@@ -308,7 +524,7 @@ test.describe('Itinerary editor real-flow E2E', () => {
 
         await expect.poll(async () => {
             return page.locator('#nav-container .day-btn').count();
-        }).toBe(3);
+        }).toBe(4);
 
         await expect(page.locator('#nav-container')).not.toContainText('航班總覽');
 
