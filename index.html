@@ -469,7 +469,7 @@
     <header class="bg-white/70 backdrop-blur-md border-b sticky top-0 z-50 px-3 py-2 sm:px-6 sm:py-3 flex justify-between items-center shadow-sm">
         <div data-ui-action="go-overview" class="cursor-pointer shrink-0">
                 <span id="ui-header-title">紐西蘭南島 · 冬季自駕</span>
-            <p id="app-version-badge-header" class="text-[10px] text-blue-600 font-bold uppercase tracking-widest">Winter Adventure · v1.4.0</p>
+            <p id="app-version-badge-header" class="text-[10px] text-blue-600 font-bold uppercase tracking-widest">Winter Adventure · v1.5.0</p>
         </div>
         
         <div class="flex items-center gap-1 sm:gap-3">
@@ -506,7 +506,7 @@
                     <div class="absolute inset-0 bg-gradient-to-r from-purple-500/30 to-emerald-500/30 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                     <i class="fas fa-moon relative z-10"></i>
                 </button>
-                <button type="button" data-ui-action="toggle-edit-mode" id="edit-mode-btn" class="bg-amber-500 hover:bg-amber-600 text-white px-3 py-1.5 rounded-full text-[12px] font-bold transition-all shadow-sm flex items-center gap-1 group">
+                <button type="button" data-ui-action="toggle-edit-mode" id="edit-mode-btn" class="hidden lg:flex bg-amber-500 hover:bg-amber-600 text-white px-3 py-1.5 rounded-full text-[12px] font-bold transition-all shadow-sm items-center gap-1 group">
                     <i class="fas fa-edit group-hover:scale-110 transition-transform"></i> <span id="ui-edit-btn">編輯</span>
                 </button>
                 <button type="button" data-ui-action="open-io-modal" id="import-export-btn" class="bg-indigo-500 hover:bg-indigo-600 text-white px-3 py-1.5 rounded-full text-[12px] font-bold transition-all shadow-sm flex items-center gap-1 group hidden">
@@ -556,7 +556,7 @@
                 </div>
 
                 <div class="mt-12 pt-8 border-t border-slate-100">
-                    <p id="app-version-badge-drawer" class="text-[10px] text-slate-400 font-bold uppercase tracking-wider text-center">New Zealand Travel · v1.4.0</p>
+                    <p id="app-version-badge-drawer" class="text-[10px] text-slate-400 font-bold uppercase tracking-wider text-center">New Zealand Travel · v1.5.0</p>
                 </div>
             </div>
         </div>
@@ -842,7 +842,7 @@
         `;
         document.body.insertAdjacentHTML('beforeend', milkyWayWindowModalHTML);
 
-        const APP_VERSION = "1.4.0";
+        const APP_VERSION = "1.5.0";
         const AIR_NZ_BOOKING_URL = "https://www.airnewzealand.co.nz/book";
         const PAGE_INDEX = Object.freeze({
             COSTS: -4,
@@ -880,6 +880,7 @@
         const BUDGET_FILTERS = Object.freeze(['all', 'accommodation', 'flight', 'insurance', 'food']);
         let auroraSelectedCity = "Tekapo";
         let activeBudgetFilter = 'all';
+        const mobileEditableExpenseIds = new Set();
         let skyConditionsSelectedStop = null;
         let activeMilkyWayWindowKey = null;
         let activeMilkyWayWindowIndex = null;
@@ -902,6 +903,38 @@
 
         function isCostsPageSelection(dayIdx = activeDayIndex) {
             return dayIdx === PAGE_INDEX.COSTS;
+        }
+
+        function isMobileReadOnlyViewport() {
+            return window.innerWidth < 1024;
+        }
+
+        function isMobileExpenseEditLocked(entryId) {
+            return isMobileReadOnlyViewport() && !mobileEditableExpenseIds.has(entryId);
+        }
+
+        function setMobileExpenseEditing(entryId, isEditing) {
+            if (!entryId) return;
+            if (isEditing) {
+                mobileEditableExpenseIds.add(entryId);
+            } else {
+                mobileEditableExpenseIds.delete(entryId);
+            }
+        }
+
+        function pruneMobileExpenseEditingState() {
+            const activeIds = new Set(expenses.map(item => item.id));
+            Array.from(mobileEditableExpenseIds).forEach((id) => {
+                if (!activeIds.has(id)) mobileEditableExpenseIds.delete(id);
+            });
+        }
+
+        function syncEditModeForViewport() {
+            if (isMobileReadOnlyViewport() && isEditMode) {
+                isEditMode = false;
+                return true;
+            }
+            return false;
         }
 
         function getFlightOverviewCount(langCode = currentLang) {
@@ -1334,6 +1367,9 @@
                 budgetFieldSharedWith: "分攤人數",
                 budgetFieldNotes: "備註",
                 budgetDelete: "刪除",
+                budgetEdit: "編輯",
+                budgetDone: "完成",
+                budgetMobileLockedHint: "手機上先點編輯，再修改已輸入的花費。",
                 budgetPerPersonHint: "每人約 {amount}",
                 budgetTypeFlight: "機票",
                 budgetTypeAccommodation: "住宿",
@@ -1546,6 +1582,9 @@
                 budgetFieldSharedWith: "Split",
                 budgetFieldNotes: "Notes",
                 budgetDelete: "Delete",
+                budgetEdit: "Edit",
+                budgetDone: "Done",
+                budgetMobileLockedHint: "On mobile, tap Edit before changing an existing expense.",
                 budgetPerPersonHint: "{amount} per person",
                 budgetTypeFlight: "Flight",
                 budgetTypeAccommodation: "Stay",
@@ -5924,6 +5963,8 @@
 
 
         function updateUI() {
+            syncEditModeForViewport();
+            pruneMobileExpenseEditingState();
             normalizeActiveSelectionForCurrentItinerary();
             const ui = translations[currentLang];
             const flightOverviewCount = getFlightOverviewCount(currentLang);
@@ -5951,6 +5992,11 @@
             }
             if (document.getElementById('ui-sync-btn')) {
                 document.getElementById('ui-sync-btn').innerText = currentLang === 'zh' ? '同步至英文' : 'Sync to EN';
+            }
+            const editModeBtn = document.getElementById('edit-mode-btn');
+            if (editModeBtn) {
+                editModeBtn.classList.toggle('hidden', isMobileReadOnlyViewport());
+                editModeBtn.classList.toggle('lg:flex', true);
             }
             
             // Optimization: Only clear and re-render nav if needed or if first load
@@ -6771,37 +6817,44 @@
             return items.map((item) => {
                 const safeId = escapeHtmlAttribute(item.id);
                 const amountPerPerson = item.sharedWith > 1 ? Number((item.amount.total / item.sharedWith).toFixed(2)) : item.amount.total;
+                const isMobileLocked = isMobileExpenseEditLocked(item.id);
+                const mobileLockAttr = isMobileLocked ? 'disabled' : '';
+                const mobileLockClasses = 'disabled:opacity-60 disabled:text-slate-500 disabled:cursor-not-allowed';
                 return `
                     <div class="bg-white/80 rounded-[1.75rem] border border-slate-100 shadow-sm p-5 space-y-4">
                         <div class="flex items-start justify-between gap-3">
                             <div class="flex-1 grid grid-cols-1 lg:grid-cols-[1.8fr_0.8fr_0.8fr] gap-3">
                                 <label class="block">
                                     <span class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">${ui.budgetFieldTitle}</span>
-                                    <input type="text" value="${escapeHtmlAttribute(getLocalizedBudgetText(item.title, currentLang))}" data-budget-kind="expense" data-budget-id="${safeId}" data-budget-field="title" class="w-full bg-slate-50 border border-slate-200 px-3 py-2 rounded-xl text-sm font-bold text-slate-700">
+                                    <input type="text" value="${escapeHtmlAttribute(getLocalizedBudgetText(item.title, currentLang))}" data-budget-kind="expense" data-budget-id="${safeId}" data-budget-field="title" ${mobileLockAttr} class="w-full bg-slate-50 border border-slate-200 px-3 py-2 rounded-xl text-sm font-bold text-slate-700 ${mobileLockClasses}">
                                 </label>
                                 <label class="block">
                                     <span class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">${ui.budgetFieldType}</span>
-                                    <select data-budget-kind="expense" data-budget-id="${safeId}" data-budget-field="category" class="w-full bg-slate-50 border border-slate-200 px-3 py-2 rounded-xl text-sm text-slate-700">${renderExpenseCategoryOptions(ui, item.category)}</select>
+                                    <select data-budget-kind="expense" data-budget-id="${safeId}" data-budget-field="category" ${mobileLockAttr} class="w-full bg-slate-50 border border-slate-200 px-3 py-2 rounded-xl text-sm text-slate-700 ${mobileLockClasses}">${renderExpenseCategoryOptions(ui, item.category)}</select>
                                 </label>
                                 <label class="block">
                                     <span class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">${ui.budgetFieldDay}</span>
-                                    <input type="number" min="1" step="1" value="${item.day}" data-budget-kind="expense" data-budget-id="${safeId}" data-budget-field="day" class="w-full bg-slate-50 border border-slate-200 px-3 py-2 rounded-xl text-sm text-slate-700">
+                                    <input type="number" min="1" step="1" value="${item.day}" data-budget-kind="expense" data-budget-id="${safeId}" data-budget-field="day" ${mobileLockAttr} class="w-full bg-slate-50 border border-slate-200 px-3 py-2 rounded-xl text-sm text-slate-700 ${mobileLockClasses}">
                                 </label>
                             </div>
-                            <button type="button" data-action="remove-budget-entry" data-budget-kind="expense" data-budget-id="${safeId}" class="shrink-0 px-3 py-2 rounded-xl bg-rose-50 text-rose-600 text-xs font-black uppercase tracking-wider hover:bg-rose-100 transition-colors">${ui.budgetDelete}</button>
+                            <div class="shrink-0 flex items-center gap-2">
+                                <button type="button" data-action="toggle-expense-edit" data-budget-id="${safeId}" class="lg:hidden px-3 py-2 rounded-xl ${isMobileLocked ? 'bg-slate-100 text-slate-600 hover:bg-slate-200' : 'bg-amber-100 text-amber-700 hover:bg-amber-200'} text-xs font-black uppercase tracking-wider transition-colors">${isMobileLocked ? ui.budgetEdit : ui.budgetDone}</button>
+                                <button type="button" data-action="remove-budget-entry" data-budget-kind="expense" data-budget-id="${safeId}" class="px-3 py-2 rounded-xl bg-rose-50 text-rose-600 text-xs font-black uppercase tracking-wider hover:bg-rose-100 transition-colors">${ui.budgetDelete}</button>
+                            </div>
                         </div>
+                        ${isMobileLocked ? `<p class="lg:hidden text-[11px] font-semibold text-slate-500 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2">${ui.budgetMobileLockedHint}</p>` : ''}
                         <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
                             <label class="block">
                                 <span class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">${ui.budgetFieldAmount}</span>
-                                <input type="number" min="0" step="0.01" value="${item.amount.total}" data-budget-kind="expense" data-budget-id="${safeId}" data-budget-field="total" class="w-full bg-slate-50 border border-slate-200 px-3 py-2 rounded-xl text-sm text-slate-700">
+                                <input type="number" min="0" step="0.01" value="${item.amount.total}" data-budget-kind="expense" data-budget-id="${safeId}" data-budget-field="total" ${mobileLockAttr} class="w-full bg-slate-50 border border-slate-200 px-3 py-2 rounded-xl text-sm text-slate-700 ${mobileLockClasses}">
                             </label>
                             <label class="block">
                                 <span class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">${ui.budgetFieldCurrency}</span>
-                                <select data-budget-kind="expense" data-budget-id="${safeId}" data-budget-field="currency" class="w-full bg-slate-50 border border-slate-200 px-3 py-2 rounded-xl text-sm text-slate-700">${renderBudgetCurrencyOptions(item.amount.currency)}</select>
+                                <select data-budget-kind="expense" data-budget-id="${safeId}" data-budget-field="currency" ${mobileLockAttr} class="w-full bg-slate-50 border border-slate-200 px-3 py-2 rounded-xl text-sm text-slate-700 ${mobileLockClasses}">${renderBudgetCurrencyOptions(item.amount.currency)}</select>
                             </label>
                             <label class="block">
                                 <span class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">${ui.budgetFieldSharedWith}</span>
-                                <input type="number" min="1" step="1" value="${item.sharedWith}" data-budget-kind="expense" data-budget-id="${safeId}" data-budget-field="sharedWith" class="w-full bg-slate-50 border border-slate-200 px-3 py-2 rounded-xl text-sm text-slate-700">
+                                <input type="number" min="1" step="1" value="${item.sharedWith}" data-budget-kind="expense" data-budget-id="${safeId}" data-budget-field="sharedWith" ${mobileLockAttr} class="w-full bg-slate-50 border border-slate-200 px-3 py-2 rounded-xl text-sm text-slate-700 ${mobileLockClasses}">
                             </label>
                             <div class="text-xs text-slate-500 font-semibold bg-slate-50 rounded-xl px-3 py-2 border border-slate-200 flex items-center">
                                 ${ui.budgetPerPersonHint.replace('{amount}', `${item.amount.currency} ${amountPerPerson.toLocaleString(undefined, { maximumFractionDigits: 2 })}`)}
@@ -6809,7 +6862,7 @@
                         </div>
                         <label class="block">
                             <span class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">${ui.budgetFieldNotes}</span>
-                            <input type="text" value="${escapeHtmlAttribute(item.notes)}" data-budget-kind="expense" data-budget-id="${safeId}" data-budget-field="notes" class="w-full bg-slate-50 border border-slate-200 px-3 py-2 rounded-xl text-sm text-slate-700">
+                            <input type="text" value="${escapeHtmlAttribute(item.notes)}" data-budget-kind="expense" data-budget-id="${safeId}" data-budget-field="notes" ${mobileLockAttr} class="w-full bg-slate-50 border border-slate-200 px-3 py-2 rounded-xl text-sm text-slate-700 ${mobileLockClasses}">
                         </label>
                     </div>
                 `;
@@ -6855,6 +6908,8 @@
             const { filteredBookings, filteredExpenses } = getFilteredBudgetCollections();
             const metrics = getBudgetSummaryMetrics(filteredBookings, filteredExpenses);
             const rateValue = getBudgetNZDRate();
+            const canEditBookings = isEditMode;
+            const canEditBudgetSettings = isEditMode;
 
             container.innerHTML = `
                 <div class="space-y-6 animate-in fade-in">
@@ -6903,7 +6958,7 @@
                             <div class="grid grid-cols-1 md:grid-cols-[180px_1fr] gap-4 items-center">
                                 <label class="block">
                                     <span class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">${ui.budgetRateLabel}</span>
-                                    <input type="number" min="0" step="0.01" value="${rateValue}" data-budget-kind="settings" data-budget-field="nzdToTwdRate" ${isEditMode ? '' : 'disabled'} class="w-full bg-slate-50 border border-slate-200 px-3 py-2 rounded-xl text-sm font-bold text-slate-700 disabled:opacity-60">
+                                    <input type="number" min="0" step="0.01" value="${rateValue}" data-budget-kind="settings" data-budget-field="nzdToTwdRate" ${canEditBudgetSettings ? '' : 'disabled'} class="w-full bg-slate-50 border border-slate-200 px-3 py-2 rounded-xl text-sm font-bold text-slate-700 disabled:opacity-60">
                                 </label>
                                 <p class="text-sm text-slate-500">${ui.budgetRateHint}</p>
                             </div>
@@ -6916,9 +6971,9 @@
                                 <h3 class="text-2xl font-bold text-slate-800">${ui.budgetBookingsTitle}</h3>
                                 <p class="text-sm text-slate-500 mt-1">${ui.budgetBookingsHint}</p>
                             </div>
-                            <button type="button" data-action="add-booking-entry" class="px-4 py-2 rounded-2xl bg-emerald-600 text-white font-bold shadow-lg shadow-emerald-600/20 hover:bg-emerald-700 transition-colors ${isEditMode ? '' : 'hidden'}">${ui.budgetAddBookingBtn}</button>
+                            <button type="button" data-action="add-booking-entry" class="px-4 py-2 rounded-2xl bg-emerald-600 text-white font-bold shadow-lg shadow-emerald-600/20 hover:bg-emerald-700 transition-colors ${canEditBookings ? '' : 'hidden'}">${ui.budgetAddBookingBtn}</button>
                         </div>
-                        <fieldset ${isEditMode ? '' : 'disabled'} class="space-y-4 disabled:opacity-80" data-testid="budget-bookings-panel">${renderBookingCards(ui, filteredBookings, { emptyMessage: ui.budgetFilteredEmpty })}</fieldset>
+                        <fieldset ${canEditBookings ? '' : 'disabled'} class="space-y-4 disabled:opacity-80" data-testid="budget-bookings-panel">${renderBookingCards(ui, filteredBookings, { emptyMessage: ui.budgetFilteredEmpty })}</fieldset>
                     </div>
 
                     <div class="glass-card rounded-[2rem] p-8 shadow-2xl relative overflow-hidden">
@@ -7421,15 +7476,25 @@
                 updateUI();
             },
             'add-expense-entry': () => {
-                expenses.push(createBudgetExpenseDraft(1, getPreferredExpenseCategoryForCurrentFilter()));
+                const draft = createBudgetExpenseDraft(1, getPreferredExpenseCategoryForCurrentFilter());
+                expenses.push(draft);
+                setMobileExpenseEditing(draft.id, true);
                 saveBudgetData();
                 updateUI();
             },
             'add-day-expense': (actionEl) => {
                 const dayIdx = parseActionIndex(actionEl.dataset.dayIdx);
                 if (dayIdx == null) return;
-                expenses.push(createBudgetExpenseDraft(dayIdx + 1, getPreferredExpenseCategoryForCurrentFilter()));
+                const draft = createBudgetExpenseDraft(dayIdx + 1, getPreferredExpenseCategoryForCurrentFilter());
+                expenses.push(draft);
+                setMobileExpenseEditing(draft.id, true);
                 saveBudgetData();
+                updateUI();
+            },
+            'toggle-expense-edit': (actionEl) => {
+                const id = actionEl.dataset.budgetId;
+                if (!id) return;
+                setMobileExpenseEditing(id, isMobileExpenseEditLocked(id));
                 updateUI();
             },
             'set-budget-filter': (actionEl) => {
@@ -7444,6 +7509,7 @@
                 if (kind === 'booking') {
                     bookings = bookings.filter(item => item.id !== id);
                 } else if (kind === 'expense') {
+                    setMobileExpenseEditing(id, false);
                     expenses = expenses.filter(item => item.id !== id);
                 }
                 saveBudgetData();
@@ -7741,7 +7807,10 @@
             }
         }
 
-        window.addEventListener('resize', initMobileRotation);
+        window.addEventListener('resize', () => {
+            initMobileRotation();
+            if (syncEditModeForViewport()) updateUI();
+        });
         setInterval(updateClocks, 30000);
         updateClocks();
         initMobileRotation();

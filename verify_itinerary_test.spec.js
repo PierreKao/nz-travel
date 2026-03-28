@@ -427,6 +427,101 @@ test.describe('Itinerary editor real-flow E2E', () => {
         expect(dialogs[0]).toContain('導入成功');
     });
 
+    test('手機版既有支出預設唯讀，點編輯後才可修改', async ({ page }) => {
+        const dialogs = [];
+        page.on('dialog', async (dialog) => {
+            dialogs.push(dialog.message());
+            await dialog.accept();
+        });
+
+        await page.setViewportSize({ width: 390, height: 844 });
+        await openApp(page);
+
+        await expect(page.locator('#edit-mode-btn')).toBeHidden();
+
+        await page.locator('[data-ui-action="open-drawer"]').click();
+        await page.locator('[data-ui-action="drawer-open-io-modal"]').click();
+
+        const payload = {
+            itinerary: [
+                {
+                    date: 'Day 01',
+                    actualDate: '2026-07-01',
+                    city: { zh: '蒂卡波', en: 'Tekapo' },
+                    mapUrl: 'Lake+Tekapo',
+                    stay: { zh: '蒂卡波', en: 'Tekapo' },
+                    zh: { title: '📱 手機支出測試', timeline: [['上午', '先匯入一筆住宿預訂', '步行', '', '', '']] },
+                    en: { title: '📱 Mobile Expense Test', timeline: [['Morning', 'Import one booking first', 'Walk', '', '', '']] }
+                }
+            ],
+            bookings: [
+                {
+                    id: 'stay_001',
+                    type: 'accommodation',
+                    title: { zh: '蒂卡波住宿', en: 'Tekapo stay' },
+                    amount: { currency: 'NZD', total: 200 },
+                    status: 'booked',
+                    dayStart: 1,
+                    dayEnd: 2,
+                    sharedWith: 4,
+                    notes: ''
+                }
+            ],
+            expenses: [
+                {
+                    id: 'expense_mobile_001',
+                    category: 'food',
+                    title: { zh: '既有晚餐', en: 'Existing dinner' },
+                    amount: { currency: 'NZD', total: 28 },
+                    day: 1,
+                    sharedWith: 2,
+                    notes: 'locked by default'
+                }
+            ]
+        };
+
+        await page.locator('#io-textarea').fill(JSON.stringify(payload, null, 2));
+        await page.locator('[data-ui-action="import-itinerary"]').click();
+        await expect.poll(async () => page.locator('#io-modal').getAttribute('class')).toContain('hidden');
+
+        await page.locator('#nav-container .day-btn').nth(2).click();
+        await expect(page.locator('[data-testid="budget-bookings-panel"] [data-budget-kind="booking"][data-budget-id="stay_001"][data-budget-field="title"]')).toBeDisabled();
+        await expect(page.locator('[data-action="add-booking-entry"]')).toBeHidden();
+        const mobileBudgetExpenseTitle = page.locator('[data-testid="budget-expenses-panel"] [data-budget-kind="expense"][data-budget-id="expense_mobile_001"][data-budget-field="title"]');
+        await expect(mobileBudgetExpenseTitle).toBeDisabled();
+        await page.locator('[data-action="toggle-expense-edit"][data-budget-id="expense_mobile_001"]').click();
+        await expect(mobileBudgetExpenseTitle).toBeEnabled();
+        await mobileBudgetExpenseTitle.fill('修改後晚餐');
+        await expect.poll(async () => {
+            return page.evaluate(() => {
+                const saved = JSON.parse(localStorage.getItem('nz_travel_expenses') || '[]');
+                return saved.find(item => item.id === 'expense_mobile_001')?.title?.zh || '';
+            });
+        }).toBe('修改後晚餐');
+
+        await page.locator('#nav-container .day-btn').last().click();
+        await page.locator('[data-action="add-day-expense"]').click();
+        const dayExpenseCards = page.locator('[data-testid="day-expenses-panel"] [data-budget-kind="expense"][data-budget-field="title"]');
+        await expect(dayExpenseCards).toHaveCount(2);
+        await dayExpenseCards.nth(1).fill('Mobile coffee');
+        await page.locator('[data-testid="day-expenses-panel"] [data-budget-kind="expense"][data-budget-field="total"]').nth(1).fill('12');
+
+        await expect.poll(async () => {
+            return page.evaluate(() => {
+                const saved = JSON.parse(localStorage.getItem('nz_travel_expenses') || '[]');
+                return {
+                    count: saved.length,
+                    existingTitle: saved.find(item => item.id === 'expense_mobile_001')?.title?.zh || '',
+                    newTitle: saved.find(item => item.id !== 'expense_mobile_001')?.title?.zh || '',
+                    newTotal: saved.find(item => item.id !== 'expense_mobile_001')?.amount?.total || 0
+                };
+            });
+        }).toEqual({ count: 2, existingTitle: '修改後晚餐', newTitle: 'Mobile coffee', newTotal: 12 });
+
+        expect(dialogs.length).toBe(1);
+        expect(dialogs[0]).toContain('導入成功');
+    });
+
     test('匯入時會把標題中的路程時間拆到預估時間欄', async ({ page }) => {
         const dialogs = [];
         page.on('dialog', async (dialog) => {
