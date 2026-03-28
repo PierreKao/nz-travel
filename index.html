@@ -469,7 +469,7 @@
     <header class="bg-white/70 backdrop-blur-md border-b sticky top-0 z-50 px-3 py-2 sm:px-6 sm:py-3 flex justify-between items-center shadow-sm">
         <div data-ui-action="go-overview" class="cursor-pointer shrink-0">
                 <span id="ui-header-title">紐西蘭南島 · 冬季自駕</span>
-            <p id="app-version-badge-header" class="text-[10px] text-blue-600 font-bold uppercase tracking-widest">Winter Adventure · v1.3.4</p>
+            <p id="app-version-badge-header" class="text-[10px] text-blue-600 font-bold uppercase tracking-widest">Winter Adventure · v1.3.5</p>
         </div>
         
         <div class="flex items-center gap-1 sm:gap-3">
@@ -515,9 +515,6 @@
                 <button type="button" data-ui-action="sync-zh-en" id="sync-btn" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1.5 rounded-full text-[12px] font-bold transition-all shadow-sm flex items-center gap-1 group hidden">
                     <i class="fas fa-arrows-rotate group-hover:rotate-180 transition-transform duration-500"></i> <span id="ui-sync-btn">同步至英文</span>
                 </button>
-                <button type="button" data-ui-action="export-html" id="export-btn" class="bg-gray-700 hover:bg-gray-800 text-white px-3 py-1.5 rounded-full text-[12px] font-bold transition-all shadow-sm flex items-center gap-1 group hidden">
-                    <i class="fas fa-download group-hover:scale-110 transition-transform"></i> <span id="ui-export-btn">匯出</span>
-                </button>
                 <button type="button" data-ui-action="reset-all-data" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 rounded-full text-[12px] font-bold transition-all shadow-sm flex items-center gap-1 group">
                     <i class="fas fa-trash-can group-hover:scale-110 transition-transform"></i> <span id="ui-reset-btn">清除</span>
                 </button>
@@ -559,7 +556,7 @@
                 </div>
 
                 <div class="mt-12 pt-8 border-t border-slate-100">
-                    <p id="app-version-badge-drawer" class="text-[10px] text-slate-400 font-bold uppercase tracking-wider text-center">New Zealand Travel · v1.3.4</p>
+                    <p id="app-version-badge-drawer" class="text-[10px] text-slate-400 font-bold uppercase tracking-wider text-center">New Zealand Travel · v1.3.5</p>
                 </div>
             </div>
         </div>
@@ -780,6 +777,19 @@
                     <p class="text-[11px] text-slate-500 mt-2 font-medium" id="io-desc">複製或貼入下方代碼以備份或更新行程。</p>
                 </div>
                 <div class="space-y-4">
+                    <input type="file" id="io-file-input" accept=".json,application/json" class="hidden" data-ui-action="io-file-input">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <button type="button" data-ui-action="choose-io-file" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3 px-4 rounded-xl transition-all flex items-center justify-center gap-2">
+                            <i class="fas fa-folder-open"></i> <span id="io-file-btn-text">選擇 JSON 檔</span>
+                        </button>
+                        <button type="button" data-ui-action="download-io-json" class="bg-emerald-100 hover:bg-emerald-200 text-emerald-700 font-bold py-3 px-4 rounded-xl transition-all flex items-center justify-center gap-2">
+                            <i class="fas fa-download"></i> <span id="io-download-btn-text">下載 JSON</span>
+                        </button>
+                    </div>
+                    <button type="button" data-ui-action="export-html" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3 px-4 rounded-xl transition-all flex items-center justify-center gap-2">
+                        <i class="fas fa-file-code"></i> <span id="io-export-html-btn-text">匯出 HTML</span>
+                    </button>
+                    <p id="io-file-status" class="text-[11px] text-slate-400 font-medium text-center">尚未選擇檔案</p>
                     <textarea id="io-textarea" class="w-full h-64 bg-slate-50 border border-slate-200 p-4 rounded-2xl text-[10px] font-mono text-slate-700 focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all shadow-inner resize-none"></textarea>
                     <div class="flex gap-3">
                         <button type="button" data-ui-action="copy-io-text" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3 px-4 rounded-xl transition-all flex items-center justify-center gap-2">
@@ -832,7 +842,7 @@
         `;
         document.body.insertAdjacentHTML('beforeend', milkyWayWindowModalHTML);
 
-        const APP_VERSION = "1.3.4";
+        const APP_VERSION = "1.3.5";
         const AIR_NZ_BOOKING_URL = "https://www.airnewzealand.co.nz/book";
 
         let currentLang = 'zh';
@@ -1226,11 +1236,17 @@
                 flightSearchBtn: "查詢紐航班次",
                 importExportBtn: "導入/導出行程",
                 ioModalTitle: "導入或導出行程資料",
-                ioModalDesc: "將 JSON 貼入下方可導入行程（含 customCoords 自訂座標），或複製內容備份。",
+                ioModalDesc: "可貼上 JSON、選擇本機 JSON 檔導入，或直接下載目前行程備份（含 customCoords 自訂座標）。",
                 importDone: "資料導入成功！",
                 importError: "導入失敗，請檢查 JSON 格式是否正確。",
                 ioCopyBtn: "複製內容",
+                ioFileBtn: "選擇 JSON 檔",
+                ioDownloadBtn: "下載 JSON",
+                ioExportHtmlBtn: "匯出 HTML",
                 ioImportBtn: "確認導入",
+                ioFileIdle: "尚未選擇檔案",
+                ioFileLoaded: "已載入檔案：{name}",
+                ioFileReadError: "讀取檔案失敗，請確認這是有效的 JSON 檔。",
                 resetConfirmBtn: "確認重置",
                 resetCancelBtn: "取消",
                 moveUp: "上移",
@@ -1358,11 +1374,17 @@
                 flightSearchBtn: "Search Air NZ Flights",
                 importExportBtn: "Import/Export",
                 ioModalTitle: "Import/Export Data",
-                ioModalDesc: "Paste JSON to import itinerary data (including customCoords), or copy for backup.",
+                ioModalDesc: "Paste JSON, load a local JSON file to import itinerary data, or download the current itinerary backup including customCoords.",
                 importDone: "Data imported successfully!",
                 importError: "Import failed, please check JSON format.",
                 ioCopyBtn: "Copy",
+                ioFileBtn: "Choose JSON File",
+                ioDownloadBtn: "Download JSON",
+                ioExportHtmlBtn: "Export HTML",
                 ioImportBtn: "Import",
+                ioFileIdle: "No file selected",
+                ioFileLoaded: "Loaded file: {name}",
+                ioFileReadError: "Failed to read the file. Please make sure it is a valid JSON file.",
                 resetConfirmBtn: "Confirm Reset",
                 resetCancelBtn: "Cancel",
                 moveUp: "Move Up",
@@ -3320,6 +3342,34 @@
             setTimeout(() => leafletMap.invalidateSize(), 100);
         }
 
+        function getRouteStopForDay(day, dayIdx) {
+            if (!day) return null;
+
+            const routeCandidates = [
+                day.city?.en,
+                day.city?.zh,
+                day.mapQuery,
+                day.mapUrl,
+                day.en?.title,
+                day.zh?.title
+            ];
+
+            for (const candidate of routeCandidates) {
+                const cityKey = getCityKeyFromName(candidate || "");
+                if (!cityKey || ["Auckland", "Taipei"].includes(cityKey)) continue;
+
+                if (isCuteMapMode) {
+                    if (!CUTE_COORDS[cityKey]) continue;
+                    return { ...CUTE_COORDS[cityKey], label: cityKey, dayIdx };
+                }
+
+                if (!COORDS[cityKey]) continue;
+                return { lat: COORDS[cityKey].lat, lon: COORDS[cityKey].lon, label: cityKey, dayIdx };
+            }
+
+            return null;
+        }
+
         // Route Map Logic
         function renderRouteMap() {
             const svgGroupLines = document.getElementById('map-lines');
@@ -3336,15 +3386,8 @@
             const processedCities = new Set();
 
             itinerary.forEach((day, idx) => {
-                const cityStr = day.city.en || "Queenstown";
-                const cityKey = getCityKeyFromName(cityStr);
-                if (cityKey && cityKey !== 'Auckland' && cityKey !== 'Taipei') {
-                    if (isCuteMapMode) {
-                        if (CUTE_COORDS[cityKey]) points.push({ ...CUTE_COORDS[cityKey], label: cityKey, dayIdx: idx });
-                    } else {
-                        points.push({ lat: COORDS[cityKey].lat, lon: COORDS[cityKey].lon, label: cityKey, dayIdx: idx });
-                    }
-                }
+                const routeStop = getRouteStopForDay(day, idx);
+                if (routeStop) points.push(routeStop);
             });
 
             if (points.length < 2) return;
@@ -3407,10 +3450,9 @@
                 });
                 leafletMap.fitBounds(latLons, { padding: [30, 30] });
             } else if (itinerary[dayIdx]) {
-                const cityStr = itinerary[dayIdx].city.en;
-                const cityKey = getCityKeyFromName(cityStr);
-                if (cityKey && COORDS[cityKey]) {
-                    leafletMap.flyTo([COORDS[cityKey].lat, COORDS[cityKey].lon], 9, {
+                const routeStop = getRouteStopForDay(itinerary[dayIdx], dayIdx);
+                if (routeStop?.lat != null && routeStop?.lon != null) {
+                    leafletMap.flyTo([routeStop.lat, routeStop.lon], 9, {
                         animate: true,
                         duration: 1.5
                     });
@@ -5252,9 +5294,18 @@
             document.getElementById('io-title').innerText = ui.ioModalTitle;
             document.getElementById('io-desc').innerText = ui.ioModalDesc;
             const copyBtnText = document.getElementById('io-copy-btn-text');
+            const fileBtnText = document.getElementById('io-file-btn-text');
+            const downloadBtnText = document.getElementById('io-download-btn-text');
+            const exportHtmlBtnText = document.getElementById('io-export-html-btn-text');
             const importBtnText = document.getElementById('io-import-btn-text');
             if (copyBtnText) copyBtnText.innerText = ui.ioCopyBtn;
+            if (fileBtnText) fileBtnText.innerText = ui.ioFileBtn;
+            if (downloadBtnText) downloadBtnText.innerText = ui.ioDownloadBtn;
+            if (exportHtmlBtnText) exportHtmlBtnText.innerText = ui.ioExportHtmlBtn;
             if (importBtnText) importBtnText.innerText = ui.ioImportBtn;
+            updateIOFileStatus(ui.ioFileIdle);
+            const ioFileInput = document.getElementById('io-file-input');
+            if (ioFileInput) ioFileInput.value = '';
             document.getElementById('io-textarea').value = JSON.stringify(buildItineraryExportPayload(), null, 2);
             
             const modal = document.getElementById('io-modal');
@@ -5297,6 +5348,60 @@
             } catch (error) {
                 alert(currentLang === 'zh' ? '複製失敗，請手動複製。' : 'Copy failed. Please copy manually.');
             }
+        }
+
+        function updateIOFileStatus(message) {
+            const status = document.getElementById('io-file-status');
+            if (status) status.innerText = message;
+        }
+
+        function chooseIOFile() {
+            const input = document.getElementById('io-file-input');
+            if (!input) return;
+            input.value = '';
+            input.click();
+        }
+
+        function getIOExportFilename() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            return `nz-travel-itinerary-${year}-${month}-${day}.json`;
+        }
+
+        function downloadIOJson() {
+            const payloadText = JSON.stringify(buildItineraryExportPayload(), null, 2);
+            const blob = new Blob([payloadText], { type: 'application/json' });
+            const blobUrl = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = blobUrl;
+            link.download = getIOExportFilename();
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            setTimeout(() => URL.revokeObjectURL(blobUrl), 0);
+        }
+
+        function handleIOFileSelection(fileInput) {
+            const file = fileInput?.files?.[0];
+            const ui = translations[currentLang];
+            if (!file) {
+                updateIOFileStatus(ui.ioFileIdle);
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = () => {
+                const text = typeof reader.result === 'string' ? reader.result : '';
+                document.getElementById('io-textarea').value = text;
+                updateIOFileStatus(ui.ioFileLoaded.replace('{name}', file.name));
+            };
+            reader.onerror = () => {
+                updateIOFileStatus(ui.ioFileIdle);
+                alert(ui.ioFileReadError);
+            };
+            reader.readAsText(file);
         }
 
         function importItinerary() {
@@ -6290,6 +6395,12 @@
         }
 
         function handleGlobalUIChange(event) {
+            const fileTarget = event.target.closest('[data-ui-action="io-file-input"]');
+            if (fileTarget) {
+                handleIOFileSelection(fileTarget);
+                return;
+            }
+
             const uiActionTarget = event.target.closest('[data-ui-action="milkyway-seek"]');
             if (!uiActionTarget) return;
             const windowIndex = parseActionIndex(uiActionTarget.value);
@@ -6332,6 +6443,8 @@
             'open-airnz-booking': () => openAirNzBooking(),
             'close-io-modal': () => closeIOModal(),
             'copy-io-text': () => copyIOText(),
+            'choose-io-file': () => chooseIOFile(),
+            'download-io-json': () => downloadIOJson(),
             'import-itinerary': () => importItinerary(),
             'close-reset-modal': () => closeResetModal(),
             'execute-reset': () => executeReset(),

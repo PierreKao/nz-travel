@@ -155,6 +155,62 @@ test.describe('Itinerary editor real-flow E2E', () => {
         expect(dialogs[0]).toContain('導入成功');
     });
 
+    test('import/export 支援 JSON 檔案', async ({ page }) => {
+        const dialogs = [];
+        page.on('dialog', async (dialog) => {
+            dialogs.push(dialog.message());
+            await dialog.accept();
+        });
+
+        await openApp(page);
+        await page.locator('#edit-mode-btn').click();
+        await page.locator('[data-ui-action="open-io-modal"]').first().click();
+        await expect(page.locator('#io-modal')).toHaveClass(/flex/);
+
+        const filePayload = {
+            itinerary: [
+                {
+                    date: 'Day 01',
+                    actualDate: '2026-07-01',
+                    city: { zh: '瓦納卡', en: 'Wanaka' },
+                    mapUrl: 'That+Wanaka+Tree',
+                    stay: { zh: '瓦納卡', en: 'Wanaka' },
+                    zh: { title: '📁 檔案匯入測試', timeline: [['上午', '從檔案匯入', '步行', '', '', 'file import path']] },
+                    en: { title: '📁 File Import Test', timeline: [['Morning', 'Imported from file', 'Walk', '', '', 'file import path']] }
+                }
+            ],
+            customCoords: {
+                'File Import Spot': { lat: -44.7, lon: 169.13, zh: '檔案匯入點', en: 'File Import Spot' }
+            }
+        };
+
+        await page.locator('#io-file-input').setInputFiles({
+            name: 'sample-import.json',
+            mimeType: 'application/json',
+            buffer: Buffer.from(JSON.stringify(filePayload, null, 2))
+        });
+
+        await expect(page.locator('#io-file-status')).toContainText('sample-import.json');
+        await expect(page.locator('#io-textarea')).toHaveValue(/檔案匯入測試/);
+
+        const downloadPromise = page.waitForEvent('download');
+        await page.locator('[data-ui-action="download-io-json"]').click();
+        const download = await downloadPromise;
+        expect(download.suggestedFilename()).toMatch(/^nz-travel-itinerary-\d{4}-\d{2}-\d{2}\.json$/);
+
+        await page.locator('[data-ui-action="import-itinerary"]').click();
+
+        await expect.poll(async () => {
+            return page.evaluate(() => {
+                const saved = JSON.parse(localStorage.getItem('itinerary_custom') || '[]');
+                return saved[0]?.zh?.title || '';
+            });
+        }).toBe('📁 檔案匯入測試');
+
+        expect(dialogs.length).toBe(1);
+        expect(dialogs[0]).toContain('導入成功');
+    });
+
     test('匯入較短行程時會自動校正目前天數並刷新畫面', async ({ page }) => {
         const dialogs = [];
         page.on('dialog', async (dialog) => {
