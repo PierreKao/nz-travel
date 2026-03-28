@@ -485,8 +485,18 @@ test.describe('Itinerary editor real-flow E2E', () => {
         await expect.poll(async () => page.locator('#io-modal').getAttribute('class')).toContain('hidden');
 
         await page.locator('#nav-container .day-btn').nth(2).click();
-        await expect(page.locator('[data-testid="budget-bookings-panel"] [data-budget-kind="booking"][data-budget-id="stay_001"][data-budget-field="title"]')).toBeDisabled();
+        const mobileBookingTitle = page.locator('[data-testid="budget-bookings-panel"] [data-budget-kind="booking"][data-budget-id="stay_001"][data-budget-field="title"]');
+        await expect(mobileBookingTitle).toBeDisabled();
         await expect(page.locator('[data-action="add-booking-entry"]')).toBeHidden();
+        await page.locator('[data-action="toggle-booking-edit"][data-budget-id="stay_001"]').click();
+        await expect(mobileBookingTitle).toBeEnabled();
+        await mobileBookingTitle.fill('蒂卡波湖景住宿');
+        await expect.poll(async () => {
+            return page.evaluate(() => {
+                const saved = JSON.parse(localStorage.getItem('nz_travel_bookings') || '[]');
+                return saved.find(item => item.id === 'stay_001')?.title?.zh || '';
+            });
+        }).toBe('蒂卡波湖景住宿');
         const mobileBudgetExpenseTitle = page.locator('[data-testid="budget-expenses-panel"] [data-budget-kind="expense"][data-budget-id="expense_mobile_001"][data-budget-field="title"]');
         await expect(mobileBudgetExpenseTitle).toBeDisabled();
         await page.locator('[data-action="toggle-expense-edit"][data-budget-id="expense_mobile_001"]').click();
