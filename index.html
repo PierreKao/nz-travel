@@ -844,9 +844,19 @@
 
         const APP_VERSION = "1.3.5";
         const AIR_NZ_BOOKING_URL = "https://www.airnewzealand.co.nz/book";
+        const PAGE_INDEX = Object.freeze({
+            OVERVIEW: -1,
+            CHECKLIST: -2,
+            FLIGHTS: -3
+        });
+        const FULL_STATIC_PAGE_ORDER = Object.freeze([
+            PAGE_INDEX.OVERVIEW,
+            PAGE_INDEX.CHECKLIST,
+            PAGE_INDEX.FLIGHTS
+        ]);
 
         let currentLang = 'zh';
-        let activeDayIndex = -1;
+        let activeDayIndex = PAGE_INDEX.OVERVIEW;
         let isAurora = false;
         let isEditMode = false;
         let currentNZDRate = 19.5; // Default fallback
@@ -866,6 +876,42 @@
         const auroraCache = new Map();
         let milkyWayState = { status: "idle", city: "Tekapo", data: null, error: "" };
         const milkyWayCache = new Map();
+
+        function isOverviewPageSelection(dayIdx = activeDayIndex) {
+            return dayIdx === PAGE_INDEX.OVERVIEW;
+        }
+
+        function isChecklistPageSelection(dayIdx = activeDayIndex) {
+            return dayIdx === PAGE_INDEX.CHECKLIST;
+        }
+
+        function isFlightsPageSelection(dayIdx = activeDayIndex) {
+            return dayIdx === PAGE_INDEX.FLIGHTS;
+        }
+
+        function getFlightOverviewCount(langCode = currentLang) {
+            return getFlightOverviewEntries(langCode).length;
+        }
+
+        function hasFlightOverviewPage(langCode = currentLang) {
+            return getFlightOverviewCount(langCode) > 0;
+        }
+
+        function getStaticPageOrder(langCode = currentLang) {
+            return hasFlightOverviewPage(langCode)
+                ? FULL_STATIC_PAGE_ORDER
+                : FULL_STATIC_PAGE_ORDER.slice(0, 2);
+        }
+
+        function getStaticNavCount(langCode = currentLang) {
+            return getStaticPageOrder(langCode).length;
+        }
+
+        function getNavSelectionForButtonIndex(buttonIndex, langCode = currentLang) {
+            const staticPages = getStaticPageOrder(langCode);
+            if (buttonIndex < staticPages.length) return staticPages[buttonIndex];
+            return buttonIndex - staticPages.length;
+        }
 
         // --- Memory Anchors (IndexedDB) ---
         const DB_NAME = 'NZTravelMemories';
@@ -1221,6 +1267,11 @@
                 countdownDaysLabel: "天",
                 countdownDateLabel: "出發日：{date}",
                 countdownCloseBtn: "太好了",
+                flightOverviewTitle: "航班總覽",
+                flightOverviewSubtitle: "集中查看所有已排定的航班、轉機與機場流程。",
+                flightOverviewHint: "點擊卡片可直接開啟當日行程。",
+                flightOverviewEmpty: "這天的航班資訊主要寫在標題中，點擊可查看完整安排。",
+                flightOverviewNoData: "目前行程沒有航班資料。",
                 converterTitle: "匯率換算器",
                 nzdLabel: "NZD (紐幣)",
                 twdLabel: "TWD (台幣)",
@@ -1364,6 +1415,11 @@
                 countdownDaysLabel: "days to go",
                 countdownDateLabel: "Departure: {date}",
                 countdownCloseBtn: "Let's go",
+                flightOverviewTitle: "Flight Overview",
+                flightOverviewSubtitle: "See every scheduled flight, transfer, and airport step in one place.",
+                flightOverviewHint: "Tap a card to jump into that day.",
+                flightOverviewEmpty: "This flight day only has the main flight info in its title. Open it for the full schedule.",
+                flightOverviewNoData: "No flight data is available for this itinerary.",
                 converterTitle: "Currency Converter",
                 nzdLabel: "NZD (Dollar)",
                 twdLabel: "TWD (Taiwanese Dollar)",
@@ -2804,9 +2860,9 @@
 
         function updateSidebarTitles() {
             const btns = document.querySelectorAll('.day-btn');
+            const staticNavCount = getStaticNavCount();
             btns.forEach((btn, i) => {
-                // Skip overview (-1) and checklist (-2) buttons which are first two
-                const dayIdx = i - 2;
+                const dayIdx = i - staticNavCount;
                 if (dayIdx >= 0 && dayIdx < itinerary.length) {
                     const day = itinerary[dayIdx];
                     const [y, m, d] = day.actualDate.split('-');
@@ -3442,7 +3498,7 @@
         function focusMapOnDay(dayIdx) {
             if (!leafletMap || isCuteMapMode) return;
             
-            if (dayIdx === -1) {
+            if (dayIdx === PAGE_INDEX.OVERVIEW) {
                 // Overview: fit all
                 const latLons = [];
                 Object.values(COORDS).forEach(c => {
@@ -4219,7 +4275,7 @@
             const cached = auroraCache.get(cityKey);
             if (!force && cached && (Date.now() - cached.timestamp) < AURORA_CACHE_TTL) {
                 auroraState = { status: 'success', city: cityKey, data: cached.data, error: '' };
-                if (activeDayIndex === -1) renderOverview(document.getElementById('content-display'), translations[currentLang]);
+                if (isOverviewPageSelection()) renderOverview(document.getElementById('content-display'), translations[currentLang]);
                 return cached.data;
             }
 
@@ -4228,7 +4284,7 @@
             }
 
             auroraState = { status: 'loading', city: cityKey, data: null, error: '' };
-            if (activeDayIndex === -1) renderOverview(document.getElementById('content-display'), translations[currentLang]);
+            if (isOverviewPageSelection()) renderOverview(document.getElementById('content-display'), translations[currentLang]);
 
             try {
                 const coord = COORDS[cityKey];
@@ -4251,12 +4307,12 @@
                 const data = calculateAuroraVisibility(cityKey, ovationPayload, kpPayload, weatherPayload);
                 auroraCache.set(cityKey, { timestamp: Date.now(), data });
                 auroraState = { status: 'success', city: cityKey, data, error: '' };
-                if (activeDayIndex === -1) renderOverview(document.getElementById('content-display'), translations[currentLang]);
+                if (isOverviewPageSelection()) renderOverview(document.getElementById('content-display'), translations[currentLang]);
                 return data;
             } catch (error) {
                 console.warn('Aurora fetch failed', error);
                 auroraState = { status: 'error', city: cityKey, data: null, error: String(error.message || error) };
-                if (activeDayIndex === -1) renderOverview(document.getElementById('content-display'), translations[currentLang]);
+                if (isOverviewPageSelection()) renderOverview(document.getElementById('content-display'), translations[currentLang]);
                 return null;
             }
         }
@@ -4275,7 +4331,7 @@
             auroraSelectedCity = stop.cityKey;
             auroraState = { status: 'idle', city: stop.cityKey, data: null, error: '' };
             milkyWayState = { status: 'idle', city: stop.cityKey, data: null, error: '' };
-            if (activeDayIndex === -1) renderOverview(document.getElementById('content-display'), translations[currentLang]);
+            if (isOverviewPageSelection()) renderOverview(document.getElementById('content-display'), translations[currentLang]);
             refreshAuroraVisibility(false);
             refreshMilkyWayVisibility(false);
         }
@@ -4391,7 +4447,7 @@
             const cached = milkyWayCache.get(cacheKey);
             if (!force && cached && (Date.now() - cached.timestamp) < MILKY_WAY_CACHE_TTL) {
                 milkyWayState = { status: 'success', city: cityKey, data: cached.data, error: '' };
-                if (activeDayIndex === -1) renderOverview(document.getElementById('content-display'), translations[currentLang]);
+                if (isOverviewPageSelection()) renderOverview(document.getElementById('content-display'), translations[currentLang]);
                 return cached.data;
             }
 
@@ -4400,7 +4456,7 @@
             }
 
             milkyWayState = { status: 'loading', city: cityKey, data: null, error: '' };
-            if (activeDayIndex === -1) renderOverview(document.getElementById('content-display'), translations[currentLang]);
+            if (isOverviewPageSelection()) renderOverview(document.getElementById('content-display'), translations[currentLang]);
 
             try {
                 const coord = COORDS[cityKey];
@@ -4425,12 +4481,12 @@
                 }
                 milkyWayCache.set(cacheKey, { timestamp: Date.now(), data });
                 milkyWayState = { status: 'success', city: cityKey, data, error: '' };
-                if (activeDayIndex === -1) renderOverview(document.getElementById('content-display'), translations[currentLang]);
+                if (isOverviewPageSelection()) renderOverview(document.getElementById('content-display'), translations[currentLang]);
                 return data;
             } catch (error) {
                 console.warn('Milky Way fetch failed', error);
                 milkyWayState = { status: 'error', city: cityKey, data: null, error: String(error.message || error) };
-                if (activeDayIndex === -1) renderOverview(document.getElementById('content-display'), translations[currentLang]);
+                if (isOverviewPageSelection()) renderOverview(document.getElementById('content-display'), translations[currentLang]);
                 return null;
             }
         }
@@ -4682,7 +4738,7 @@
 
         function toggleSkyConditions() {
             isSkyConditionsExpanded = !isSkyConditionsExpanded;
-            if (activeDayIndex === -1) {
+            if (isOverviewPageSelection()) {
                 renderOverview(document.getElementById('content-display'), translations[currentLang]);
             }
         }
@@ -5031,7 +5087,7 @@
                 }
                 
                 // Re-render UI to display fetched rate if we are in overview
-                if (activeDayIndex === -1 && document.getElementById('notice-board')) {
+                if (isOverviewPageSelection() && document.getElementById('notice-board')) {
                     updateUI(); 
                 }
             } catch (e) {
@@ -5040,7 +5096,7 @@
                 const fallbackEn = "1 NZD ≈ 19.8 TWD (incl. service fee)";
                 translations['zh'].notices.find(n => n.id === 'exchangeRate').content = fallbackZh;
                 translations['en'].notices.find(n => n.id === 'exchangeRate').content = fallbackEn;
-                if (activeDayIndex === -1 && document.getElementById('notice-board')) updateUI();
+                if (isOverviewPageSelection() && document.getElementById('notice-board')) updateUI();
             }
         }
 
@@ -5101,7 +5157,7 @@
 
         async function fetchWeather(city) {
             const box = document.getElementById('weather-box');
-            if (activeDayIndex === -1 || !city) { 
+            if (isOverviewPageSelection() || !city) { 
                 box.classList.add('hidden'); 
                 box.classList.add('pointer-events-none');
                 return; 
@@ -5253,7 +5309,7 @@
                 lbl.classList.add('text-slate-700');
             }
             
-            if(activeDayIndex === -2) updateChecklistProgressRing();
+            if (isChecklistPageSelection()) updateChecklistProgressRing();
         }
 
         function updateChecklistProgressRing() {
@@ -5286,7 +5342,7 @@
                 saved[`${groupId}_${idx}`] = !allChecked;
             });
             localStorage.setItem('nz_travel_checklist', JSON.stringify(saved));
-            if(activeDayIndex === -2) updateUI();
+            if (isChecklistPageSelection()) updateUI();
         }
 
         function openIOModal() {
@@ -5453,11 +5509,15 @@
 
         function normalizeActiveSelectionForCurrentItinerary() {
             if (!Array.isArray(itinerary) || itinerary.length === 0) {
-                activeDayIndex = -1;
+                activeDayIndex = PAGE_INDEX.OVERVIEW;
                 return;
             }
-            if (activeDayIndex < -2) {
-                activeDayIndex = -1;
+            if (activeDayIndex < PAGE_INDEX.FLIGHTS) {
+                activeDayIndex = PAGE_INDEX.OVERVIEW;
+                return;
+            }
+            if (isFlightsPageSelection() && !hasFlightOverviewPage()) {
+                activeDayIndex = PAGE_INDEX.OVERVIEW;
                 return;
             }
             if (activeDayIndex >= itinerary.length) {
@@ -5469,6 +5529,9 @@
         function updateUI() {
             normalizeActiveSelectionForCurrentItinerary();
             const ui = translations[currentLang];
+            const flightOverviewCount = getFlightOverviewCount(currentLang);
+            const showFlightsPage = flightOverviewCount > 0;
+            const staticPageOrder = showFlightsPage ? FULL_STATIC_PAGE_ORDER : FULL_STATIC_PAGE_ORDER.slice(0, 2);
             // ... (rest of function will be updated in next chunk if needed)
             updateVersionBadges();
             document.getElementById('ui-header-title').innerText = ui.header;
@@ -5495,24 +5558,34 @@
             
             // Optimization: Only clear and re-render nav if needed or if first load
             const nav = document.getElementById('nav-container');
-            const navHash = `${activeDayIndex}-${currentLang}-${itinerary.length}-${savedStartDate}`;
+            const navHash = `${activeDayIndex}-${currentLang}-${itinerary.length}-${savedStartDate}-${flightOverviewCount}`;
             if (nav.dataset.hash !== navHash) {
                 nav.innerHTML = '';
                 nav.dataset.hash = navHash;
-                
-                // Overview Button
-                const ovBtn = document.createElement('button');
-                ovBtn.className = `day-btn md:w-full text-left px-4 py-2 rounded-xl text-sm font-bold border mb-1 flex-shrink-0 whitespace-nowrap flex items-center gap-2 ${activeDayIndex === -1 ? 'active-tab' : 'bg-white/70 backdrop-blur-sm'}`;
-                ovBtn.innerHTML = `<i class="fas fa-map"></i> ${ui.overviewBtn}`;
-                ovBtn.onclick = (e) => { e.stopPropagation(); activeDayIndex = -1; updateUI(); };
-                nav.appendChild(ovBtn);
 
-                // Checklist Button
-                const chkBtn = document.createElement('button');
-                chkBtn.className = `day-btn md:w-full text-left px-4 py-2 rounded-xl text-sm font-bold border mb-1 flex-shrink-0 whitespace-nowrap flex items-center gap-2 ${activeDayIndex === -2 ? 'active-tab' : 'bg-white/70 backdrop-blur-sm'}`;
-                chkBtn.innerHTML = `<i class="fas fa-clipboard-list text-amber-600"></i> ${ui.checklistBtn}`;
-                chkBtn.onclick = (e) => { e.stopPropagation(); activeDayIndex = -2; updateUI(); };
-                nav.appendChild(chkBtn);
+                const staticNavItems = [
+                    { pageIndex: PAGE_INDEX.OVERVIEW, label: ui.overviewBtn, iconHtml: '<i class="fas fa-map"></i>' },
+                    { pageIndex: PAGE_INDEX.CHECKLIST, label: ui.checklistBtn, iconHtml: '<i class="fas fa-clipboard-list text-amber-600"></i>' }
+                ];
+                if (showFlightsPage) {
+                    staticNavItems.push({
+                        pageIndex: PAGE_INDEX.FLIGHTS,
+                        label: ui.flightOverviewTitle,
+                        iconHtml: '<i class="fas fa-plane-departure text-sky-500"></i>'
+                    });
+                }
+
+                staticNavItems.forEach((item) => {
+                    const btn = document.createElement('button');
+                    btn.className = `day-btn md:w-full text-left px-4 py-2 rounded-xl text-sm font-bold border mb-1 flex-shrink-0 whitespace-nowrap flex items-center gap-2 ${activeDayIndex === item.pageIndex ? 'active-tab' : 'bg-white/70 backdrop-blur-sm'}`;
+                    btn.innerHTML = `${item.iconHtml} ${item.label}`;
+                    btn.onclick = (e) => {
+                        e.stopPropagation();
+                        activeDayIndex = item.pageIndex;
+                        updateUI();
+                    };
+                    nav.appendChild(btn);
+                });
 
                 const todayStr = getCurrentSystemDateKey();
 
@@ -5532,10 +5605,7 @@
             } else {
                 // Just update active classes
                 nav.querySelectorAll('.day-btn').forEach((btn, idx) => {
-                    let mappedIdx;
-                    if (idx === 0) mappedIdx = -1;      // Overview
-                    else if (idx === 1) mappedIdx = -2; // Checklist
-                    else mappedIdx = idx - 2;           // Days
+                    const mappedIdx = getNavSelectionForButtonIndex(idx, currentLang);
                     
                     if (mappedIdx === activeDayIndex) {
                         btn.classList.add('active-tab');
@@ -5548,7 +5618,7 @@
             }
 
             const content = document.getElementById('content-display');
-            if (activeDayIndex === -1) {
+            if (isOverviewPageSelection()) {
                 ensureAuroraSelection();
                 const cachedAurora = auroraCache.get(auroraSelectedCity);
                 if (cachedAurora && (Date.now() - cachedAurora.timestamp) < AURORA_CACHE_TTL) {
@@ -5566,8 +5636,11 @@
                 fetchWeather("");
                 refreshAuroraVisibility(false);
                 refreshMilkyWayVisibility(false);
-            } else if (activeDayIndex === -2) {
+            } else if (isChecklistPageSelection()) {
                 renderChecklist(content, ui);
+                fetchWeather("");
+            } else if (isFlightsPageSelection()) {
+                renderFlightsPage(content, ui);
                 fetchWeather("");
             } else {
                 renderDay(content, ui);
@@ -5577,7 +5650,7 @@
             // Map Logic Global - Only show on Overview
             const globalMapArea = document.getElementById('global-map-area');
             const mapToggleText = document.getElementById('map-toggle-text');
-            if (activeDayIndex === -1) {
+            if (isOverviewPageSelection()) {
                 globalMapArea.classList.remove('hidden');
                 if (mapToggleText) {
                     mapToggleText.innerText = isCuteMapMode ? (currentLang === 'zh' ? '路線模式' : 'Route Mode') : (currentLang === 'zh' ? '可愛模式' : 'Cute Mode');
@@ -5588,7 +5661,7 @@
                     // Force refresh layout to prevent grey/blank map
                     setTimeout(() => {
                         leafletMap.invalidateSize();
-                        if (!isCuteMapMode) focusMapOnDay(activeDayIndex);
+                    if (!isCuteMapMode) focusMapOnDay(activeDayIndex);
                     }, 50);
                 }
             } else {
@@ -5926,6 +5999,116 @@
             `;
         }
 
+        function getFlightOverviewEntries(langCode = currentLang) {
+            const fallbackLang = langCode === 'zh' ? 'en' : 'zh';
+            const actualFlightPattern = langCode === 'zh'
+                ? /(✈️|航班|航程|起飛|飛往|飛回|飛抵|過夜航班|國內線航程|國際線航程|轉機前往|轉國內線|[A-Z]{2,3}\s*\d{2,4}|[A-Z]{3}\s*[→-]\s*[A-Z]{3})/i
+                : /(✈️|flight|depart|fly|overnight flight|domestic flight|international flight|connection to|transfer to domestic flight|[A-Z]{2,3}\s*\d{2,4}|[A-Z]{3}\s*[→-]\s*[A-Z]{3})/i;
+            const supportingFlightPattern = langCode === 'zh'
+                ? /(機場|轉乘|報到|還車)/i
+                : /(airport|transfer|check-?in|car return)/i;
+
+            return itinerary.map((day, index) => {
+                const langDay = day?.[langCode] || day?.en || day?.zh || {};
+                const title = typeof langDay.title === 'string' ? langDay.title : '';
+                const timeline = Array.isArray(langDay.timeline) ? langDay.timeline.map((item) => normalizeTimelineItem(item)) : [];
+                const hasFlightTitle = actualFlightPattern.test(title);
+                const hasFlightItem = timeline.some((item) => {
+                    const combinedText = [item[0], item[1], item[2], item[5]].filter(Boolean).join(' ');
+                    return actualFlightPattern.test(combinedText);
+                });
+                if (!hasFlightTitle && !hasFlightItem) return null;
+
+                const items = timeline.filter((item) => {
+                    const combinedText = [item[0], item[1], item[2], item[5]].filter(Boolean).join(' ');
+                    return actualFlightPattern.test(combinedText) || supportingFlightPattern.test(combinedText);
+                });
+
+                return {
+                    dayIndex: index,
+                    dateLabel: savedStartDate && day.actualDate
+                        ? formatDateKeyForDisplay(day.actualDate, { month: 'numeric', day: 'numeric', weekday: 'short' })
+                        : (day.date || `Day ${String(index + 1).padStart(2, '0')}`),
+                    title,
+                    city: day?.city?.[langCode] || day?.city?.[fallbackLang] || '',
+                    items
+                };
+            }).filter(Boolean);
+        }
+
+        function renderFlightOverviewSection(ui) {
+            const flights = getFlightOverviewEntries(currentLang);
+            if (!flights.length) return '';
+
+            return `
+                <div data-testid="flight-overview-panel" class="glass-card rounded-[2rem] p-6 sm:p-7 shadow-2xl animate-in fade-in relative overflow-hidden">
+                    <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between mb-6 relative z-10">
+                        <div>
+                            <h3 class="text-2xl sm:text-3xl font-black text-slate-800 flex items-center gap-3">
+                                <i class="fas fa-plane-departure text-sky-500"></i> ${ui.flightOverviewTitle}
+                            </h3>
+                            <p class="text-sm text-slate-500 mt-2 max-w-2xl">${ui.flightOverviewSubtitle}</p>
+                        </div>
+                        <div class="inline-flex items-center gap-2 self-start sm:self-auto bg-sky-50 text-sky-700 text-[11px] font-black px-3 py-1.5 rounded-full border border-sky-100 uppercase tracking-wider">
+                            <i class="fas fa-ticket-alt"></i> ${flights.length}
+                        </div>
+                    </div>
+
+                    <p class="text-[11px] text-slate-400 uppercase font-bold tracking-[0.28em] mb-4 relative z-10">${ui.flightOverviewHint}</p>
+
+                    <div class="grid grid-cols-1 xl:grid-cols-2 gap-4 relative z-10">
+                        ${flights.map((flight) => `
+                            <div data-action="open-overview-day" data-day-idx="${flight.dayIndex}" class="bg-white/70 border border-slate-100 rounded-[1.75rem] p-5 shadow-sm hover:bg-white hover:shadow-md hover:border-sky-200 cursor-pointer transition-all group">
+                                <div class="flex items-start justify-between gap-4">
+                                    <div class="min-w-0">
+                                        <p class="text-[11px] font-black uppercase tracking-[0.28em] text-sky-500">${flight.dateLabel}</p>
+                                        <h4 class="text-lg font-black text-slate-800 mt-2 leading-snug group-hover:text-sky-700 transition-colors">${flight.title}</h4>
+                                        ${flight.city ? `<p class="text-xs text-slate-400 uppercase tracking-wider mt-2">${flight.city}</p>` : ''}
+                                    </div>
+                                    <div class="w-11 h-11 rounded-2xl bg-sky-100 text-sky-600 flex items-center justify-center shrink-0 transition-transform group-hover:scale-105">
+                                        <i class="fas fa-plane"></i>
+                                    </div>
+                                </div>
+
+                                ${flight.items.length ? `
+                                    <div class="mt-5 space-y-3">
+                                        ${flight.items.map((item) => `
+                                            <div class="rounded-2xl border border-slate-100 bg-slate-50/85 px-4 py-3">
+                                                <div class="flex items-start gap-3">
+                                                    <div class="min-w-[64px] text-[11px] font-black uppercase tracking-widest text-sky-600">${item[0] || '--'}</div>
+                                                    <div class="flex-1 min-w-0">
+                                                        <p class="text-sm font-bold text-slate-700 leading-snug">${item[1] || ''}</p>
+                                                        ${item[2] ? `<p class="text-[11px] text-slate-400 mt-1">${item[2]}</p>` : ''}
+                                                        ${item[5] ? `<p class="text-[12px] text-slate-500 mt-2 leading-relaxed">${item[5]}</p>` : ''}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                ` : `<p class="text-sm text-slate-500 mt-5">${ui.flightOverviewEmpty}</p>`}
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderFlightsPage(container, ui) {
+            const flightOverviewMarkup = renderFlightOverviewSection(ui);
+            container.innerHTML = `
+                <div class="space-y-6 animate-in fade-in">
+                    ${flightOverviewMarkup || `
+                        <div class="glass-card rounded-[2rem] p-8 shadow-2xl relative overflow-hidden">
+                            <h2 class="text-3xl font-bold mb-4 flex items-center gap-3 text-slate-800">
+                                <i class="fas fa-plane-slash text-slate-400"></i> ${ui.flightOverviewTitle}
+                            </h2>
+                            <p class="text-sm text-slate-500">${ui.flightOverviewNoData}</p>
+                        </div>
+                    `}
+                </div>
+            `;
+        }
+
         function renderOverview(container, ui) {
             container.innerHTML = `
                 <div class="glass-card rounded-[2rem] p-8 shadow-2xl animate-in fade-in relative overflow-hidden">
@@ -5937,7 +6120,6 @@
 
                     ${renderSkyConditionsSection(ui)}
 
-                    
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-3 relative z-10">
                         ${itinerary.map((day, i) => {
                             const todayStr = getCurrentSystemDateKey();
@@ -6410,7 +6592,7 @@
 
         const globalUIActionMap = {
             'go-overview': () => {
-                activeDayIndex = -1;
+                activeDayIndex = PAGE_INDEX.OVERVIEW;
                 updateUI();
             },
             'show-notice-modal': (actionEl) => {

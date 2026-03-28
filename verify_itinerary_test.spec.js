@@ -80,7 +80,7 @@ test.describe('Itinerary editor real-flow E2E', () => {
         await page.locator('#edit-mode-btn').click();
         await expect(page.locator('#edit-mode-btn')).toHaveClass(/ring-4/);
 
-        await page.locator('#nav-container .day-btn').nth(2).click();
+        await page.locator('#nav-container .day-btn').nth(3).click();
 
         const newTitle = `E2E Day Title ${Date.now()}`;
         const dayTitleEditable = page.locator('h2[data-edit-day="0"][data-edit-field="zh"][data-edit-subfield="title"]');
@@ -95,7 +95,7 @@ test.describe('Itinerary editor real-flow E2E', () => {
 
         await page.reload({ waitUntil: 'domcontentloaded' });
         await page.waitForFunction(() => document.querySelectorAll('#nav-container .day-btn').length > 2);
-        await page.locator('#nav-container .day-btn').nth(2).click();
+        await page.locator('#nav-container .day-btn').nth(3).click();
 
         await expect(page.locator('#content-display h2').first()).toContainText(newTitle);
     });
@@ -253,6 +253,149 @@ test.describe('Itinerary editor real-flow E2E', () => {
         await expect.poll(async () => {
             return page.locator('#nav-container .day-btn').count();
         }).toBe(3);
+
+        await expect(page.locator('#nav-container')).not.toContainText('航班總覽');
+
+        expect(dialogs.length).toBe(1);
+        expect(dialogs[0]).toContain('導入成功');
+    });
+
+    test('航班頁會集中列出所有航班內容', async ({ page }) => {
+        const dialogs = [];
+        page.on('dialog', async (dialog) => {
+            dialogs.push(dialog.message());
+            await dialog.accept();
+        });
+
+        await openApp(page);
+        await page.locator('#edit-mode-btn').click();
+
+        const flightHeavyPayload = [
+            {
+                date: 'Day 01',
+                actualDate: '2026-06-25',
+                city: { zh: '台北/奧克蘭', en: 'Taipei/Auckland' },
+                mapUrl: 'Auckland+Airport',
+                stay: { zh: '過夜航班', en: 'Overnight Flight' },
+                zh: {
+                    title: '✈️ 台北 → 奧克蘭（NZ 78 18:35 - 09:15）',
+                    timeline: [
+                        ['18:35', '桃園機場起飛', '11 小時 航程', '', '', '紐西蘭航空 NZ78'],
+                        ['機上', '休息與調整時差', '過夜航班', '', '', '']
+                    ]
+                },
+                en: {
+                    title: '✈️ Taipei → Auckland (NZ 78 18:35 - 09:15)',
+                    timeline: [
+                        ['18:35', 'Depart from TPE', '11 hr flight', '', '', 'Air New Zealand NZ78'],
+                        ['On board', 'Rest on board', 'Overnight flight', '', '', '']
+                    ]
+                }
+            },
+            {
+                date: 'Day 02',
+                actualDate: '2026-06-26',
+                city: { zh: '皇后鎮', en: 'Queenstown' },
+                mapUrl: 'Queenstown+Airport',
+                stay: { zh: '皇后鎮', en: 'Queenstown' },
+                zh: {
+                    title: '🏔️ 奧克蘭 → 皇后鎮（NZ 637 12:25 - 14:20）',
+                    timeline: [
+                        ['09:15', '奧克蘭轉國內線', '機場轉乘', '', '', '先完成入境與領行李'],
+                        ['12:25', '飛往皇后鎮', '1 小時 55 分 航程', '', '', '']
+                    ]
+                },
+                en: {
+                    title: '🏔️ Auckland → Queenstown (NZ 637 12:25 - 14:20)',
+                    timeline: [
+                        ['09:15', 'Transfer to domestic terminal', 'Airport transfer', '', '', ''],
+                        ['12:25', 'Flight to Queenstown', '1 hr 55 min flight', '', '', '']
+                    ]
+                }
+            },
+            {
+                date: 'Day 03',
+                actualDate: '2026-07-06',
+                city: { zh: '奧克蘭', en: 'Auckland' },
+                mapUrl: 'Christchurch+Airport',
+                stay: { zh: '奧克蘭', en: 'Auckland' },
+                zh: {
+                    title: '🚗 蒂卡波 → 基督城 → 奧克蘭（NZ 566 18:10 - 19:35）',
+                    timeline: [
+                        ['08:30', '由蒂卡波出發前往基督城機場', '3 小時 車程', '', '', '保留還車與報到緩衝'],
+                        ['18:10', '基督城 → 奧克蘭（NZ 566）', '1 小時 25 分 航程', '', '', '']
+                    ]
+                },
+                en: {
+                    title: '🚗 Tekapo → Christchurch → Auckland (NZ 566 18:10 - 19:35)',
+                    timeline: [
+                        ['08:30', 'Leave Tekapo for Christchurch Airport', '3 hr drive', '', '', ''],
+                        ['18:10', 'Christchurch → Auckland (NZ 566)', '1 hr 25 min flight', '', '', '']
+                    ]
+                }
+            },
+            {
+                date: 'Day 04',
+                actualDate: '2026-07-07',
+                city: { zh: '台北', en: 'Taipei' },
+                mapUrl: 'Taipei+101',
+                stay: { zh: '返程日（不住宿）', en: 'Return day (no stay)' },
+                zh: {
+                    title: '✈️ 奧克蘭 → 台北（NZ77 09:40 - 17:05）',
+                    timeline: [
+                        ['09:40', '奧克蘭起飛', '國際線航程', '', '', ''],
+                        ['17:05', '抵達台北', '', '', '', '']
+                    ]
+                },
+                en: {
+                    title: '✈️ Auckland → Taipei (NZ77 09:40 - 17:05)',
+                    timeline: [
+                        ['09:40', 'Depart from Auckland', 'International flight', '', '', ''],
+                        ['17:05', 'Arrive in Taipei', '', '', '', '']
+                    ]
+                }
+            },
+            {
+                date: 'Day 05',
+                actualDate: '2026-07-08',
+                city: { zh: '基督城', en: 'Christchurch' },
+                mapUrl: 'Christchurch+Airport',
+                stay: { zh: '基督城', en: 'Christchurch' },
+                zh: {
+                    title: '🚗 基督城市區移動',
+                    timeline: [
+                        ['上午', '先去機場附近確認還車地點', '機場接駁', '', '', '沒有搭飛機'],
+                        ['下午', '市區散步', '步行', '', '', '']
+                    ]
+                },
+                en: {
+                    title: '🚗 Christchurch City Day',
+                    timeline: [
+                        ['Morning', 'Check the car return location near the airport', 'Airport shuttle', '', '', 'No flight today'],
+                        ['Afternoon', 'City walk', 'Walk', '', '', '']
+                    ]
+                }
+            }
+        ];
+
+        await page.locator('[data-ui-action="open-io-modal"]').first().click();
+        await page.locator('#io-textarea').fill(JSON.stringify(flightHeavyPayload, null, 2));
+        await page.locator('[data-ui-action="import-itinerary"]').click();
+
+        await expect.poll(async () => {
+            return page.locator('#io-modal').getAttribute('class');
+        }).toContain('hidden');
+
+        await page.locator('#nav-container .day-btn').nth(2).click();
+
+        const overview = page.locator('#content-display');
+        const flightPanel = page.locator('[data-testid="flight-overview-panel"]');
+        await expect(overview).toContainText('航班總覽');
+        await expect(flightPanel).toContainText('台北 → 奧克蘭');
+        await expect(flightPanel).toContainText('奧克蘭轉國內線');
+        await expect(flightPanel).toContainText('基督城 → 奧克蘭');
+        await expect(flightPanel).toContainText('奧克蘭 → 台北');
+        await expect(flightPanel).not.toContainText('基督城市區移動');
 
         expect(dialogs.length).toBe(1);
         expect(dialogs[0]).toContain('導入成功');
