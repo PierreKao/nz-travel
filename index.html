@@ -514,7 +514,7 @@
     <header class="bg-white/70 backdrop-blur-md border-b sticky top-0 z-50 px-3 py-2 sm:px-6 sm:py-3 flex justify-between items-center shadow-sm">
         <div data-ui-action="go-overview" class="cursor-pointer shrink-0">
                 <span id="ui-header-title">紐西蘭南島 · 冬季自駕</span>
-            <p id="app-version-badge-header" class="text-[10px] text-blue-600 font-bold uppercase tracking-widest">Winter Adventure · v1.5.4</p>
+            <p id="app-version-badge-header" class="text-[10px] text-blue-600 font-bold uppercase tracking-widest">Winter Adventure · v1.5.5</p>
         </div>
         
         <div class="flex items-center gap-1 sm:gap-3">
@@ -601,7 +601,7 @@
                 </div>
 
                 <div class="mt-12 pt-8 border-t border-slate-100">
-                    <p id="app-version-badge-drawer" class="text-[10px] text-slate-400 font-bold uppercase tracking-wider text-center">New Zealand Travel · v1.5.4</p>
+                    <p id="app-version-badge-drawer" class="text-[10px] text-slate-400 font-bold uppercase tracking-wider text-center">New Zealand Travel · v1.5.5</p>
                 </div>
             </div>
         </div>
@@ -911,7 +911,7 @@
         `;
         document.body.insertAdjacentHTML('beforeend', milkyWayWindowModalHTML);
 
-        const APP_VERSION = "1.5.4";
+        const APP_VERSION = "1.5.5";
         const AIR_NZ_BOOKING_URL = "https://www.airnewzealand.co.nz/book";
         const PAGE_INDEX = Object.freeze({
             COSTS: -4,
@@ -930,7 +930,13 @@
         let activeDayIndex = PAGE_INDEX.OVERVIEW;
         let isAurora = false;
         let isEditMode = false;
-        let currentNZDRate = 19.5; // Default fallback
+        const FALLBACK_NZD_TO_TWD_RATE = 19.5;
+        const LIVE_RATE_FEE_MULTIPLIER = 1.015;
+        let exchangeRateState = {
+            liveNzdToTwdRate: FALLBACK_NZD_TO_TWD_RATE,
+            source: 'fallback',
+            updatedAt: null
+        };
         let isSkyConditionsExpanded = false;
         const NZ_TIMEZONE = 'Pacific/Auckland';
         const SYSTEM_TIMEZONE = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
@@ -1435,7 +1441,7 @@
                 budgetRateModeFixed: "固定匯率",
                 budgetRateLabel: "NZD -> TWD 匯率",
                 budgetRateHintLive: "使用目前抓到的即時匯率換算。",
-                budgetRateHintFixed: "使用你手動指定的固定匯率換算。",
+                budgetRateHintFixed: "使用你手動指定的固定匯率，並自動加上 1.5% 刷卡手續費。",
                 budgetFilterAll: "全部",
                 budgetFilterAccommodation: "住宿",
                 budgetFilterFlight: "機票",
@@ -1515,6 +1521,8 @@
                 nzdLabel: "NZD (紐幣)",
                 twdLabel: "TWD (台幣)",
                 nzdFeeNote: "1 NZD ≈ {rate} TWD (含 1.5% 手續費)",
+                nzdLiveRateNote: "1 NZD ≈ {rate} TWD (即時來源)",
+                nzdFixedRateNote: "1 NZD ≈ {rate} TWD (固定匯率，含 1.5% 手續費)",
                 printChoiceTitle: "列印選項",
                 printChoiceDesc: "行程中包含旅行照片與回憶，請問要如何列印？",
                 printOnlyItinerary: "僅列印行程",
@@ -1669,7 +1677,7 @@
                 budgetRateModeFixed: "Fixed rate",
                 budgetRateLabel: "NZD -> TWD rate",
                 budgetRateHintLive: "Use the currently fetched live rate for conversion.",
-                budgetRateHintFixed: "Use your own fixed rate for conversion.",
+                budgetRateHintFixed: "Use your own fixed rate and automatically add a 1.5% card fee.",
                 budgetFilterAll: "All",
                 budgetFilterAccommodation: "Stay",
                 budgetFilterFlight: "Flight",
@@ -1749,6 +1757,8 @@
                 nzdLabel: "NZD (Dollar)",
                 twdLabel: "TWD (Taiwanese Dollar)",
                 nzdFeeNote: "1 NZD ≈ {rate} TWD (incl. 1.5% fee)",
+                nzdLiveRateNote: "1 NZD ≈ {rate} TWD (live source)",
+                nzdFixedRateNote: "1 NZD ≈ {rate} TWD (fixed rate, incl. 1.5% fee)",
                 resetDataBtn: "Reset All Data",
                 resetConfirmMsg: "Are you sure you want to reset all data? This will permanently delete your start date, checklist progress, and all saved photos/notes.",
                 resetSuccessMsg: "Data has been successfully reset.",
@@ -2964,11 +2974,44 @@
         let bookings = normalizeBookingsPayload(loadStoredJson(BOOKINGS_STORAGE_KEY, []));
         let expenses = normalizeExpensesPayload(loadStoredJson(EXPENSES_STORAGE_KEY, []));
 
-        function getBudgetNZDRate() {
-            if (budgetSettings?.rateMode === 'fixed' && Number(budgetSettings?.nzdToTwdRate) > 0) {
-                return Number(budgetSettings.nzdToTwdRate);
+        function getLiveExchangeRate() {
+            const parsed = Number(exchangeRateState?.liveNzdToTwdRate);
+            return Number.isFinite(parsed) && parsed > 0 ? Number(parsed) : FALLBACK_NZD_TO_TWD_RATE;
+        }
+
+        function getConfiguredFixedExchangeRate() {
+            const parsed = Number(budgetSettings?.nzdToTwdRate);
+            return Number.isFinite(parsed) && parsed > 0 ? Number(parsed) : null;
+        }
+
+        function getExchangeRateSourceMeta() {
+            const fixedRate = getConfiguredFixedExchangeRate();
+            if (budgetSettings?.rateMode === 'fixed' && fixedRate) {
+                const fixedRateWithFee = Number((fixedRate * LIVE_RATE_FEE_MULTIPLIER).toFixed(2));
+                return {
+                    value: fixedRateWithFee,
+                    mode: 'fixed',
+                    labelKey: 'fixed'
+                };
             }
-            return Number(currentNZDRate) > 0 ? Number(currentNZDRate) : 19.5;
+            return {
+                value: getLiveExchangeRate(),
+                mode: 'live',
+                labelKey: exchangeRateState?.source === 'live' ? 'live' : 'fallback'
+            };
+        }
+
+        function getBudgetNZDRate() {
+            return getExchangeRateSourceMeta().value;
+        }
+
+        function formatExchangeRateNote(lang = currentLang) {
+            const meta = getExchangeRateSourceMeta();
+            const ui = translations[lang] || translations.en;
+            if (meta.mode === 'fixed') {
+                return ui.nzdFixedRateNote.replace('{rate}', meta.value.toFixed(2));
+            }
+            return ui.nzdLiveRateNote.replace('{rate}', meta.value.toFixed(2));
         }
 
         function saveBudgetData() {
@@ -5711,20 +5754,17 @@
                 const res = await fetch('https://api.exchangerate-api.com/v4/latest/NZD');
                 const data = await res.json();
                 const rawRate = data.rates['TWD'];
-                const twdRateWithFee = (rawRate * 1.015).toFixed(2);
-                currentNZDRate = parseFloat(twdRateWithFee);
-                
-                const note = translations['zh'].nzdFeeNote.replace('{rate}', currentNZDRate);
-                const noteEn = translations['en'].nzdFeeNote.replace('{rate}', currentNZDRate);
-
-                // Update internal translation data
-                translations['zh'].notices.find(n => n.id === 'exchangeRate').content = note;
-                translations['en'].notices.find(n => n.id === 'exchangeRate').content = noteEn;
+                const twdRateWithFee = Number((rawRate * LIVE_RATE_FEE_MULTIPLIER).toFixed(2));
+                exchangeRateState = {
+                    liveNzdToTwdRate: twdRateWithFee,
+                    source: 'live',
+                    updatedAt: Date.now()
+                };
                 
                 // Update converter info if open
                 const rateInfo = document.getElementById('converter-rate-info');
                 if (rateInfo) {
-                    rateInfo.innerText = currentLang === 'zh' ? note : noteEn;
+                    rateInfo.innerText = formatExchangeRateNote(currentLang);
                 }
                 
                 // Re-render UI to display fetched rate if we are on screens that surface the rate
@@ -5735,10 +5775,11 @@
                 }
             } catch (e) {
                 console.warn('Failed to fetch exchange rate', e);
-                const fallbackZh = "1 NZD ≈ 19.8 TWD (含手續費)";
-                const fallbackEn = "1 NZD ≈ 19.8 TWD (incl. service fee)";
-                translations['zh'].notices.find(n => n.id === 'exchangeRate').content = fallbackZh;
-                translations['en'].notices.find(n => n.id === 'exchangeRate').content = fallbackEn;
+                exchangeRateState = {
+                    liveNzdToTwdRate: FALLBACK_NZD_TO_TWD_RATE,
+                    source: 'fallback',
+                    updatedAt: exchangeRateState?.updatedAt || null
+                };
                 if ((isOverviewPageSelection() && document.getElementById('notice-board')) || isCostsPageSelection()) updateUI();
             }
         }
@@ -5747,17 +5788,17 @@
             const modal = document.getElementById('converter-modal');
             const backdrop = document.getElementById('converter-backdrop');
             const content = document.getElementById('converter-content');
+            const activeRate = getBudgetNZDRate();
             
             document.getElementById('converter-title').innerText = translations[currentLang].converterTitle;
-            const note = currentLang === 'zh' ? translations['zh'].nzdFeeNote.replace('{rate}', currentNZDRate) : translations['en'].nzdFeeNote.replace('{rate}', currentNZDRate);
-            document.getElementById('converter-rate-info').innerText = note;
+            document.getElementById('converter-rate-info').innerText = formatExchangeRateNote(currentLang);
             const nzdLabel = document.getElementById('converter-nzd-label');
             const twdLabel = document.getElementById('converter-twd-label');
             if (nzdLabel) nzdLabel.innerText = translations[currentLang].nzdLabel;
             if (twdLabel) twdLabel.innerText = translations[currentLang].twdLabel;
             
             document.getElementById('nzd-input').value = 1;
-            document.getElementById('twd-input').value = currentNZDRate;
+            document.getElementById('twd-input').value = activeRate.toFixed(2);
 
             modal.classList.remove('hidden');
             modal.classList.add('flex');
@@ -5788,13 +5829,14 @@
         function convertCurrency(source) {
             const nzdInput = document.getElementById('nzd-input');
             const twdInput = document.getElementById('twd-input');
+            const activeRate = getBudgetNZDRate();
             
             if (source === 'nzd') {
                 const val = parseFloat(nzdInput.value) || 0;
-                twdInput.value = (val * currentNZDRate).toFixed(0);
+                twdInput.value = (val * activeRate).toFixed(0);
             } else {
                 const val = parseFloat(twdInput.value) || 0;
-                nzdInput.value = (val / currentNZDRate).toFixed(2);
+                nzdInput.value = activeRate > 0 ? (val / activeRate).toFixed(2) : '0.00';
             }
         }
 
@@ -6757,7 +6799,7 @@
                 <div data-ui-action="show-notice-modal" data-notice-idx="${idx}" class="bg-white/90 p-4 rounded-xl shadow-sm border border-slate-100 flex flex-col justify-center cursor-pointer hover:shadow-md hover:border-blue-200 hover:-translate-y-1 transition-all group">
                     <i class="fas ${n.icon} text-blue-500 mb-2 group-hover:scale-110 transition-transform"></i>
                     <h5 class="font-bold text-sm">${n.title}</h5>
-                    <p class="text-[11px] text-slate-500 mt-1 leading-tight">${n.content}</p>
+                    <p class="text-[11px] text-slate-500 mt-1 leading-tight">${getNoticeDisplayContent(n, currentLang)}</p>
                     <div class="mt-2 text-[9px] text-blue-400 font-bold opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 uppercase">
                         ${currentLang === 'zh' ? '點擊查看詳解' : 'Learn more'} <i class="fas fa-chevron-right text-[8px]"></i>
                     </div>
@@ -7350,6 +7392,14 @@
                 perPersonTotal: calculateBudgetPerPersonTotal(combinedItems),
                 upcomingCount: filteredBookings.filter(item => item.status !== 'paid').length
             };
+        }
+
+        function getNoticeDisplayContent(notice, lang = currentLang) {
+            if (!notice) return '';
+            if (notice.id === 'exchangeRate') {
+                return formatExchangeRateNote(lang);
+            }
+            return notice.content || '';
         }
 
         function updateBudgetSummaryWidgets() {

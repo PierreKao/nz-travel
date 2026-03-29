@@ -308,6 +308,15 @@ test.describe('Itinerary editor real-flow E2E', () => {
             return page.locator('#io-modal').getAttribute('class');
         }).toContain('hidden');
 
+        await expect(page.locator('#notice-board')).toContainText('1 NZD ≈ 20.30 TWD');
+        await expect(page.locator('#notice-board')).toContainText('固定匯率');
+
+        await page.locator('[data-ui-action="open-converter"]').click();
+        await expect(page.locator('#converter-rate-info')).toContainText('1 NZD ≈ 20.30 TWD');
+        await expect(page.locator('#converter-rate-info')).toContainText('固定匯率');
+        await expect(page.locator('#twd-input')).toHaveValue('20.30');
+        await page.evaluate(() => closeConverter());
+
         await expect(page.locator('#nav-container')).toContainText('費用總覽');
         await page.locator('#nav-container .day-btn').nth(2).click();
 
@@ -320,15 +329,15 @@ test.describe('Itinerary editor real-flow E2E', () => {
         await expect(budgetPanel.locator('[data-budget-kind="booking"][data-budget-id="hotel_001"][data-budget-field="title"]')).toHaveValue('皇后鎮住宿');
         await expect(page.locator('[data-testid="budget-expenses-panel"] [data-budget-kind="expense"][data-budget-id="expense_001"][data-budget-field="title"]')).toHaveValue('超市採買');
         await expect(page.locator('[data-testid="budget-expenses-panel"] [data-budget-kind="expense"][data-budget-id="expense_002"][data-budget-field="title"]')).toHaveValue('住宿加購早餐');
-        await expect(page.locator('[data-budget-summary="grand"]')).toContainText('約 TWD 28,570');
-        await expect(page.locator('[data-budget-summary="paid"]')).toContainText('約 TWD 20,170');
-        await expect(page.locator('[data-budget-summary="unpaid"]')).toContainText('約 TWD 8,400');
-        await expect(page.locator('[data-budget-summary="perPerson"]')).toContainText('約 TWD 14,285');
+        await expect(page.locator('[data-budget-summary="grand"]')).toContainText('約 TWD 28,721');
+        await expect(page.locator('[data-budget-summary="paid"]')).toContainText('約 TWD 20,195');
+        await expect(page.locator('[data-budget-summary="unpaid"]')).toContainText('約 TWD 8,526');
+        await expect(page.locator('[data-budget-summary="perPerson"]')).toContainText('約 TWD 14,361');
 
         await page.locator('[data-action="set-budget-filter"][data-budget-filter="accommodation"]').click();
         await expect(budgetPanel.locator('[data-budget-kind="booking"][data-budget-id="hotel_001"][data-budget-field="title"]')).toHaveValue('皇后鎮住宿');
         await expect(page.locator('[data-testid="budget-expenses-panel"] [data-budget-kind="expense"][data-budget-id="expense_002"][data-budget-field="title"]')).toHaveValue('住宿加購早餐');
-        await expect(page.locator('[data-budget-summary="grand"]')).toContainText('約 TWD 9,100');
+        await expect(page.locator('[data-budget-summary="grand"]')).toContainText('約 TWD 9,237');
 
         await page.locator('[data-action="add-booking-entry"]').click();
         const latestAccommodationBookingType = page.locator('[data-testid="budget-bookings-panel"] [data-budget-kind="booking"][data-budget-field="type"]').last();
@@ -358,7 +367,7 @@ test.describe('Itinerary editor real-flow E2E', () => {
 
         await page.locator('[data-action="set-budget-filter"][data-budget-filter="food"]').click();
         await expect(page.locator('[data-testid="budget-expenses-panel"] [data-budget-kind="expense"][data-budget-id="expense_001"][data-budget-field="title"]')).toHaveValue('超市採買');
-        await expect(page.locator('[data-budget-summary="grand"]')).toContainText('約 TWD 970');
+        await expect(page.locator('[data-budget-summary="grand"]')).toContainText('約 TWD 985');
 
         await page.locator('[data-action="set-budget-filter"][data-budget-filter="all"]').click();
         await page.locator('[data-action="set-budget-filter"][data-budget-filter="car_rental"]').click();
@@ -374,11 +383,11 @@ test.describe('Itinerary editor real-flow E2E', () => {
         await page.locator('[data-action="set-budget-filter"][data-budget-filter="all"]').click();
 
         await page.locator('[data-budget-kind="settings"][data-budget-field="baseCurrency"]').selectOption('NZD');
-        await expect(page.locator('[data-budget-summary="grand"]')).toContainText('約 NZD 1,429');
+        await expect(page.locator('[data-budget-summary="grand"]')).toContainText('約 NZD 1,415');
         await expect(budgetPanel.locator('[data-budget-kind="booking"][data-budget-id="flight_001"][data-budget-field="currency"]')).toHaveValue('TWD');
         await expect(budgetPanel.locator('[data-budget-kind="booking"][data-budget-id="flight_001"][data-budget-field="total"]')).toHaveValue('18500');
         await expect(budgetPanel.locator('[data-budget-display-amount="booking"][data-budget-id="flight_001"]')).toContainText('目前顯示');
-        await expect(budgetPanel.locator('[data-budget-display-amount="booking"][data-budget-id="flight_001"]')).toContainText('NZD 925');
+        await expect(budgetPanel.locator('[data-budget-display-amount="booking"][data-budget-id="flight_001"]')).toContainText('NZD 911.33');
         await expect(page.locator('[data-testid="budget-expenses-panel"] [data-budget-kind="expense"][data-budget-id="expense_001"][data-budget-field="currency"]')).toHaveValue('NZD');
         await expect(page.locator('[data-testid="budget-expenses-panel"] [data-budget-kind="expense"][data-budget-id="expense_001"][data-budget-field="total"]')).toHaveValue('48.5');
         await expect(page.locator('[data-testid="budget-expenses-panel"] [data-budget-display-amount="expense"][data-budget-id="expense_001"]')).toContainText('NZD 48.5');
