@@ -514,7 +514,7 @@
     <header class="bg-white/70 backdrop-blur-md border-b sticky top-0 z-50 px-3 py-2 sm:px-6 sm:py-3 flex justify-between items-center shadow-sm">
         <div data-ui-action="go-overview" class="cursor-pointer shrink-0">
                 <span id="ui-header-title">紐西蘭南島 · 冬季自駕</span>
-            <p id="app-version-badge-header" class="text-[10px] text-blue-600 font-bold uppercase tracking-widest">Winter Adventure · v1.5.2</p>
+            <p id="app-version-badge-header" class="text-[10px] text-blue-600 font-bold uppercase tracking-widest">Winter Adventure · v1.5.3</p>
         </div>
         
         <div class="flex items-center gap-1 sm:gap-3">
@@ -601,7 +601,7 @@
                 </div>
 
                 <div class="mt-12 pt-8 border-t border-slate-100">
-                    <p id="app-version-badge-drawer" class="text-[10px] text-slate-400 font-bold uppercase tracking-wider text-center">New Zealand Travel · v1.5.2</p>
+                    <p id="app-version-badge-drawer" class="text-[10px] text-slate-400 font-bold uppercase tracking-wider text-center">New Zealand Travel · v1.5.3</p>
                 </div>
             </div>
         </div>
@@ -911,7 +911,7 @@
         `;
         document.body.insertAdjacentHTML('beforeend', milkyWayWindowModalHTML);
 
-        const APP_VERSION = "1.5.2";
+        const APP_VERSION = "1.5.3";
         const AIR_NZ_BOOKING_URL = "https://www.airnewzealand.co.nz/book";
         const PAGE_INDEX = Object.freeze({
             COSTS: -4,
@@ -946,7 +946,20 @@
         const BOOKING_STATUSES = ['planned', 'booked', 'paid'];
         const EXPENSE_CATEGORIES = ['accommodation', 'flight', 'insurance', 'food', 'shopping', 'fuel', 'parking', 'transport', 'ticket', 'other'];
         const SUPPORTED_BUDGET_CURRENCIES = ['TWD', 'NZD'];
-        const BUDGET_FILTERS = Object.freeze(['all', 'accommodation', 'flight', 'insurance', 'food']);
+        const BUDGET_FILTERS = Object.freeze([
+            'all',
+            'accommodation',
+            'flight',
+            'insurance',
+            'car_rental',
+            'ticket',
+            'transport',
+            'food',
+            'shopping',
+            'fuel',
+            'parking',
+            'other'
+        ]);
         let auroraSelectedCity = "Tekapo";
         let activeBudgetFilter = 'all';
         const mobileEditableBookingIds = new Set();
@@ -1415,13 +1428,26 @@
                 budgetBtn: "費用總覽",
                 budgetTitle: "旅費管理",
                 budgetSubtitle: "把已知的住宿、機票、保險與旅途中支出分開記錄，匯入匯出也會一起保存。",
+                budgetDisplayCurrencyLabel: "顯示幣別",
+                budgetDisplayCurrencyHint: "決定摘要總額要固定顯示為台幣或紐幣。",
+                budgetRateModeLabel: "匯率模式",
+                budgetRateModeLive: "即時匯率",
+                budgetRateModeFixed: "固定匯率",
                 budgetRateLabel: "NZD -> TWD 匯率",
-                budgetRateHint: "用來把紐幣換算成台幣估算總額。",
+                budgetRateHintLive: "使用目前抓到的即時匯率換算。",
+                budgetRateHintFixed: "使用你手動指定的固定匯率換算。",
                 budgetFilterAll: "全部",
                 budgetFilterAccommodation: "住宿",
                 budgetFilterFlight: "機票",
                 budgetFilterInsurance: "保險",
+                budgetFilterCarRental: "租車",
+                budgetFilterTicket: "票券",
+                budgetFilterTransport: "交通",
                 budgetFilterFood: "餐費",
+                budgetFilterShopping: "購物",
+                budgetFilterFuel: "加油",
+                budgetFilterParking: "停車",
+                budgetFilterOther: "其他",
                 budgetFilteredEmpty: "目前篩選條件下沒有符合的項目。",
                 budgetSummaryBooked: "已知預訂",
                 budgetSummarySpent: "旅途支出",
@@ -1463,6 +1489,8 @@
                 budgetDeleteDescFallback: "確定要刪除這筆資料嗎？此操作無法復原。",
                 budgetDeleteConfirmBtn: "確認刪除",
                 budgetPerPersonHint: "每人約 {amount}",
+                budgetStoredAmountLabel: "原始記錄",
+                budgetDisplayAmountLabel: "目前顯示",
                 budgetTypeFlight: "機票",
                 budgetTypeAccommodation: "住宿",
                 budgetTypeInsurance: "保險",
@@ -1634,13 +1662,26 @@
                 budgetBtn: "Budget",
                 budgetTitle: "Trip Budget",
                 budgetSubtitle: "Track known bookings separately from on-trip spending so imports and exports stay clean.",
+                budgetDisplayCurrencyLabel: "Display currency",
+                budgetDisplayCurrencyHint: "Choose whether summaries stay in TWD or NZD.",
+                budgetRateModeLabel: "Rate mode",
+                budgetRateModeLive: "Live rate",
+                budgetRateModeFixed: "Fixed rate",
                 budgetRateLabel: "NZD -> TWD rate",
-                budgetRateHint: "Used to estimate totals in TWD.",
+                budgetRateHintLive: "Use the currently fetched live rate for conversion.",
+                budgetRateHintFixed: "Use your own fixed rate for conversion.",
                 budgetFilterAll: "All",
                 budgetFilterAccommodation: "Stay",
                 budgetFilterFlight: "Flight",
                 budgetFilterInsurance: "Insurance",
+                budgetFilterCarRental: "Car",
+                budgetFilterTicket: "Ticket",
+                budgetFilterTransport: "Transport",
                 budgetFilterFood: "Food",
+                budgetFilterShopping: "Shopping",
+                budgetFilterFuel: "Fuel",
+                budgetFilterParking: "Parking",
+                budgetFilterOther: "Other",
                 budgetFilteredEmpty: "No entries match this filter yet.",
                 budgetSummaryBooked: "Known bookings",
                 budgetSummarySpent: "Trip spending",
@@ -1682,6 +1723,8 @@
                 budgetDeleteDescFallback: "Delete this entry? This action cannot be undone.",
                 budgetDeleteConfirmBtn: "Delete",
                 budgetPerPersonHint: "{amount} per person",
+                budgetStoredAmountLabel: "Stored",
+                budgetDisplayAmountLabel: "Shown as",
                 budgetTypeFlight: "Flight",
                 budgetTypeAccommodation: "Stay",
                 budgetTypeInsurance: "Insurance",
@@ -2922,7 +2965,10 @@
         let expenses = normalizeExpensesPayload(loadStoredJson(EXPENSES_STORAGE_KEY, []));
 
         function getBudgetNZDRate() {
-            return Number(budgetSettings?.nzdToTwdRate) > 0 ? Number(budgetSettings.nzdToTwdRate) : currentNZDRate;
+            if (budgetSettings?.rateMode === 'fixed' && Number(budgetSettings?.nzdToTwdRate) > 0) {
+                return Number(budgetSettings.nzdToTwdRate);
+            }
+            return Number(currentNZDRate) > 0 ? Number(currentNZDRate) : 19.5;
         }
 
         function saveBudgetData() {
@@ -2934,13 +2980,24 @@
             localStorage.setItem(EXPENSES_STORAGE_KEY, JSON.stringify(expenses));
         }
 
-        function createBudgetBookingDraft() {
+        function createBudgetBookingDraft(type = 'accommodation') {
+            const safeType = BOOKING_TYPES.includes(type) ? type : 'accommodation';
+            const draftCurrency = SUPPORTED_BUDGET_CURRENCIES.includes(budgetSettings.baseCurrency) ? budgetSettings.baseCurrency : 'TWD';
+            const defaultTitleByType = {
+                accommodation: currentLang === 'zh' ? { zh: '新住宿', en: 'New stay' } : { zh: '新住宿', en: 'New stay' },
+                flight: currentLang === 'zh' ? { zh: '新機票', en: 'New flight' } : { zh: '新機票', en: 'New flight' },
+                insurance: currentLang === 'zh' ? { zh: '新保險', en: 'New insurance' } : { zh: '新保險', en: 'New insurance' },
+                car_rental: currentLang === 'zh' ? { zh: '新租車', en: 'New car rental' } : { zh: '新租車', en: 'New car rental' },
+                ticket: currentLang === 'zh' ? { zh: '新票券', en: 'New ticket' } : { zh: '新票券', en: 'New ticket' },
+                transport: currentLang === 'zh' ? { zh: '新交通預訂', en: 'New transport booking' } : { zh: '新交通預訂', en: 'New transport booking' },
+                other: currentLang === 'zh' ? { zh: '新預訂', en: 'New booking' } : { zh: '新預訂', en: 'New booking' }
+            };
             return normalizeBookingItem({
                 id: generateBudgetEntryId('booking'),
-                type: 'accommodation',
-                title: currentLang === 'zh' ? { zh: '新住宿', en: 'New stay' } : { zh: '新預訂', en: 'New booking' },
+                type: safeType,
+                title: defaultTitleByType[safeType] || defaultTitleByType.other,
                 vendor: '',
-                amount: { total: 0, currency: 'NZD' },
+                amount: { total: 0, currency: draftCurrency },
                 status: 'planned',
                 dayStart: 1,
                 dayEnd: 1,
@@ -2951,11 +3008,12 @@
 
         function createBudgetExpenseDraft(dayNumber = 1, category = 'food') {
             const safeCategory = EXPENSE_CATEGORIES.includes(category) ? category : 'food';
+            const draftCurrency = SUPPORTED_BUDGET_CURRENCIES.includes(budgetSettings.baseCurrency) ? budgetSettings.baseCurrency : 'TWD';
             return normalizeExpenseItem({
                 id: generateBudgetEntryId('expense'),
                 category: safeCategory,
                 title: currentLang === 'zh' ? { zh: '新支出', en: 'New expense' } : { zh: '新支出', en: 'New expense' },
-                amount: { total: 0, currency: 'NZD' },
+                amount: { total: 0, currency: draftCurrency },
                 day: dayNumber,
                 sharedWith: 1,
                 notes: ''
@@ -2965,6 +3023,19 @@
         function getPreferredExpenseCategoryForCurrentFilter() {
             if (EXPENSE_CATEGORIES.includes(activeBudgetFilter)) return activeBudgetFilter;
             return 'food';
+        }
+
+        function getPreferredBookingTypeForCurrentFilter() {
+            if (BOOKING_TYPES.includes(activeBudgetFilter)) return activeBudgetFilter;
+            return 'accommodation';
+        }
+
+        function canCurrentFilterCreateBooking() {
+            return activeBudgetFilter === 'all' || BOOKING_TYPES.includes(activeBudgetFilter);
+        }
+
+        function canCurrentFilterCreateExpense() {
+            return activeBudgetFilter === 'all' || EXPENSE_CATEGORIES.includes(activeBudgetFilter);
         }
 
         function syncAllZhToEn() {
@@ -3553,12 +3624,14 @@
         }
 
         function buildItineraryExportPayload() {
+            const normalizedBudget = normalizeBudgetSettings(budgetSettings);
             return {
                 itinerary,
                 customCoords: customCityCoords,
                 budgetSettings: {
-                    ...normalizeBudgetSettings(budgetSettings),
-                    nzdToTwdRate: getBudgetNZDRate()
+                    ...normalizedBudget,
+                    displayCurrency: normalizedBudget.baseCurrency,
+                    fixedNzdToTwdRate: normalizedBudget.nzdToTwdRate
                 },
                 bookings: normalizeBookingsPayload(bookings),
                 expenses: normalizeExpensesPayload(expenses)
@@ -3674,6 +3747,7 @@
         function getDefaultBudgetSettings() {
             return {
                 baseCurrency: 'TWD',
+                rateMode: 'live',
                 nzdToTwdRate: null
             };
         }
@@ -3681,10 +3755,12 @@
         function normalizeBudgetSettings(input) {
             const defaults = getDefaultBudgetSettings();
             const normalized = input && typeof input === 'object' ? input : {};
-            const baseCurrency = sanitizeTextInput(normalized.baseCurrency || defaults.baseCurrency, { maxLength: 8 }).toUpperCase();
-            const parsedRate = Number(normalized.nzdToTwdRate ?? normalized.exchangeRates?.NZD_TWD);
+            const baseCurrency = sanitizeTextInput(normalized.baseCurrency || normalized.displayCurrency || defaults.baseCurrency, { maxLength: 8 }).toUpperCase();
+            const rateModeRaw = sanitizeTextInput(normalized.rateMode || normalized.exchangeRateMode || defaults.rateMode, { maxLength: 16 }).toLowerCase();
+            const parsedRate = Number(normalized.nzdToTwdRate ?? normalized.fixedNzdToTwdRate ?? normalized.exchangeRates?.NZD_TWD);
             return {
                 baseCurrency: SUPPORTED_BUDGET_CURRENCIES.includes(baseCurrency) ? baseCurrency : defaults.baseCurrency,
+                rateMode: ['live', 'fixed'].includes(rateModeRaw) ? rateModeRaw : defaults.rateMode,
                 nzdToTwdRate: Number.isFinite(parsedRate) && parsedRate > 0 ? Number(parsedRate.toFixed(4)) : defaults.nzdToTwdRate
             };
         }
@@ -6767,7 +6843,14 @@
                 accommodation: ui.budgetFilterAccommodation,
                 flight: ui.budgetFilterFlight,
                 insurance: ui.budgetFilterInsurance,
-                food: ui.budgetFilterFood
+                car_rental: ui.budgetFilterCarRental,
+                ticket: ui.budgetFilterTicket,
+                transport: ui.budgetFilterTransport,
+                food: ui.budgetFilterFood,
+                shopping: ui.budgetFilterShopping,
+                fuel: ui.budgetFilterFuel,
+                parking: ui.budgetFilterParking,
+                other: ui.budgetFilterOther
             };
             return map[filterKey] || ui.budgetFilterAll;
         }
@@ -6806,6 +6889,30 @@
                 return Number((safeAmount.total / getBudgetNZDRate()).toFixed(2));
             }
             return 0;
+        }
+
+        function convertBudgetAmount(amount, targetCurrency = 'TWD') {
+            const safeAmount = normalizeBudgetAmount(amount, targetCurrency);
+            const safeTargetCurrency = SUPPORTED_BUDGET_CURRENCIES.includes(targetCurrency) ? targetCurrency : 'TWD';
+            if (safeAmount.currency === safeTargetCurrency) {
+                return {
+                    total: safeAmount.total,
+                    currency: safeTargetCurrency
+                };
+            }
+            return {
+                total: Number(convertBudgetAmountToBase(safeAmount, safeTargetCurrency).toFixed(2)),
+                currency: safeTargetCurrency
+            };
+        }
+
+        function formatBudgetAmountLabel(amount) {
+            const safeAmount = normalizeBudgetAmount(amount, 'TWD');
+            return `${safeAmount.currency} ${safeAmount.total.toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
+        }
+
+        function getBudgetDisplayAmount(amount) {
+            return convertBudgetAmount(amount, budgetSettings.baseCurrency);
         }
 
         function calculateBudgetPerPersonTotal(items = []) {
@@ -6895,6 +7002,16 @@
             `).join('');
         }
 
+        function renderRateModeOptions(ui, value) {
+            const modes = [
+                { value: 'live', label: ui.budgetRateModeLive },
+                { value: 'fixed', label: ui.budgetRateModeFixed }
+            ];
+            return modes.map((mode) => `
+                <option value="${mode.value}" ${mode.value === value ? 'selected' : ''}>${mode.label}</option>
+            `).join('');
+        }
+
         function renderBookingCards(ui, items = bookings, options = {}) {
             const { emptyMessage = ui.budgetBookingsEmpty } = options;
             if (!items.length) {
@@ -6908,6 +7025,8 @@
             return items.map((item) => {
                 const safeId = escapeHtmlAttribute(item.id);
                 const amountPerPerson = item.sharedWith > 1 ? Number((item.amount.total / item.sharedWith).toFixed(2)) : item.amount.total;
+                const displayAmount = getBudgetDisplayAmount(item.amount);
+                const displayPerPerson = item.sharedWith > 1 ? Number((displayAmount.total / item.sharedWith).toFixed(2)) : displayAmount.total;
                 const isMobileLocked = isMobileBookingEditLocked(item.id);
                 const mobileLockAttr = isMobileLocked ? 'disabled' : '';
                 const mobileLockClasses = 'disabled:opacity-100 disabled:bg-white disabled:text-slate-700 disabled:border-slate-200 disabled:cursor-not-allowed';
@@ -6968,8 +7087,13 @@
                                 <span class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">${ui.budgetFieldNotes}</span>
                                 <input type="text" value="${escapeHtmlAttribute(item.notes)}" data-budget-kind="booking" data-budget-id="${safeId}" data-budget-field="notes" ${mobileLockAttr} class="w-full bg-slate-50 border border-slate-200 px-3 py-2 rounded-xl text-sm text-slate-700 ${mobileLockClasses}">
                             </label>
-                            <div class="text-xs text-slate-500 font-semibold bg-slate-50 rounded-xl px-3 py-2 border border-slate-200">
-                                ${ui.budgetPerPersonHint.replace('{amount}', `${item.amount.currency} ${amountPerPerson.toLocaleString(undefined, { maximumFractionDigits: 2 })}`)}
+                            <div class="space-y-2">
+                                <div class="text-xs text-slate-500 font-semibold bg-slate-50 rounded-xl px-3 py-2 border border-slate-200">
+                                    ${ui.budgetStoredAmountLabel} · ${formatBudgetAmountLabel(item.amount)}<br>${ui.budgetPerPersonHint.replace('{amount}', `${item.amount.currency} ${amountPerPerson.toLocaleString(undefined, { maximumFractionDigits: 2 })}`)}
+                                </div>
+                                <div class="text-xs text-emerald-700 font-semibold bg-emerald-50 rounded-xl px-3 py-2 border border-emerald-100" data-budget-display-amount="booking" data-budget-id="${safeId}">
+                                    ${ui.budgetDisplayAmountLabel} · ${formatBudgetAmountLabel(displayAmount)}<br>${ui.budgetPerPersonHint.replace('{amount}', `${displayAmount.currency} ${displayPerPerson.toLocaleString(undefined, { maximumFractionDigits: 2 })}`)}
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -6990,6 +7114,8 @@
             return items.map((item) => {
                 const safeId = escapeHtmlAttribute(item.id);
                 const amountPerPerson = item.sharedWith > 1 ? Number((item.amount.total / item.sharedWith).toFixed(2)) : item.amount.total;
+                const displayAmount = getBudgetDisplayAmount(item.amount);
+                const displayPerPerson = item.sharedWith > 1 ? Number((displayAmount.total / item.sharedWith).toFixed(2)) : displayAmount.total;
                 const isMobileLocked = isMobileExpenseEditLocked(item.id);
                 const mobileLockAttr = isMobileLocked ? 'disabled' : '';
                 const mobileLockClasses = 'disabled:opacity-100 disabled:bg-white disabled:text-slate-700 disabled:border-slate-200 disabled:cursor-not-allowed';
@@ -7032,8 +7158,13 @@
                                 <span class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">${ui.budgetFieldSharedWith}</span>
                                 <input type="number" min="1" step="1" value="${item.sharedWith}" data-budget-kind="expense" data-budget-id="${safeId}" data-budget-field="sharedWith" ${mobileLockAttr} class="w-full bg-slate-50 border border-slate-200 px-3 py-2 rounded-xl text-sm text-slate-700 ${mobileLockClasses}">
                             </label>
-                            <div class="text-xs text-slate-500 font-semibold bg-slate-50 rounded-xl px-3 py-2 border border-slate-200 flex items-center">
-                                ${ui.budgetPerPersonHint.replace('{amount}', `${item.amount.currency} ${amountPerPerson.toLocaleString(undefined, { maximumFractionDigits: 2 })}`)}
+                            <div class="space-y-2">
+                                <div class="text-xs text-slate-500 font-semibold bg-slate-50 rounded-xl px-3 py-2 border border-slate-200">
+                                    ${ui.budgetStoredAmountLabel} · ${formatBudgetAmountLabel(item.amount)}<br>${ui.budgetPerPersonHint.replace('{amount}', `${item.amount.currency} ${amountPerPerson.toLocaleString(undefined, { maximumFractionDigits: 2 })}`)}
+                                </div>
+                                <div class="text-xs text-emerald-700 font-semibold bg-emerald-50 rounded-xl px-3 py-2 border border-emerald-100" data-budget-display-amount="expense" data-budget-id="${safeId}">
+                                    ${ui.budgetDisplayAmountLabel} · ${formatBudgetAmountLabel(displayAmount)}<br>${ui.budgetPerPersonHint.replace('{amount}', `${displayAmount.currency} ${displayPerPerson.toLocaleString(undefined, { maximumFractionDigits: 2 })}`)}
+                                </div>
                             </div>
                         </div>
                         <label class="block">
@@ -7084,8 +7215,10 @@
             const { filteredBookings, filteredExpenses } = getFilteredBudgetCollections();
             const metrics = getBudgetSummaryMetrics(filteredBookings, filteredExpenses);
             const rateValue = getBudgetNZDRate();
+            const isFixedRateMode = budgetSettings.rateMode === 'fixed';
             const canEditBookings = isEditMode || isMobileReadOnlyViewport();
-            const canAddBookings = isEditMode;
+            const canAddBookings = isEditMode && canCurrentFilterCreateBooking();
+            const canAddExpenses = canCurrentFilterCreateExpense();
             const canEditBudgetSettings = isEditMode;
 
             container.innerHTML = `
@@ -7132,12 +7265,22 @@
                         </div>
 
                         <div class="bg-white/75 rounded-[1.75rem] border border-slate-100 p-5 shadow-sm">
-                            <div class="grid grid-cols-1 md:grid-cols-[180px_1fr] gap-4 items-center">
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
+                                <label class="block">
+                                    <span class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">${ui.budgetDisplayCurrencyLabel}</span>
+                                    <select data-budget-kind="settings" data-budget-field="baseCurrency" ${canEditBudgetSettings ? '' : 'disabled'} class="w-full bg-slate-50 border border-slate-200 px-3 py-2 rounded-xl text-sm font-bold text-slate-700 disabled:opacity-100 disabled:bg-white disabled:text-slate-700 disabled:border-slate-200">${renderBudgetCurrencyOptions(budgetSettings.baseCurrency)}</select>
+                                    <p class="text-sm text-slate-500 mt-2">${ui.budgetDisplayCurrencyHint}</p>
+                                </label>
+                                <label class="block">
+                                    <span class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">${ui.budgetRateModeLabel}</span>
+                                    <select data-budget-kind="settings" data-budget-field="rateMode" ${canEditBudgetSettings ? '' : 'disabled'} class="w-full bg-slate-50 border border-slate-200 px-3 py-2 rounded-xl text-sm font-bold text-slate-700 disabled:opacity-100 disabled:bg-white disabled:text-slate-700 disabled:border-slate-200">${renderRateModeOptions(ui, budgetSettings.rateMode)}</select>
+                                    <p class="text-sm text-slate-500 mt-2">${isFixedRateMode ? ui.budgetRateHintFixed : ui.budgetRateHintLive}</p>
+                                </label>
                                 <label class="block">
                                     <span class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">${ui.budgetRateLabel}</span>
-                                <input type="number" min="0" step="0.01" value="${rateValue}" data-budget-kind="settings" data-budget-field="nzdToTwdRate" ${canEditBudgetSettings ? '' : 'disabled'} class="w-full bg-slate-50 border border-slate-200 px-3 py-2 rounded-xl text-sm font-bold text-slate-700 disabled:opacity-100 disabled:bg-white disabled:text-slate-700 disabled:border-slate-200">
+                                    <input type="number" min="0" step="0.01" value="${rateValue}" data-budget-kind="settings" data-budget-field="nzdToTwdRate" ${(canEditBudgetSettings && isFixedRateMode) ? '' : 'disabled'} class="w-full bg-slate-50 border border-slate-200 px-3 py-2 rounded-xl text-sm font-bold text-slate-700 disabled:opacity-100 disabled:bg-white disabled:text-slate-700 disabled:border-slate-200">
+                                    <p class="text-sm text-slate-500 mt-2">${isFixedRateMode ? ui.budgetRateHintFixed : ui.budgetRateHintLive}</p>
                                 </label>
-                                <p class="text-sm text-slate-500">${ui.budgetRateHint}</p>
                             </div>
                         </div>
                     </div>
@@ -7159,7 +7302,7 @@
                                 <h3 class="text-2xl font-bold text-slate-800">${ui.budgetExpensesTitle}</h3>
                                 <p class="text-sm text-slate-500 mt-1">${ui.budgetExpensesHint}</p>
                             </div>
-                            <button type="button" data-action="add-expense-entry" class="px-4 py-2 rounded-2xl bg-blue-600 text-white font-bold shadow-lg shadow-blue-600/20 hover:bg-blue-700 transition-colors">${ui.budgetAddExpenseBtn}</button>
+                            <button type="button" data-action="add-expense-entry" class="px-4 py-2 rounded-2xl bg-blue-600 text-white font-bold shadow-lg shadow-blue-600/20 hover:bg-blue-700 transition-colors ${canAddExpenses ? '' : 'hidden'}">${ui.budgetAddExpenseBtn}</button>
                         </div>
                         <div class="space-y-4" data-testid="budget-expenses-panel">${renderExpenseCards(ui, filteredExpenses, { emptyMessage: ui.budgetFilteredEmpty })}</div>
                     </div>
@@ -7482,10 +7625,16 @@
                 if (field === 'nzdToTwdRate') {
                     const parsed = Number(rawValue);
                     budgetSettings.nzdToTwdRate = Number.isFinite(parsed) && parsed > 0 ? Number(parsed.toFixed(4)) : null;
+                } else if (field === 'baseCurrency') {
+                    const safeCurrency = sanitizeTextInput(rawValue, { maxLength: 8 }).toUpperCase();
+                    budgetSettings.baseCurrency = SUPPORTED_BUDGET_CURRENCIES.includes(safeCurrency) ? safeCurrency : 'TWD';
+                } else if (field === 'rateMode') {
+                    const safeMode = sanitizeTextInput(rawValue, { maxLength: 16 }).toLowerCase();
+                    budgetSettings.rateMode = ['live', 'fixed'].includes(safeMode) ? safeMode : 'live';
                 }
                 saveBudgetData();
                 if (refreshUi) {
-                    updateBudgetSummaryWidgets();
+                    updateUI();
                 }
                 return;
             }
@@ -7648,13 +7797,15 @@
                 removeTimelineItem(dayIdx, itemIdx);
             },
             'add-booking-entry': () => {
-                const draft = createBudgetBookingDraft();
+                if (!canCurrentFilterCreateBooking()) return;
+                const draft = createBudgetBookingDraft(getPreferredBookingTypeForCurrentFilter());
                 bookings.push(draft);
                 setMobileBookingEditing(draft.id, true);
                 saveBudgetData();
                 updateUI();
             },
             'add-expense-entry': () => {
+                if (!canCurrentFilterCreateExpense()) return;
                 const draft = createBudgetExpenseDraft(1, getPreferredExpenseCategoryForCurrentFilter());
                 expenses.push(draft);
                 setMobileExpenseEditing(draft.id, true);

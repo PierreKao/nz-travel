@@ -1,6 +1,6 @@
 {
   "name": "nz-travel",
-  "version": "1.5.2",
+  "version": "1.5.3",
   "description": "",
   "main": "security_regression.spec.js",
   "scripts": {

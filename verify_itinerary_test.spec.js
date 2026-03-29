@@ -236,6 +236,7 @@ test.describe('Itinerary editor real-flow E2E', () => {
             ],
             budgetSettings: {
                 baseCurrency: 'TWD',
+                rateMode: 'fixed',
                 nzdToTwdRate: 20
             },
             bookings: [
@@ -298,6 +299,9 @@ test.describe('Itinerary editor real-flow E2E', () => {
 
         const budgetPanel = page.locator('[data-testid="budget-bookings-panel"]');
         await expect(page.locator('#content-display')).toContainText('旅費管理');
+        await expect(page.locator('[data-action="set-budget-filter"][data-budget-filter="car_rental"]')).toBeVisible();
+        await expect(page.locator('[data-budget-kind="settings"][data-budget-field="baseCurrency"]')).toHaveValue('TWD');
+        await expect(page.locator('[data-budget-kind="settings"][data-budget-field="rateMode"]')).toHaveValue('fixed');
         await expect(budgetPanel.locator('[data-budget-kind="booking"][data-budget-id="flight_001"][data-budget-field="title"]')).toHaveValue('台北 - 奧克蘭來回');
         await expect(budgetPanel.locator('[data-budget-kind="booking"][data-budget-id="hotel_001"][data-budget-field="title"]')).toHaveValue('皇后鎮住宿');
         await expect(page.locator('[data-testid="budget-expenses-panel"] [data-budget-kind="expense"][data-budget-id="expense_001"][data-budget-field="title"]')).toHaveValue('超市採買');
@@ -311,6 +315,19 @@ test.describe('Itinerary editor real-flow E2E', () => {
         await expect(budgetPanel.locator('[data-budget-kind="booking"][data-budget-id="hotel_001"][data-budget-field="title"]')).toHaveValue('皇后鎮住宿');
         await expect(page.locator('[data-testid="budget-expenses-panel"] [data-budget-kind="expense"][data-budget-id="expense_002"][data-budget-field="title"]')).toHaveValue('住宿加購早餐');
         await expect(page.locator('[data-budget-summary="grand"]')).toContainText('約 TWD 9,100');
+
+        await page.locator('[data-action="add-booking-entry"]').click();
+        const latestAccommodationBookingType = page.locator('[data-testid="budget-bookings-panel"] [data-budget-kind="booking"][data-budget-field="type"]').last();
+        await expect(latestAccommodationBookingType).toHaveValue('accommodation');
+        await expect.poll(async () => {
+            return page.evaluate(() => {
+                const saved = JSON.parse(localStorage.getItem('nz_travel_bookings') || '[]');
+                return saved[saved.length - 1]?.type || '';
+            });
+        }).toBe('accommodation');
+        await page.locator('[data-testid="budget-bookings-panel"] [data-action="remove-budget-entry"]').last().click();
+        await expect(page.locator('#delete-entry-modal')).toHaveClass(/flex/);
+        await page.locator('[data-ui-action="execute-delete-entry"]').click();
 
         await page.locator('[data-action="add-expense-entry"]').click();
         const latestAccommodationExpenseCategory = page.locator('[data-testid="budget-expenses-panel"] [data-budget-kind="expense"][data-budget-field="category"]').last();
@@ -330,6 +347,40 @@ test.describe('Itinerary editor real-flow E2E', () => {
         await expect(page.locator('[data-budget-summary="grand"]')).toContainText('約 TWD 970');
 
         await page.locator('[data-action="set-budget-filter"][data-budget-filter="all"]').click();
+        await page.locator('[data-action="set-budget-filter"][data-budget-filter="car_rental"]').click();
+        await page.locator('[data-action="add-booking-entry"]').click();
+        const latestCarBookingType = page.locator('[data-testid="budget-bookings-panel"] [data-budget-kind="booking"][data-budget-field="type"]').last();
+        await expect(latestCarBookingType).toHaveValue('car_rental');
+        const latestCarBookingCurrency = page.locator('[data-testid="budget-bookings-panel"] [data-budget-kind="booking"][data-budget-field="currency"]').last();
+        await expect(latestCarBookingCurrency).toHaveValue('TWD');
+        await expect(page.locator('[data-action="add-expense-entry"]')).toBeHidden();
+        await page.locator('[data-testid="budget-bookings-panel"] [data-action="remove-budget-entry"]').last().click();
+        await expect(page.locator('#delete-entry-modal')).toHaveClass(/flex/);
+        await page.locator('[data-ui-action="execute-delete-entry"]').click();
+        await page.locator('[data-action="set-budget-filter"][data-budget-filter="all"]').click();
+
+        await page.locator('[data-budget-kind="settings"][data-budget-field="baseCurrency"]').selectOption('NZD');
+        await expect(page.locator('[data-budget-summary="grand"]')).toContainText('約 NZD 1,429');
+        await expect(budgetPanel.locator('[data-budget-kind="booking"][data-budget-id="flight_001"][data-budget-field="currency"]')).toHaveValue('TWD');
+        await expect(budgetPanel.locator('[data-budget-kind="booking"][data-budget-id="flight_001"][data-budget-field="total"]')).toHaveValue('18500');
+        await expect(budgetPanel.locator('[data-budget-display-amount="booking"][data-budget-id="flight_001"]')).toContainText('目前顯示');
+        await expect(budgetPanel.locator('[data-budget-display-amount="booking"][data-budget-id="flight_001"]')).toContainText('NZD 925');
+        await expect(page.locator('[data-testid="budget-expenses-panel"] [data-budget-kind="expense"][data-budget-id="expense_001"][data-budget-field="currency"]')).toHaveValue('NZD');
+        await expect(page.locator('[data-testid="budget-expenses-panel"] [data-budget-kind="expense"][data-budget-id="expense_001"][data-budget-field="total"]')).toHaveValue('48.5');
+        await expect(page.locator('[data-testid="budget-expenses-panel"] [data-budget-display-amount="expense"][data-budget-id="expense_001"]')).toContainText('NZD 48.5');
+        await page.locator('[data-budget-kind="settings"][data-budget-field="rateMode"]').selectOption('live');
+        await expect(page.locator('[data-budget-kind="settings"][data-budget-field="nzdToTwdRate"]')).toBeDisabled();
+        await expect.poll(async () => {
+            return page.evaluate(() => {
+                const settings = JSON.parse(localStorage.getItem('nz_travel_budget_settings') || '{}');
+                return {
+                    baseCurrency: settings.baseCurrency,
+                    rateMode: settings.rateMode,
+                    bookingCurrency: bookings.find(item => item.id === 'flight_001')?.amount?.currency,
+                    bookingTotal: bookings.find(item => item.id === 'flight_001')?.amount?.total
+                };
+            });
+        }).toEqual({ baseCurrency: 'NZD', rateMode: 'live', bookingCurrency: 'TWD', bookingTotal: 18500 });
 
         await page.locator('[data-budget-kind="expense"][data-budget-id="expense_001"][data-budget-field="total"]').fill('60');
         const budgetDayInput = page.locator('[data-testid="budget-expenses-panel"] [data-budget-kind="expense"][data-budget-id="expense_001"][data-budget-field="day"]');
