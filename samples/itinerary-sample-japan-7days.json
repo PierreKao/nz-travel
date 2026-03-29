@@ -1,0 +1,644 @@
+{
+  "itinerary": [
+    {
+      "date": "Day 01",
+      "actualDate": "2026-10-12",
+      "city": {
+        "zh": "東京",
+        "en": "Tokyo"
+      },
+      "mapUrl": "Tokyo+Haneda+Airport",
+      "stay": {
+        "zh": "東京",
+        "en": "Tokyo"
+      },
+      "zh": {
+        "title": "✈️ 抵達東京",
+        "timeline": [
+          [
+            "上午",
+            "抵達羽田機場、入境與前往市區",
+            "機場鐵道 / 電車",
+            "",
+            "",
+            "日本7日範例：首日匯入測試"
+          ],
+          [
+            "下午",
+            "淺草寺與仲見世通散步",
+            "地鐵 / 步行",
+            "",
+            "",
+            ""
+          ],
+          [
+            "晚上",
+            "晴空塔周邊晚餐",
+            "地鐵 / 步行",
+            "",
+            "",
+            ""
+          ]
+        ]
+      },
+      "en": {
+        "title": "✈️ Arrive in Tokyo",
+        "timeline": [
+          [
+            "Morning",
+            "Arrive at Haneda and transfer into the city",
+            "Airport rail / train",
+            "",
+            "",
+            "Japan 7-day sample: first-day import test"
+          ],
+          [
+            "Afternoon",
+            "Walk through Senso-ji and Nakamise Street",
+            "Metro / walk",
+            "",
+            "",
+            ""
+          ],
+          [
+            "Evening",
+            "Dinner near Tokyo Skytree",
+            "Metro / walk",
+            "",
+            "",
+            ""
+          ]
+        ]
+      }
+    },
+    {
+      "date": "Day 02",
+      "actualDate": "2026-10-13",
+      "city": {
+        "zh": "東京",
+        "en": "Tokyo"
+      },
+      "mapUrl": "Shibuya+Tokyo",
+      "stay": {
+        "zh": "東京",
+        "en": "Tokyo"
+      },
+      "zh": {
+        "title": "🗼 東京市區日",
+        "timeline": [
+          [
+            "上午",
+            "明治神宮與原宿",
+            "地鐵 / 步行",
+            "",
+            "",
+            ""
+          ],
+          [
+            "下午",
+            "澀谷十字路口與購物",
+            "地鐵 / 步行",
+            "",
+            "",
+            ""
+          ],
+          [
+            "晚上",
+            "新宿夜景與居酒屋",
+            "JR / 步行",
+            "",
+            "",
+            "日本7日範例：東京市區活動"
+          ]
+        ]
+      },
+      "en": {
+        "title": "🗼 Tokyo City Day",
+        "timeline": [
+          [
+            "Morning",
+            "Meiji Shrine and Harajuku",
+            "Metro / walk",
+            "",
+            "",
+            ""
+          ],
+          [
+            "Afternoon",
+            "Shibuya Crossing and shopping",
+            "Metro / walk",
+            "",
+            "",
+            ""
+          ],
+          [
+            "Evening",
+            "Shinjuku skyline and izakaya dinner",
+            "JR / walk",
+            "",
+            "",
+            "Japan 7-day sample: Tokyo city activities"
+          ]
+        ]
+      }
+    },
+    {
+      "date": "Day 03",
+      "actualDate": "2026-10-14",
+      "city": {
+        "zh": "箱根",
+        "en": "Hakone"
+      },
+      "mapUrl": "Hakone+Open+Air+Museum",
+      "drive": "2 hr",
+      "stay": {
+        "zh": "箱根",
+        "en": "Hakone"
+      },
+      "zh": {
+        "title": "🚄 東京 → 箱根",
+        "timeline": [
+          [
+            "上午",
+            "搭乘特急前往箱根",
+            "2 小時 鐵道",
+            "",
+            "",
+            ""
+          ],
+          [
+            "下午",
+            "箱根雕刻之森美術館",
+            "巴士 / 步行",
+            "",
+            "",
+            ""
+          ],
+          [
+            "晚上",
+            "溫泉旅館入住與晚餐",
+            "步行",
+            "",
+            "",
+            "日本7日範例：溫泉旅館"
+          ]
+        ]
+      },
+      "en": {
+        "title": "🚄 Tokyo → Hakone",
+        "timeline": [
+          [
+            "Morning",
+            "Take the limited express to Hakone",
+            "2 hr rail",
+            "",
+            "",
+            ""
+          ],
+          [
+            "Afternoon",
+            "Hakone Open-Air Museum",
+            "Bus / walk",
+            "",
+            "",
+            ""
+          ],
+          [
+            "Evening",
+            "Check in to onsen ryokan and dinner",
+            "Walk",
+            "",
+            "",
+            "Japan 7-day sample: onsen stay"
+          ]
+        ]
+      }
+    },
+    {
+      "date": "Day 04",
+      "actualDate": "2026-10-15",
+      "city": {
+        "zh": "京都",
+        "en": "Kyoto"
+      },
+      "mapUrl": "Kyoto+Station",
+      "drive": "2.5 hr",
+      "stay": {
+        "zh": "京都",
+        "en": "Kyoto"
+      },
+      "zh": {
+        "title": "🚅 箱根 → 京都",
+        "timeline": [
+          [
+            "上午",
+            "新幹線前往京都",
+            "2.5 小時 鐵道",
+            "",
+            "",
+            ""
+          ],
+          [
+            "下午",
+            "清水寺與二年坂散步",
+            "巴士 / 步行",
+            "",
+            "",
+            ""
+          ],
+          [
+            "晚上",
+            "祇園周邊晚餐",
+            "步行",
+            "",
+            "",
+            ""
+          ]
+        ]
+      },
+      "en": {
+        "title": "🚅 Hakone → Kyoto",
+        "timeline": [
+          [
+            "Morning",
+            "Ride the shinkansen to Kyoto",
+            "2.5 hr rail",
+            "",
+            "",
+            ""
+          ],
+          [
+            "Afternoon",
+            "Kiyomizu-dera and Ninenzaka walk",
+            "Bus / walk",
+            "",
+            "",
+            ""
+          ],
+          [
+            "Evening",
+            "Dinner around Gion",
+            "Walk",
+            "",
+            "",
+            ""
+          ]
+        ]
+      }
+    },
+    {
+      "date": "Day 05",
+      "actualDate": "2026-10-16",
+      "city": {
+        "zh": "京都",
+        "en": "Kyoto"
+      },
+      "mapUrl": "Fushimi+Inari+Taisha",
+      "stay": {
+        "zh": "京都",
+        "en": "Kyoto"
+      },
+      "zh": {
+        "title": "⛩️ 京都文化日",
+        "timeline": [
+          [
+            "清晨",
+            "伏見稻荷大社",
+            "JR / 步行",
+            "",
+            "",
+            ""
+          ],
+          [
+            "下午",
+            "嵐山竹林與渡月橋",
+            "電車 / 步行",
+            "",
+            "",
+            ""
+          ],
+          [
+            "晚上",
+            "河原町自由活動",
+            "步行",
+            "",
+            "",
+            "日本7日範例：京都經典路線"
+          ]
+        ]
+      },
+      "en": {
+        "title": "⛩️ Kyoto Culture Day",
+        "timeline": [
+          [
+            "Early AM",
+            "Fushimi Inari Shrine",
+            "JR / walk",
+            "",
+            "",
+            ""
+          ],
+          [
+            "Afternoon",
+            "Arashiyama Bamboo Grove and Togetsukyo",
+            "Train / walk",
+            "",
+            "",
+            ""
+          ],
+          [
+            "Evening",
+            "Free time in Kawaramachi",
+            "Walk",
+            "",
+            "",
+            "Japan 7-day sample: classic Kyoto route"
+          ]
+        ]
+      }
+    },
+    {
+      "date": "Day 06",
+      "actualDate": "2026-10-17",
+      "city": {
+        "zh": "大阪",
+        "en": "Osaka"
+      },
+      "mapUrl": "Dotonbori+Osaka",
+      "drive": "30 min",
+      "stay": {
+        "zh": "大阪",
+        "en": "Osaka"
+      },
+      "zh": {
+        "title": "🚉 京都 → 大阪",
+        "timeline": [
+          [
+            "上午",
+            "前往大阪並寄放行李",
+            "30 分 鐵道",
+            "",
+            "",
+            ""
+          ],
+          [
+            "下午",
+            "大阪城與梅田",
+            "地鐵 / 步行",
+            "",
+            "",
+            ""
+          ],
+          [
+            "晚上",
+            "道頓堀與心齋橋",
+            "地鐵 / 步行",
+            "",
+            "",
+            "日本7日範例：大阪夜間活動"
+          ]
+        ]
+      },
+      "en": {
+        "title": "🚉 Kyoto → Osaka",
+        "timeline": [
+          [
+            "Morning",
+            "Transfer to Osaka and drop luggage",
+            "30 min rail",
+            "",
+            "",
+            ""
+          ],
+          [
+            "Afternoon",
+            "Osaka Castle and Umeda",
+            "Metro / walk",
+            "",
+            "",
+            ""
+          ],
+          [
+            "Evening",
+            "Dotonbori and Shinsaibashi",
+            "Metro / walk",
+            "",
+            "",
+            "Japan 7-day sample: Osaka evening"
+          ]
+        ]
+      }
+    },
+    {
+      "date": "Day 07",
+      "actualDate": "2026-10-18",
+      "city": {
+        "zh": "大阪",
+        "en": "Osaka"
+      },
+      "mapUrl": "Kansai+International+Airport",
+      "stay": {
+        "zh": "返程日（不住宿）",
+        "en": "Return day (no stay)"
+      },
+      "zh": {
+        "title": "✈️ 大阪返程",
+        "timeline": [
+          [
+            "上午",
+            "黑門市場或臨空城自由活動",
+            "電車 / 步行",
+            "",
+            "",
+            ""
+          ],
+          [
+            "下午",
+            "前往關西機場辦理報到",
+            "機場鐵道",
+            "",
+            "",
+            ""
+          ],
+          [
+            "晚上",
+            "返程航班",
+            "航程",
+            "",
+            "",
+            "日本7日範例：最終日"
+          ]
+        ]
+      },
+      "en": {
+        "title": "✈️ Osaka Departure",
+        "timeline": [
+          [
+            "Morning",
+            "Free time at Kuromon Market or Rinku Town",
+            "Train / walk",
+            "",
+            "",
+            ""
+          ],
+          [
+            "Afternoon",
+            "Head to Kansai Airport and check in",
+            "Airport rail",
+            "",
+            "",
+            ""
+          ],
+          [
+            "Evening",
+            "Flight home",
+            "Flight",
+            "",
+            "",
+            "Japan 7-day sample: final day"
+          ]
+        ]
+      }
+    }
+  ],
+  "customCoords": {
+    "Tokyo Night View": {
+      "lat": 35.6586,
+      "lon": 139.7454,
+      "zh": "東京夜景點",
+      "en": "Tokyo Night View"
+    },
+    "Kyoto Riverside Walk": {
+      "lat": 35.0037,
+      "lon": 135.7684,
+      "zh": "京都河畔散步點",
+      "en": "Kyoto Riverside Walk"
+    }
+  },
+  "budgetSettings": {
+    "baseCurrency": "TWD",
+    "rateMode": "fixed",
+    "nzdToTwdRate": 19.2
+  },
+  "bookings": [
+    {
+      "id": "samplejp_flight",
+      "type": "flight",
+      "title": {
+        "zh": "台北往返東京 / 大阪機票",
+        "en": "Taipei open-jaw Japan flight"
+      },
+      "vendor": "Sample Air",
+      "amount": {
+        "total": 35200,
+        "currency": "TWD"
+      },
+      "status": "paid",
+      "dayStart": 1,
+      "dayEnd": 7,
+      "sharedWith": 2,
+      "notes": "公開範例：日本航班"
+    },
+    {
+      "id": "samplejp_tokyo_hotel",
+      "type": "accommodation",
+      "title": {
+        "zh": "東京住宿兩晚",
+        "en": "Tokyo stay for 2 nights"
+      },
+      "vendor": "Sample Tokyo Hotel",
+      "amount": {
+        "total": 12600,
+        "currency": "TWD"
+      },
+      "status": "booked",
+      "dayStart": 1,
+      "dayEnd": 2,
+      "sharedWith": 2,
+      "notes": "公開範例：東京住宿"
+    },
+    {
+      "id": "samplejp_kyoto_hotel",
+      "type": "accommodation",
+      "title": {
+        "zh": "京都住宿兩晚",
+        "en": "Kyoto stay for 2 nights"
+      },
+      "vendor": "Sample Kyoto Inn",
+      "amount": {
+        "total": 9800,
+        "currency": "TWD"
+      },
+      "status": "booked",
+      "dayStart": 4,
+      "dayEnd": 5,
+      "sharedWith": 2,
+      "notes": "公開範例：京都住宿"
+    },
+    {
+      "id": "samplejp_transport_pass",
+      "type": "transport",
+      "title": {
+        "zh": "新幹線與跨城交通",
+        "en": "Shinkansen and intercity transport"
+      },
+      "vendor": "JR Sample",
+      "amount": {
+        "total": 6400,
+        "currency": "TWD"
+      },
+      "status": "planned",
+      "dayStart": 3,
+      "dayEnd": 6,
+      "sharedWith": 2,
+      "notes": "公開範例：交通預訂"
+    }
+  ],
+  "expenses": [
+    {
+      "id": "samplejp_food_day2",
+      "category": "food",
+      "title": {
+        "zh": "東京拉麵與甜點",
+        "en": "Tokyo ramen and dessert"
+      },
+      "amount": {
+        "total": 980,
+        "currency": "TWD"
+      },
+      "day": 2,
+      "sharedWith": 2,
+      "notes": "公開範例：餐費"
+    },
+    {
+      "id": "samplejp_ticket_day3",
+      "category": "ticket",
+      "title": {
+        "zh": "箱根周遊券加值",
+        "en": "Hakone pass top-up"
+      },
+      "amount": {
+        "total": 760,
+        "currency": "TWD"
+      },
+      "day": 3,
+      "sharedWith": 1,
+      "notes": "公開範例：票券"
+    },
+    {
+      "id": "samplejp_shopping_day6",
+      "category": "shopping",
+      "title": {
+        "zh": "大阪藥妝與伴手禮",
+        "en": "Osaka shopping and souvenirs"
+      },
+      "amount": {
+        "total": 2200,
+        "currency": "TWD"
+      },
+      "day": 6,
+      "sharedWith": 1,
+      "notes": "公開範例：購物"
+    }
+  ]
+}

@@ -1089,5 +1089,164 @@
       "zh": "範例夜拍點",
       "en": "Sample Night Point"
     }
-  }
+  },
+  "budgetSettings": {
+    "baseCurrency": "TWD",
+    "rateMode": "fixed",
+    "nzdToTwdRate": 19.1
+  },
+  "bookings": [
+    {
+      "id": "sample15_flight_longhaul",
+      "type": "flight",
+      "title": {
+        "zh": "台北往返紐西蘭機票",
+        "en": "Taipei round-trip to New Zealand"
+      },
+      "vendor": "Sample Air",
+      "amount": {
+        "total": 61200,
+        "currency": "TWD"
+      },
+      "status": "paid",
+      "dayStart": 1,
+      "dayEnd": 15,
+      "sharedWith": 2,
+      "notes": "公開範例：長程機票"
+    },
+    {
+      "id": "sample15_car_rental",
+      "type": "car_rental",
+      "title": {
+        "zh": "南島自駕租車",
+        "en": "South Island car rental"
+      },
+      "vendor": "Sample Rentals",
+      "amount": {
+        "total": 1180,
+        "currency": "NZD"
+      },
+      "status": "booked",
+      "dayStart": 1,
+      "dayEnd": 15,
+      "sharedWith": 4,
+      "notes": "公開範例：多人分攤"
+    },
+    {
+      "id": "sample15_insurance",
+      "type": "insurance",
+      "title": {
+        "zh": "旅遊平安險",
+        "en": "Travel insurance"
+      },
+      "vendor": "Sample Insurance",
+      "amount": {
+        "total": 4200,
+        "currency": "TWD"
+      },
+      "status": "paid",
+      "dayStart": 1,
+      "dayEnd": 15,
+      "sharedWith": 2,
+      "notes": "公開範例：保險"
+    },
+    {
+      "id": "sample15_tekapo_stay",
+      "type": "accommodation",
+      "title": {
+        "zh": "蒂卡波兩晚住宿",
+        "en": "Tekapo stay for 2 nights"
+      },
+      "vendor": "Sample Lake Lodge",
+      "amount": {
+        "total": 460,
+        "currency": "NZD"
+      },
+      "status": "booked",
+      "dayStart": 3,
+      "dayEnd": 4,
+      "sharedWith": 2,
+      "notes": "公開範例：住宿"
+    },
+    {
+      "id": "sample15_ticket_cruise",
+      "type": "ticket",
+      "title": {
+        "zh": "米佛峽灣遊船",
+        "en": "Milford cruise"
+      },
+      "vendor": "Sample Cruises",
+      "amount": {
+        "total": 238,
+        "currency": "NZD"
+      },
+      "status": "planned",
+      "dayStart": 11,
+      "dayEnd": 11,
+      "sharedWith": 2,
+      "notes": "公開範例：票券"
+    }
+  ],
+  "expenses": [
+    {
+      "id": "sample15_fuel_day6",
+      "category": "fuel",
+      "title": {
+        "zh": "Wanaka 加油",
+        "en": "Wanaka fuel stop"
+      },
+      "amount": {
+        "total": 98,
+        "currency": "NZD"
+      },
+      "day": 6,
+      "sharedWith": 4,
+      "notes": "公開範例：加油"
+    },
+    {
+      "id": "sample15_food_day8",
+      "category": "food",
+      "title": {
+        "zh": "皇后鎮漢堡晚餐",
+        "en": "Queenstown burger dinner"
+      },
+      "amount": {
+        "total": 52,
+        "currency": "NZD"
+      },
+      "day": 8,
+      "sharedWith": 2,
+      "notes": "公開範例：餐費"
+    },
+    {
+      "id": "sample15_parking_day12",
+      "category": "parking",
+      "title": {
+        "zh": "但尼丁停車",
+        "en": "Dunedin parking"
+      },
+      "amount": {
+        "total": 16,
+        "currency": "NZD"
+      },
+      "day": 12,
+      "sharedWith": 1,
+      "notes": "公開範例：停車"
+    },
+    {
+      "id": "sample15_shopping_day14",
+      "category": "shopping",
+      "title": {
+        "zh": "伴手禮採買",
+        "en": "Souvenir shopping"
+      },
+      "amount": {
+        "total": 2100,
+        "currency": "TWD"
+      },
+      "day": 14,
+      "sharedWith": 1,
+      "notes": "公開範例：購物"
+    }
+  ]
 }

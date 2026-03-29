@@ -372,5 +372,113 @@
       "zh": "大洋路日落點",
       "en": "GOR Sunset Point"
     }
-  }
+  },
+  "budgetSettings": {
+    "baseCurrency": "TWD",
+    "rateMode": "fixed",
+    "nzdToTwdRate": 19.2
+  },
+  "bookings": [
+    {
+      "id": "sampleau_flight",
+      "type": "flight",
+      "title": {
+        "zh": "台北往返雪梨機票",
+        "en": "Taipei round-trip to Sydney"
+      },
+      "vendor": "Sample Air",
+      "amount": {
+        "total": 28600,
+        "currency": "TWD"
+      },
+      "status": "paid",
+      "dayStart": 1,
+      "dayEnd": 5,
+      "sharedWith": 2,
+      "notes": "公開範例：澳洲樣本以台幣為主"
+    },
+    {
+      "id": "sampleau_hotel",
+      "type": "accommodation",
+      "title": {
+        "zh": "雪梨與坎培拉住宿",
+        "en": "Sydney and Canberra stays"
+      },
+      "vendor": "Sample Hotel Group",
+      "amount": {
+        "total": 18400,
+        "currency": "TWD"
+      },
+      "status": "booked",
+      "dayStart": 1,
+      "dayEnd": 5,
+      "sharedWith": 2,
+      "notes": "公開範例：整趟住宿"
+    },
+    {
+      "id": "sampleau_ticket",
+      "type": "ticket",
+      "title": {
+        "zh": "歌劇院導覽",
+        "en": "Opera House tour"
+      },
+      "vendor": "Sample Tours",
+      "amount": {
+        "total": 3200,
+        "currency": "TWD"
+      },
+      "status": "planned",
+      "dayStart": 4,
+      "dayEnd": 4,
+      "sharedWith": 2,
+      "notes": "公開範例：票券"
+    }
+  ],
+  "expenses": [
+    {
+      "id": "sampleau_food_day1",
+      "category": "food",
+      "title": {
+        "zh": "雪梨港晚餐",
+        "en": "Sydney Harbour dinner"
+      },
+      "amount": {
+        "total": 1450,
+        "currency": "TWD"
+      },
+      "day": 1,
+      "sharedWith": 2,
+      "notes": "公開範例：餐費"
+    },
+    {
+      "id": "sampleau_transport_day2",
+      "category": "transport",
+      "title": {
+        "zh": "藍山一日交通",
+        "en": "Blue Mountains transport"
+      },
+      "amount": {
+        "total": 980,
+        "currency": "TWD"
+      },
+      "day": 2,
+      "sharedWith": 2,
+      "notes": "公開範例：交通"
+    },
+    {
+      "id": "sampleau_shopping_day5",
+      "category": "shopping",
+      "title": {
+        "zh": "墨爾本伴手禮",
+        "en": "Melbourne souvenirs"
+      },
+      "amount": {
+        "total": 1680,
+        "currency": "TWD"
+      },
+      "day": 5,
+      "sharedWith": 1,
+      "notes": "公開範例：購物"
+    }
+  ]
 }

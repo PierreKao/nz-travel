@@ -366,5 +366,113 @@
       "zh": "範例觀星點",
       "en": "Sample Stargazing Spot"
     }
-  }
+  },
+  "budgetSettings": {
+    "baseCurrency": "TWD",
+    "rateMode": "fixed",
+    "nzdToTwdRate": 19.2
+  },
+  "bookings": [
+    {
+      "id": "sample5_flight_tpe_chc",
+      "type": "flight",
+      "title": {
+        "zh": "台北往返基督城機票",
+        "en": "Taipei round-trip to Christchurch"
+      },
+      "vendor": "Sample Air",
+      "amount": {
+        "total": 32800,
+        "currency": "TWD"
+      },
+      "status": "booked",
+      "dayStart": 1,
+      "dayEnd": 5,
+      "sharedWith": 2,
+      "notes": "公開範例：混合幣別測試"
+    },
+    {
+      "id": "sample5_tekapo_stay",
+      "type": "accommodation",
+      "title": {
+        "zh": "蒂卡波湖景住宿",
+        "en": "Tekapo lake stay"
+      },
+      "vendor": "Sample Lodge",
+      "amount": {
+        "total": 240,
+        "currency": "NZD"
+      },
+      "status": "paid",
+      "dayStart": 2,
+      "dayEnd": 2,
+      "sharedWith": 2,
+      "notes": "含早餐"
+    },
+    {
+      "id": "sample5_queenstown_stay",
+      "type": "accommodation",
+      "title": {
+        "zh": "皇后鎮住宿兩晚",
+        "en": "Queenstown stay for 2 nights"
+      },
+      "vendor": "Sample Hotel",
+      "amount": {
+        "total": 380,
+        "currency": "NZD"
+      },
+      "status": "booked",
+      "dayStart": 4,
+      "dayEnd": 5,
+      "sharedWith": 2,
+      "notes": "公開範例：住宿預訂"
+    }
+  ],
+  "expenses": [
+    {
+      "id": "sample5_food_day1",
+      "category": "food",
+      "title": {
+        "zh": "河畔晚餐",
+        "en": "Riverside dinner"
+      },
+      "amount": {
+        "total": 1280,
+        "currency": "TWD"
+      },
+      "day": 1,
+      "sharedWith": 2,
+      "notes": "公開範例：台幣支出"
+    },
+    {
+      "id": "sample5_transport_day2",
+      "category": "transport",
+      "title": {
+        "zh": "蒂卡波停車與接駁",
+        "en": "Tekapo parking and shuttle"
+      },
+      "amount": {
+        "total": 32,
+        "currency": "NZD"
+      },
+      "day": 2,
+      "sharedWith": 2,
+      "notes": "公開範例：紐幣支出"
+    },
+    {
+      "id": "sample5_shopping_day5",
+      "category": "shopping",
+      "title": {
+        "zh": "伴手禮",
+        "en": "Souvenirs"
+      },
+      "amount": {
+        "total": 86,
+        "currency": "NZD"
+      },
+      "day": 5,
+      "sharedWith": 1,
+      "notes": "公開範例：個人支出"
+    }
+  ]
 }
