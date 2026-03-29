@@ -42,6 +42,20 @@ test.describe('Itinerary editor real-flow E2E', () => {
         await expect(page.locator('#date-modal')).toHaveClass(/hidden/);
     });
 
+    test('桌面版語言切換按鈕文字會跟著更新', async ({ page }) => {
+        await page.setViewportSize({ width: 1440, height: 900 });
+        await openApp(page);
+
+        const desktopLangBtn = page.locator('#lang-toggle-desktop');
+        await expect(desktopLangBtn).toHaveText('English');
+
+        await desktopLangBtn.click();
+        await expect(desktopLangBtn).toHaveText('中文');
+
+        await desktopLangBtn.click();
+        await expect(desktopLangBtn).toHaveText('English');
+    });
+
     test('checklist 勾選與全選切換', async ({ page }) => {
         await openApp(page);
 
@@ -109,7 +123,7 @@ test.describe('Itinerary editor real-flow E2E', () => {
 
         await openApp(page);
         await page.locator('#edit-mode-btn').click();
-        await page.locator('[data-ui-action="open-io-modal"]').first().click();
+        await page.evaluate(() => openIOModal());
         await expect(page.locator('#io-modal')).toHaveClass(/flex/);
 
         const importPayload = {
@@ -164,7 +178,7 @@ test.describe('Itinerary editor real-flow E2E', () => {
 
         await openApp(page);
         await page.locator('#edit-mode-btn').click();
-        await page.locator('[data-ui-action="open-io-modal"]').first().click();
+        await page.evaluate(() => openIOModal());
         await expect(page.locator('#io-modal')).toHaveClass(/flex/);
 
         const filePayload = {
@@ -405,6 +419,28 @@ test.describe('Itinerary editor real-flow E2E', () => {
         expect(exported).toContain('"expenses"');
         expect(exported).toContain('"hotel_001"');
         expect(exported).toContain('"total": 60');
+
+        const excelExport = await page.evaluate(() => ({
+            filename: getBudgetExcelFilename(),
+            type: buildBudgetExcelBlob().type
+        }));
+        expect(excelExport.filename).toMatch(/^nz-travel-budget-\d{4}-\d{2}-\d{2}\.xlsx$/);
+        expect(excelExport.type).toBe('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        const excelBinary = await page.evaluate(async () => {
+            const blob = buildBudgetExcelBlob();
+            const bytes = new Uint8Array(await blob.arrayBuffer());
+            return {
+                signature: Array.from(bytes.slice(0, 4)),
+                decoded: new TextDecoder().decode(bytes)
+            };
+        });
+        expect(excelBinary.signature).toEqual([80, 75, 3, 4]);
+        expect(excelBinary.decoded).toContain('xl/workbook.xml');
+        expect(excelBinary.decoded).toContain('Summary');
+        expect(excelBinary.decoded).toContain('Bookings');
+        expect(excelBinary.decoded).toContain('Expenses');
+        expect(excelBinary.decoded).toContain('flight_001');
+        expect(excelBinary.decoded).toContain('NZD');
 
         expect(dialogs.length).toBe(1);
         expect(dialogs[0]).toContain('導入成功');

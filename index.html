@@ -831,8 +831,8 @@
                             <i class="fas fa-download"></i> <span id="io-download-btn-text">下載 JSON</span>
                         </button>
                     </div>
-                    <button type="button" data-ui-action="export-html" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3 px-4 rounded-xl transition-all flex items-center justify-center gap-2">
-                        <i class="fas fa-file-code"></i> <span id="io-export-html-btn-text">匯出 HTML</span>
+                    <button type="button" data-ui-action="download-budget-excel" class="w-full bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold py-3 px-4 rounded-xl transition-all flex items-center justify-center gap-2">
+                        <i class="fas fa-file-excel"></i> <span id="io-download-excel-btn-text">匯出 Excel</span>
                     </button>
                     <p id="io-file-status" class="text-[11px] text-slate-400 font-medium text-center">尚未選擇檔案</p>
                     <textarea id="io-textarea" class="w-full h-64 bg-slate-50 border border-slate-200 p-4 rounded-2xl text-[10px] font-mono text-slate-700 focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all shadow-inner resize-none"></textarea>
@@ -1532,7 +1532,7 @@
                 ioCopyBtn: "複製內容",
                 ioFileBtn: "選擇 JSON 檔",
                 ioDownloadBtn: "下載 JSON",
-                ioExportHtmlBtn: "匯出 HTML",
+                ioDownloadExcelBtn: "匯出 Excel",
                 ioImportBtn: "確認導入",
                 ioFileIdle: "尚未選擇檔案",
                 ioFileLoaded: "已載入檔案：{name}",
@@ -1761,7 +1761,7 @@
                 ioCopyBtn: "Copy",
                 ioFileBtn: "Choose JSON File",
                 ioDownloadBtn: "Download JSON",
-                ioExportHtmlBtn: "Export HTML",
+                ioDownloadExcelBtn: "Export Excel",
                 ioImportBtn: "Import",
                 ioFileIdle: "No file selected",
                 ioFileLoaded: "Loaded file: {name}",
@@ -3252,27 +3252,6 @@
             
             saveItinerary();
             updateUI();
-        }
-
-        function exportUpdatedHTML() {
-            toggleEditMode(); // Turn off edit mode for cleaner export
-            
-            // Get current file content
-            let html = document.documentElement.outerHTML;
-            
-            // Regex to find and replace the DEFAULT_ITINERARY definition
-            const itinerarySource = JSON.stringify(itinerary, null, 4);
-            const regex = /const DEFAULT_ITINERARY = \[[\s\S]*?\];/;
-            const newHtml = html.replace(regex, `const DEFAULT_ITINERARY = ${itinerarySource.replace(/\$/g, '$$$$')};`);
-            
-            const blob = new Blob([newHtml], { type: 'text/html' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'nz_travel_custom.html';
-            a.click();
-            
-            alert(currentLang === 'zh' ? '已準備好匯出檔案。請將下載的檔案替換原始的 index.html 即可永久儲存您的修改。' : 'Export ready. Replace your original index.html with the downloaded file to save changes permanently.');
         }
 
         // Date Logic
@@ -6016,12 +5995,12 @@
             const copyBtnText = document.getElementById('io-copy-btn-text');
             const fileBtnText = document.getElementById('io-file-btn-text');
             const downloadBtnText = document.getElementById('io-download-btn-text');
-            const exportHtmlBtnText = document.getElementById('io-export-html-btn-text');
+            const downloadExcelBtnText = document.getElementById('io-download-excel-btn-text');
             const importBtnText = document.getElementById('io-import-btn-text');
             if (copyBtnText) copyBtnText.innerText = ui.ioCopyBtn;
             if (fileBtnText) fileBtnText.innerText = ui.ioFileBtn;
             if (downloadBtnText) downloadBtnText.innerText = ui.ioDownloadBtn;
-            if (exportHtmlBtnText) exportHtmlBtnText.innerText = ui.ioExportHtmlBtn;
+            if (downloadExcelBtnText) downloadExcelBtnText.innerText = ui.ioDownloadExcelBtn;
             if (importBtnText) importBtnText.innerText = ui.ioImportBtn;
             updateIOFileStatus(ui.ioFileIdle);
             const ioFileInput = document.getElementById('io-file-input');
@@ -6090,17 +6069,429 @@
             return `nz-travel-itinerary-${year}-${month}-${day}.json`;
         }
 
-        function downloadIOJson() {
-            const payloadText = JSON.stringify(buildItineraryExportPayload(), null, 2);
-            const blob = new Blob([payloadText], { type: 'application/json' });
+        function getBudgetExcelFilename() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            return `nz-travel-budget-${year}-${month}-${day}.xlsx`;
+        }
+
+        function downloadBlob(blob, filename) {
             const blobUrl = URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.href = blobUrl;
-            link.download = getIOExportFilename();
+            link.download = filename;
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
             setTimeout(() => URL.revokeObjectURL(blobUrl), 0);
+        }
+
+        function downloadIOJson() {
+            const payloadText = JSON.stringify(buildItineraryExportPayload(), null, 2);
+            const blob = new Blob([payloadText], { type: 'application/json' });
+            downloadBlob(blob, getIOExportFilename());
+        }
+
+        function escapeSpreadsheetXml(value) {
+            return String(value ?? '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&apos;');
+        }
+
+        function sanitizeWorksheetName(name) {
+            return String(name || 'Sheet')
+                .replace(/[\\/?*:\[\]]/g, '-')
+                .slice(0, 31) || 'Sheet';
+        }
+
+        function formatBudgetExportNumber(value) {
+            return Number.isFinite(Number(value)) ? Number(Number(value).toFixed(2)) : 0;
+        }
+
+        function formatBudgetExportDate(value) {
+            if (!value) return '';
+            const date = new Date(value);
+            if (Number.isNaN(date.getTime())) return String(value);
+            return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+        }
+
+        function getBudgetDayContext(dayNumber) {
+            const day = itinerary[dayNumber - 1];
+            if (!day) {
+                return {
+                    label: `Day ${dayNumber}`,
+                    actualDate: '',
+                    city: ''
+                };
+            }
+            const cityValue = day.city && typeof day.city === 'object'
+                ? (day.city[currentLang] || day.city.zh || day.city.en || '')
+                : (day.city || '');
+            return {
+                label: day.date || `Day ${dayNumber}`,
+                actualDate: day.actualDate || '',
+                city: cityValue
+            };
+        }
+
+        function buildBudgetExportRows() {
+            const ui = translations[currentLang];
+            const metrics = getBudgetSummaryMetrics(bookings, expenses);
+            const displayCurrency = budgetSettings.baseCurrency;
+            const generatedAt = new Date().toLocaleString();
+
+            const summaryRows = [
+                ['Metric', 'Value'],
+                ['Generated At', generatedAt],
+                ['Display Currency', displayCurrency],
+                ['Rate Mode', budgetSettings.rateMode],
+                ['NZD -> TWD Rate', getBudgetNZDRate()],
+                ['Booking Count', bookings.length],
+                ['Expense Count', expenses.length],
+                ['Known Bookings (Original)', formatBudgetNativeTotals(metrics.bookedTotals)],
+                ['Trip Spending (Original)', formatBudgetNativeTotals(metrics.expenseTotals)],
+                [`Known Bookings (${displayCurrency})`, formatBudgetExportNumber(metrics.bookedTotals.baseTotal)],
+                [`Trip Spending (${displayCurrency})`, formatBudgetExportNumber(metrics.expenseTotals.baseTotal)],
+                [`Grand Total (${displayCurrency})`, formatBudgetExportNumber(metrics.grandTotal)],
+                [`Paid (${displayCurrency})`, formatBudgetExportNumber(metrics.paidTotals.baseTotal)],
+                [`Unpaid (${displayCurrency})`, formatBudgetExportNumber(metrics.unpaidTotals.baseTotal)],
+                [`Per Person (${displayCurrency})`, formatBudgetExportNumber(metrics.perPersonTotal)]
+            ];
+
+            const bookingRows = [
+                ['ID', 'Type', 'Title', 'Vendor', 'Status', 'Amount Original', 'Currency Original', `Amount Display (${displayCurrency})`, 'Shared With', 'Per Person Original', `Per Person Display (${displayCurrency})`, 'Day Start', 'Day End', 'Date Start', 'Date End', 'Notes']
+            ];
+            bookings.forEach((item) => {
+                const displayAmount = getBudgetDisplayAmount(item.amount);
+                const dayStartContext = getBudgetDayContext(item.dayStart);
+                const dayEndContext = getBudgetDayContext(item.dayEnd);
+                bookingRows.push([
+                    item.id,
+                    getBudgetTypeLabel(item.type, ui),
+                    getLocalizedBudgetText(item.title, currentLang),
+                    item.vendor,
+                    getBudgetStatusLabel(item.status, ui),
+                    formatBudgetExportNumber(item.amount.total),
+                    item.amount.currency,
+                    formatBudgetExportNumber(displayAmount.total),
+                    item.sharedWith,
+                    formatBudgetExportNumber(item.amount.total / Math.max(1, item.sharedWith || 1)),
+                    formatBudgetExportNumber(displayAmount.total / Math.max(1, item.sharedWith || 1)),
+                    item.dayStart,
+                    item.dayEnd,
+                    dayStartContext.actualDate,
+                    dayEndContext.actualDate,
+                    item.notes
+                ]);
+            });
+
+            const expenseRows = [
+                ['ID', 'Category', 'Title', 'Day', 'Day Label', 'Actual Date', 'City', 'Amount Original', 'Currency Original', `Amount Display (${displayCurrency})`, 'Shared With', 'Per Person Original', `Per Person Display (${displayCurrency})`, 'Notes']
+            ];
+            expenses.forEach((item) => {
+                const displayAmount = getBudgetDisplayAmount(item.amount);
+                const dayContext = getBudgetDayContext(item.day);
+                expenseRows.push([
+                    item.id,
+                    getExpenseCategoryLabel(item.category, ui),
+                    getLocalizedBudgetText(item.title, currentLang),
+                    item.day,
+                    dayContext.label,
+                    dayContext.actualDate,
+                    dayContext.city,
+                    formatBudgetExportNumber(item.amount.total),
+                    item.amount.currency,
+                    formatBudgetExportNumber(displayAmount.total),
+                    item.sharedWith,
+                    formatBudgetExportNumber(item.amount.total / Math.max(1, item.sharedWith || 1)),
+                    formatBudgetExportNumber(displayAmount.total / Math.max(1, item.sharedWith || 1)),
+                    item.notes
+                ]);
+            });
+
+            const byDayRows = [
+                ['Day', 'Actual Date', 'City', 'Booking Count', 'Expense Count', `Bookings Allocated (${displayCurrency})`, `Expenses (${displayCurrency})`, `Grand Total (${displayCurrency})`]
+            ];
+            itinerary.forEach((_, index) => {
+                const dayNumber = index + 1;
+                const context = getBudgetDayContext(dayNumber);
+                const dayBookings = bookings.filter(item => dayNumber >= item.dayStart && dayNumber <= item.dayEnd);
+                const dayExpenses = expenses.filter(item => item.day === dayNumber);
+                const bookingAllocated = dayBookings.reduce((sum, item) => {
+                    const span = Math.max(1, (item.dayEnd || item.dayStart || dayNumber) - (item.dayStart || dayNumber) + 1);
+                    return sum + (getBudgetDisplayAmount(item.amount).total / span);
+                }, 0);
+                const expenseTotal = dayExpenses.reduce((sum, item) => sum + getBudgetDisplayAmount(item.amount).total, 0);
+                byDayRows.push([
+                    context.label,
+                    context.actualDate,
+                    context.city,
+                    dayBookings.length,
+                    dayExpenses.length,
+                    formatBudgetExportNumber(bookingAllocated),
+                    formatBudgetExportNumber(expenseTotal),
+                    formatBudgetExportNumber(bookingAllocated + expenseTotal)
+                ]);
+            });
+
+            const categoryMap = new Map();
+            const upsertCategoryRow = (scope, key, label, amount) => {
+                const bucketKey = `${scope}:${key}`;
+                if (!categoryMap.has(bucketKey)) {
+                    categoryMap.set(bucketKey, {
+                        scope,
+                        label,
+                        count: 0,
+                        totals: { TWD: 0, NZD: 0 },
+                        displayTotal: 0
+                    });
+                }
+                const bucket = categoryMap.get(bucketKey);
+                const safeAmount = normalizeBudgetAmount(amount, 'TWD');
+                bucket.count += 1;
+                bucket.totals[safeAmount.currency] += safeAmount.total;
+                bucket.displayTotal += getBudgetDisplayAmount(safeAmount).total;
+            };
+
+            bookings.forEach((item) => upsertCategoryRow('Booking', item.type, getBudgetTypeLabel(item.type, ui), item.amount));
+            expenses.forEach((item) => upsertCategoryRow('Expense', item.category, getExpenseCategoryLabel(item.category, ui), item.amount));
+
+            const byCategoryRows = [
+                ['Scope', 'Category', 'Count', 'Original Totals', `Display Total (${displayCurrency})`]
+            ];
+            Array.from(categoryMap.values())
+                .sort((a, b) => a.scope.localeCompare(b.scope) || a.label.localeCompare(b.label))
+                .forEach((bucket) => {
+                    byCategoryRows.push([
+                        bucket.scope,
+                        bucket.label,
+                        bucket.count,
+                        formatBudgetNativeTotals({ ...bucket.totals, baseTotal: bucket.displayTotal }),
+                        formatBudgetExportNumber(bucket.displayTotal)
+                    ]);
+                });
+
+            return [
+                { name: 'Summary', rows: summaryRows },
+                { name: 'Bookings', rows: bookingRows },
+                { name: 'Expenses', rows: expenseRows },
+                { name: 'By Day', rows: byDayRows },
+                { name: 'By Category', rows: byCategoryRows }
+            ];
+        }
+
+        function getExcelColumnName(index) {
+            let name = '';
+            let current = index + 1;
+            while (current > 0) {
+                const remainder = (current - 1) % 26;
+                name = String.fromCharCode(65 + remainder) + name;
+                current = Math.floor((current - 1) / 26);
+            }
+            return name;
+        }
+
+        function buildBudgetSheetCell(value, rowIndex, colIndex) {
+            const ref = `${getExcelColumnName(colIndex)}${rowIndex + 1}`;
+            const headerStyle = rowIndex === 0 ? ' s="1"' : '';
+            if (typeof value === 'number' && Number.isFinite(value)) {
+                return `<c r="${ref}"${headerStyle}><v>${value}</v></c>`;
+            }
+            return `<c r="${ref}" t="inlineStr"${headerStyle}><is><t xml:space="preserve">${escapeSpreadsheetXml(value)}</t></is></c>`;
+        }
+
+        function buildBudgetWorksheetXml(rows) {
+            const sheetRows = rows.map((row, rowIndex) => `
+                <row r="${rowIndex + 1}">
+                    ${row.map((cell, colIndex) => buildBudgetSheetCell(cell, rowIndex, colIndex)).join('')}
+                </row>
+            `).join('');
+            return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+    <sheetData>${sheetRows}</sheetData>
+</worksheet>`;
+        }
+
+        function buildBudgetWorkbookXml(sheets) {
+            const sheetNodes = sheets.map((sheet, index) => `
+                <sheet name="${escapeSpreadsheetXml(sanitizeWorksheetName(sheet.name))}" sheetId="${index + 1}" r:id="rId${index + 1}"/>
+            `).join('');
+            return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+    <sheets>${sheetNodes}</sheets>
+</workbook>`;
+        }
+
+        function buildBudgetWorkbookRelsXml(sheetCount) {
+            const sheetRels = Array.from({ length: sheetCount }, (_, index) => `
+                <Relationship Id="rId${index + 1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet${index + 1}.xml"/>
+            `).join('');
+            return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+    ${sheetRels}
+    <Relationship Id="rId${sheetCount + 1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>
+</Relationships>`;
+        }
+
+        function buildBudgetRootRelsXml() {
+            return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+    <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>
+</Relationships>`;
+        }
+
+        function buildBudgetStylesXml() {
+            return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+    <fonts count="2">
+        <font><sz val="11"/><name val="Arial"/></font>
+        <font><b/><sz val="11"/><name val="Arial"/></font>
+    </fonts>
+    <fills count="2">
+        <fill><patternFill patternType="none"/></fill>
+        <fill><patternFill patternType="solid"><fgColor rgb="FFE2E8F0"/><bgColor indexed="64"/></patternFill></fill>
+    </fills>
+    <borders count="1">
+        <border><left/><right/><top/><bottom/><diagonal/></border>
+    </borders>
+    <cellStyleXfs count="1">
+        <xf numFmtId="0" fontId="0" fillId="0" borderId="0"/>
+    </cellStyleXfs>
+    <cellXfs count="2">
+        <xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>
+        <xf numFmtId="0" fontId="1" fillId="1" borderId="0" xfId="0" applyFont="1" applyFill="1"/>
+    </cellXfs>
+</styleSheet>`;
+        }
+
+        function buildBudgetContentTypesXml(sheetCount) {
+            const sheetOverrides = Array.from({ length: sheetCount }, (_, index) => `
+    <Override PartName="/xl/worksheets/sheet${index + 1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`).join('');
+            return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+    <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
+    <Default Extension="xml" ContentType="application/xml"/>
+    <Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>
+    <Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>${sheetOverrides}
+</Types>`;
+        }
+
+        function getZipCrcTable() {
+            if (window.__zipCrcTable) return window.__zipCrcTable;
+            const table = new Uint32Array(256);
+            for (let i = 0; i < 256; i += 1) {
+                let current = i;
+                for (let j = 0; j < 8; j += 1) {
+                    current = (current & 1) ? (0xEDB88320 ^ (current >>> 1)) : (current >>> 1);
+                }
+                table[i] = current >>> 0;
+            }
+            window.__zipCrcTable = table;
+            return table;
+        }
+
+        function computeZipCrc32(bytes) {
+            const table = getZipCrcTable();
+            let crc = 0 ^ (-1);
+            for (let i = 0; i < bytes.length; i += 1) {
+                crc = (crc >>> 8) ^ table[(crc ^ bytes[i]) & 0xFF];
+            }
+            return (crc ^ (-1)) >>> 0;
+        }
+
+        function buildStoredZipBlob(files, mimeType) {
+            const encoder = new TextEncoder();
+            const localParts = [];
+            const centralParts = [];
+            let offset = 0;
+
+            files.forEach((file) => {
+                const nameBytes = encoder.encode(file.name);
+                const dataBytes = file.data instanceof Uint8Array ? file.data : encoder.encode(file.data);
+                const crc32 = computeZipCrc32(dataBytes);
+
+                const localHeader = new Uint8Array(30 + nameBytes.length);
+                const localView = new DataView(localHeader.buffer);
+                localView.setUint32(0, 0x04034b50, true);
+                localView.setUint16(4, 20, true);
+                localView.setUint16(6, 0, true);
+                localView.setUint16(8, 0, true);
+                localView.setUint16(10, 0, true);
+                localView.setUint16(12, 0, true);
+                localView.setUint32(14, crc32, true);
+                localView.setUint32(18, dataBytes.length, true);
+                localView.setUint32(22, dataBytes.length, true);
+                localView.setUint16(26, nameBytes.length, true);
+                localView.setUint16(28, 0, true);
+                localHeader.set(nameBytes, 30);
+
+                localParts.push(localHeader, dataBytes);
+
+                const centralHeader = new Uint8Array(46 + nameBytes.length);
+                const centralView = new DataView(centralHeader.buffer);
+                centralView.setUint32(0, 0x02014b50, true);
+                centralView.setUint16(4, 20, true);
+                centralView.setUint16(6, 20, true);
+                centralView.setUint16(8, 0, true);
+                centralView.setUint16(10, 0, true);
+                centralView.setUint16(12, 0, true);
+                centralView.setUint16(14, 0, true);
+                centralView.setUint32(16, crc32, true);
+                centralView.setUint32(20, dataBytes.length, true);
+                centralView.setUint32(24, dataBytes.length, true);
+                centralView.setUint16(28, nameBytes.length, true);
+                centralView.setUint16(30, 0, true);
+                centralView.setUint16(32, 0, true);
+                centralView.setUint16(34, 0, true);
+                centralView.setUint16(36, 0, true);
+                centralView.setUint32(38, 0, true);
+                centralView.setUint32(42, offset, true);
+                centralHeader.set(nameBytes, 46);
+                centralParts.push(centralHeader);
+
+                offset += localHeader.length + dataBytes.length;
+            });
+
+            const centralDirectoryOffset = offset;
+            const centralDirectorySize = centralParts.reduce((sum, part) => sum + part.length, 0);
+            const endRecord = new Uint8Array(22);
+            const endView = new DataView(endRecord.buffer);
+            endView.setUint32(0, 0x06054b50, true);
+            endView.setUint16(4, 0, true);
+            endView.setUint16(6, 0, true);
+            endView.setUint16(8, files.length, true);
+            endView.setUint16(10, files.length, true);
+            endView.setUint32(12, centralDirectorySize, true);
+            endView.setUint32(16, centralDirectoryOffset, true);
+            endView.setUint16(20, 0, true);
+
+            return new Blob([...localParts, ...centralParts, endRecord], { type: mimeType });
+        }
+
+        function buildBudgetExcelBlob() {
+            const sheets = buildBudgetExportRows();
+            const files = [
+                { name: '[Content_Types].xml', data: buildBudgetContentTypesXml(sheets.length) },
+                { name: '_rels/.rels', data: buildBudgetRootRelsXml() },
+                { name: 'xl/workbook.xml', data: buildBudgetWorkbookXml(sheets) },
+                { name: 'xl/_rels/workbook.xml.rels', data: buildBudgetWorkbookRelsXml(sheets.length) },
+                { name: 'xl/styles.xml', data: buildBudgetStylesXml() },
+                ...sheets.map((sheet, index) => ({
+                    name: `xl/worksheets/sheet${index + 1}.xml`,
+                    data: buildBudgetWorksheetXml(sheet.rows)
+                }))
+            ];
+            return buildStoredZipBlob(files, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        }
+
+        function downloadBudgetExcel() {
+            const blob = buildBudgetExcelBlob();
+            downloadBlob(blob, getBudgetExcelFilename());
         }
 
         function handleIOFileSelection(fileInput) {
@@ -6231,6 +6622,9 @@
             }
             if (document.getElementById('ui-sync-btn')) {
                 document.getElementById('ui-sync-btn').innerText = currentLang === 'zh' ? '同步至英文' : 'Sync to EN';
+            }
+            if (document.getElementById('lang-toggle-desktop')) {
+                document.getElementById('lang-toggle-desktop').innerText = currentLang === 'zh' ? 'English' : '中文';
             }
             const editModeBtn = document.getElementById('edit-mode-btn');
             if (editModeBtn) {
@@ -7959,7 +8353,6 @@
             'toggle-edit-mode': () => toggleEditMode(),
             'open-io-modal': () => openIOModal(),
             'sync-zh-en': () => syncAllZhToEn(),
-            'export-html': () => exportUpdatedHTML(),
             'reset-all-data': () => resetAllData(),
             'open-date-modal': () => openDateModal(),
             'open-drawer': () => toggleDrawer(true),
@@ -7980,6 +8373,7 @@
             'copy-io-text': () => copyIOText(),
             'choose-io-file': () => chooseIOFile(),
             'download-io-json': () => downloadIOJson(),
+            'download-budget-excel': () => downloadBudgetExcel(),
             'import-itinerary': () => importItinerary(),
             'close-reset-modal': () => closeResetModal(),
             'execute-reset': () => executeReset(),
