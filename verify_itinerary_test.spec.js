@@ -322,6 +322,8 @@ test.describe('Itinerary editor real-flow E2E', () => {
             });
         }).toBe('accommodation');
         await page.locator('[data-testid="budget-expenses-panel"] [data-action="remove-budget-entry"]').last().click();
+        await expect(page.locator('#delete-entry-modal')).toHaveClass(/flex/);
+        await page.locator('[data-ui-action="execute-delete-entry"]').click();
 
         await page.locator('[data-action="set-budget-filter"][data-budget-filter="food"]').click();
         await expect(page.locator('[data-testid="budget-expenses-panel"] [data-budget-kind="expense"][data-budget-id="expense_001"][data-budget-field="title"]')).toHaveValue('超市採買');
@@ -421,6 +423,8 @@ test.describe('Itinerary editor real-flow E2E', () => {
         ]);
 
         await page.locator('[data-testid="day-expenses-panel"] [data-action="remove-budget-entry"]').first().click();
+        await expect(page.locator('#delete-entry-modal')).toHaveClass(/flex/);
+        await page.locator('[data-ui-action="execute-delete-entry"]').click();
         await expect(page.locator('[data-testid="day-expenses-panel"]')).toContainText('這一天還沒有支出紀錄。');
 
         expect(dialogs.length).toBe(1);
@@ -488,8 +492,10 @@ test.describe('Itinerary editor real-flow E2E', () => {
         const mobileBookingTitle = page.locator('[data-testid="budget-bookings-panel"] [data-budget-kind="booking"][data-budget-id="stay_001"][data-budget-field="title"]');
         await expect(mobileBookingTitle).toBeDisabled();
         await expect(page.locator('[data-action="add-booking-entry"]')).toBeHidden();
+        await expect(page.locator('[data-action="remove-budget-entry"][data-budget-kind="booking"][data-budget-id="stay_001"]')).toBeHidden();
         await page.locator('[data-action="toggle-booking-edit"][data-budget-id="stay_001"]').click();
         await expect(mobileBookingTitle).toBeEnabled();
+        await expect(page.locator('[data-action="remove-budget-entry"][data-budget-kind="booking"][data-budget-id="stay_001"]')).toBeVisible();
         await mobileBookingTitle.fill('蒂卡波湖景住宿');
         await expect.poll(async () => {
             return page.evaluate(() => {
@@ -499,8 +505,10 @@ test.describe('Itinerary editor real-flow E2E', () => {
         }).toBe('蒂卡波湖景住宿');
         const mobileBudgetExpenseTitle = page.locator('[data-testid="budget-expenses-panel"] [data-budget-kind="expense"][data-budget-id="expense_mobile_001"][data-budget-field="title"]');
         await expect(mobileBudgetExpenseTitle).toBeDisabled();
+        await expect(page.locator('[data-action="remove-budget-entry"][data-budget-kind="expense"][data-budget-id="expense_mobile_001"]')).toBeHidden();
         await page.locator('[data-action="toggle-expense-edit"][data-budget-id="expense_mobile_001"]').click();
         await expect(mobileBudgetExpenseTitle).toBeEnabled();
+        await expect(page.locator('[data-action="remove-budget-entry"][data-budget-kind="expense"][data-budget-id="expense_mobile_001"]')).toBeVisible();
         await mobileBudgetExpenseTitle.fill('修改後晚餐');
         await expect.poll(async () => {
             return page.evaluate(() => {
