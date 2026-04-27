@@ -4159,6 +4159,72 @@
                 .replace(/>/g, '&gt;');
         }
 
+        function escapeHtmlText(value) {
+            return String(value ?? '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;');
+        }
+
+        function normalizeExternalUrl(value) {
+            const raw = typeof value === 'string' ? value.trim() : '';
+            if (!raw) return '';
+            if (/^https?:\/\/[^\s"'<>]+$/i.test(raw)) return raw;
+            if (/^www\.[^\s"'<>]+$/i.test(raw)) return `https://${raw}`;
+            return '';
+        }
+
+        function splitTrailingUrlPunctuation(value) {
+            const match = String(value ?? '').match(/^(.*?)([),.!?]+)?$/);
+            return {
+                core: match?.[1] || '',
+                suffix: match?.[2] || ''
+            };
+        }
+
+        function formatExternalUrlLabel(value) {
+            const href = normalizeExternalUrl(value);
+            if (!href) return String(value ?? '');
+            try {
+                const parsed = new URL(href);
+                const host = parsed.hostname.replace(/^www\./i, '');
+                const path = `${parsed.pathname || ''}${parsed.search || ''}${parsed.hash || ''}`.replace(/\/$/, '');
+                const compact = `${host}${path}`;
+                return compact.length > 42 ? `${compact.slice(0, 39)}...` : compact;
+            } catch (error) {
+                return String(value ?? '');
+            }
+        }
+
+        function renderTextWithLinks(value) {
+            const raw = String(value ?? '');
+            if (!raw) return '';
+            const urlRegex = /((?:https?:\/\/|www\.)[^\s<>"']+)/gi;
+            let result = '';
+            let lastIndex = 0;
+            let match;
+
+            while ((match = urlRegex.exec(raw)) !== null) {
+                const [fullMatch] = match;
+                const matchIndex = match.index;
+                const { core, suffix } = splitTrailingUrlPunctuation(fullMatch);
+                const href = normalizeExternalUrl(core);
+                const linkLabel = formatExternalUrlLabel(core);
+
+                result += escapeHtmlText(raw.slice(lastIndex, matchIndex)).replace(/\n/g, '<br>');
+                if (href) {
+                    result += `<a href="${escapeHtmlAttribute(href)}" target="_blank" rel="noopener noreferrer" class="text-blue-600 underline break-all hover:text-blue-700">${escapeHtmlText(linkLabel)}</a>`;
+                } else {
+                    result += escapeHtmlText(fullMatch);
+                }
+                if (suffix) result += escapeHtmlText(suffix);
+                lastIndex = matchIndex + fullMatch.length;
+            }
+
+            result += escapeHtmlText(raw.slice(lastIndex)).replace(/\n/g, '<br>');
+            return result;
+        }
+
         function sanitizeMapQuery(value) {
             return sanitizeTextInput(value, { maxLength: 180 });
         }
@@ -5490,12 +5556,12 @@
                         <div class="timeline">
                             ${lang.timeline.map(t => `
                                 <div class="timeline-item">
-                                    <div class="timeline-time">${t[0]}</div>
-                                    <div class="timeline-desc">${t[1]}</div>
+                                    <div class="timeline-time">${escapeHtmlText(t[0])}</div>
+                                    <div class="timeline-desc">${renderTextWithLinks(t[1])}</div>
                                 </div>
                             `).join('')}
                         </div>
-                        <div class="hotel-info">🛏️ ${ui.hotelLabel}: ${hotel}</div>
+                        <div class="hotel-info">🛏️ ${escapeHtmlText(ui.hotelLabel)}: ${escapeHtmlText(hotel)}</div>
                 `;
 
                 if (includePhotos) {
@@ -7955,11 +8021,11 @@
                                                     <div class="flex items-start justify-between">
                                                         <div class="flex-1">
                                                             ${isActive ? `<span class="absolute -top-2 right-4 bg-red-500 text-white text-[9px] font-bold px-2 py-0.5 rounded uppercase shadow-sm">${ui.activeNowBadge}</span>` : ''}
-                                                            <p contenteditable="${isEditMode}" data-edit-day="${activeDayIndex}" data-edit-field="${currentLang}" data-edit-subfield="timeline" data-edit-item-idx="${index}" data-edit-subitem-idx="1" class="text-[15px] font-bold ${isActive ? 'text-red-700' : 'text-slate-700'} outline-none focus:bg-blue-50 rounded px-1">${t[1]}</p>
+                                                            <p contenteditable="${isEditMode}" data-edit-day="${activeDayIndex}" data-edit-field="${currentLang}" data-edit-subfield="timeline" data-edit-item-idx="${index}" data-edit-subitem-idx="1" class="text-[15px] font-bold ${isActive ? 'text-red-700' : 'text-slate-700'} outline-none focus:bg-blue-50 rounded px-1">${isEditMode ? escapeHtmlText(t[1]) : renderTextWithLinks(t[1])}</p>
                                                             
                                                             <!-- Extended Description Feat -->
                                                             <div contenteditable="${isEditMode}" data-edit-day="${activeDayIndex}" data-edit-field="${currentLang}" data-edit-subfield="timeline" data-edit-item-idx="${index}" data-edit-subitem-idx="5" class="text-[12px] text-slate-500 mt-2 outline-none focus:bg-blue-50 rounded px-1 min-h-[1em]" placeholder="${isEditMode ? ui.editDescriptionPlaceholder : ''}">
-                                                                ${t[5] || ''}
+                                                                ${isEditMode ? escapeHtmlText(t[5] || '') : renderTextWithLinks(t[5] || '')}
                                                             </div>
                                                         </div>
                                                         <div class="flex flex-col gap-1 items-end">

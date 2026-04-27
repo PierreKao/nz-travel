@@ -114,6 +114,34 @@ test.describe('Itinerary editor real-flow E2E', () => {
         await expect(page.locator('#content-display h2').first()).toContainText(newTitle);
     });
 
+    test('每日行程網址在閱讀模式會自動變成連結', async ({ page }) => {
+        await openApp(page);
+
+        await page.locator('#edit-mode-btn').click();
+        await page.locator('#nav-container .day-btn').nth(4).click();
+
+        const activityField = page.locator('[data-edit-day="0"][data-edit-field="zh"][data-edit-subfield="timeline"][data-edit-item-idx="0"][data-edit-subitem-idx="1"]');
+        const noteField = page.locator('[data-edit-day="0"][data-edit-field="zh"][data-edit-subfield="timeline"][data-edit-item-idx="0"][data-edit-subitem-idx="5"]');
+
+        await activityField.fill('官方資訊 https://example.com/plan');
+        await noteField.fill('更多資料 www.example.org/guide 與 javascript:alert(1)');
+
+        await page.locator('#edit-mode-btn').click();
+        await expect(page.locator('#edit-mode-btn')).not.toHaveClass(/ring-4/);
+
+        const httpLink = page.locator('#content-display a[href="https://example.com/plan"]');
+        const wwwLink = page.locator('#content-display a[href="https://www.example.org/guide"]');
+
+        await expect(httpLink).toHaveCount(1);
+        await expect(wwwLink).toHaveCount(1);
+        await expect(httpLink).toHaveAttribute('target', '_blank');
+        await expect(httpLink).toHaveAttribute('rel', /noopener/);
+        await expect(httpLink).toHaveText('example.com/plan');
+        await expect(wwwLink).toHaveText('example.org/guide');
+        await expect(page.locator('#content-display a[href^="javascript:"]')).toHaveCount(0);
+        await expect(page.locator('#content-display')).toContainText('javascript:alert(1)');
+    });
+
     test('import 支援 markdown code block JSON（含 customCoords）', async ({ page }) => {
         const dialogs = [];
         page.on('dialog', async (dialog) => {
