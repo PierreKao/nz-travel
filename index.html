@@ -514,7 +514,7 @@
     <header class="bg-white/70 backdrop-blur-md border-b sticky top-0 z-50 px-3 py-2 sm:px-6 sm:py-3 flex justify-between items-center shadow-sm">
         <div data-ui-action="go-overview" class="cursor-pointer shrink-0">
                 <span id="ui-header-title">紐西蘭南島 · 冬季自駕</span>
-            <p id="app-version-badge-header" class="text-[10px] text-blue-600 font-bold uppercase tracking-widest">Winter Adventure · v1.5.5</p>
+            <p id="app-version-badge-header" class="text-[10px] text-blue-600 font-bold uppercase tracking-widest">Winter Adventure · v1.5.6</p>
         </div>
         
         <div class="flex items-center gap-1 sm:gap-3">
@@ -601,7 +601,7 @@
                 </div>
 
                 <div class="mt-12 pt-8 border-t border-slate-100">
-                    <p id="app-version-badge-drawer" class="text-[10px] text-slate-400 font-bold uppercase tracking-wider text-center">New Zealand Travel · v1.5.5</p>
+                    <p id="app-version-badge-drawer" class="text-[10px] text-slate-400 font-bold uppercase tracking-wider text-center">New Zealand Travel · v1.5.6</p>
                 </div>
             </div>
         </div>
@@ -911,7 +911,7 @@
         `;
         document.body.insertAdjacentHTML('beforeend', milkyWayWindowModalHTML);
 
-        const APP_VERSION = "1.5.5";
+        const APP_VERSION = "1.5.6";
         const AIR_NZ_BOOKING_URL = "https://www.airnewzealand.co.nz/book";
         const PAGE_INDEX = Object.freeze({
             COSTS: -4,
@@ -4225,6 +4225,37 @@
             return result;
         }
 
+        function stripUrlsForKeywordMatch(value) {
+            return String(value ?? '')
+                .replace(/https?:\/\/[^\s<>"']+/gi, ' ')
+                .replace(/www\.[^\s<>"']+/gi, ' ')
+                .replace(/\s+/g, ' ')
+                .trim();
+        }
+
+        function hasFlightCodeToken(value) {
+            const text = String(value ?? '');
+            return /\b[A-Z]{2}\s?\d{2,4}\b/.test(text) || /\b[A-Z]{3}\s*[→-]\s*[A-Z]{3}\b/.test(text);
+        }
+
+        function hasActualFlightKeyword(value, langCode = currentLang) {
+            const text = stripUrlsForKeywordMatch(value);
+            if (!text) return false;
+            const keywordPattern = langCode === 'zh'
+                ? /(✈️|航班|起飛|飛往|飛回|飛抵|降落|登機|過夜航班|轉國內線|轉機|機上|國際線航程|國內線航程|飛行)/i
+                : /(✈️|flight|depart|departure|arrive|arrival|boarding|overnight flight|transfer to domestic flight|domestic flight|international flight|on board|takeoff|landing|fly)/i;
+            return keywordPattern.test(text) || hasFlightCodeToken(text);
+        }
+
+        function hasFlightSupportKeyword(value, langCode = currentLang) {
+            const text = stripUrlsForKeywordMatch(value);
+            if (!text) return false;
+            const supportPattern = langCode === 'zh'
+                ? /(機場|報到|轉乘|行李|海關|還車|安檢|登機門|出境|入境)/i
+                : /(airport|check-?in|transfer|baggage|customs|car return|security|gate|immigration|terminal)/i;
+            return supportPattern.test(text);
+        }
+
         function sanitizeMapQuery(value) {
             return sanitizeTextInput(value, { maxLength: 180 });
         }
@@ -7193,27 +7224,22 @@
 
         function getFlightOverviewEntries(langCode = currentLang) {
             const fallbackLang = langCode === 'zh' ? 'en' : 'zh';
-            const actualFlightPattern = langCode === 'zh'
-                ? /(✈️|航班|航程|起飛|飛往|飛回|飛抵|過夜航班|國內線航程|國際線航程|轉機前往|轉國內線|[A-Z]{2,3}\s*\d{2,4}|[A-Z]{3}\s*[→-]\s*[A-Z]{3})/i
-                : /(✈️|flight|depart|fly|overnight flight|domestic flight|international flight|connection to|transfer to domestic flight|[A-Z]{2,3}\s*\d{2,4}|[A-Z]{3}\s*[→-]\s*[A-Z]{3})/i;
-            const supportingFlightPattern = langCode === 'zh'
-                ? /(機場|轉乘|報到|還車)/i
-                : /(airport|transfer|check-?in|car return)/i;
 
             return itinerary.map((day, index) => {
                 const langDay = day?.[langCode] || day?.en || day?.zh || {};
                 const title = typeof langDay.title === 'string' ? langDay.title : '';
                 const timeline = Array.isArray(langDay.timeline) ? langDay.timeline.map((item) => normalizeTimelineItem(item)) : [];
-                const hasFlightTitle = actualFlightPattern.test(title);
+                const hasFlightTitle = hasActualFlightKeyword(title, langCode);
                 const hasFlightItem = timeline.some((item) => {
                     const combinedText = [item[0], item[1], item[2], item[5]].filter(Boolean).join(' ');
-                    return actualFlightPattern.test(combinedText);
+                    return hasActualFlightKeyword(combinedText, langCode);
                 });
                 if (!hasFlightTitle && !hasFlightItem) return null;
 
                 const items = timeline.filter((item) => {
-                    const combinedText = [item[0], item[1], item[2], item[5]].filter(Boolean).join(' ');
-                    return actualFlightPattern.test(combinedText) || supportingFlightPattern.test(combinedText);
+                    const actualText = [item[0], item[1], item[2], item[5]].filter(Boolean).join(' ');
+                    const supportText = [item[0], item[1], item[2]].filter(Boolean).join(' ');
+                    return hasActualFlightKeyword(actualText, langCode) || hasFlightSupportKeyword(supportText, langCode);
                 });
 
                 return {

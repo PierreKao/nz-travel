@@ -884,6 +884,27 @@ test.describe('Itinerary editor real-flow E2E', () => {
                         ['Afternoon', 'City walk', 'Walk', '', '', '']
                     ]
                 }
+            },
+            {
+                date: 'Day 06',
+                actualDate: '2026-07-09',
+                city: { zh: '庫克山', en: 'Mt Cook' },
+                mapUrl: 'Hooker+Valley+Track',
+                stay: { zh: '特威澤爾', en: 'Twizel' },
+                zh: {
+                    title: '⛰️ 庫克山健行日',
+                    timeline: [
+                        ['上午', 'Hooker Valley Track', '步行', '', '', 'https://www.doc.govt.nz/parks-and-recreation/places-to-go/canterbury/places/aoraki-mount-cook-national-park/things-to-do/tracks/hooker-valley-track/'],
+                        ['下午', '返回特威澤爾', '1 小時 車程', '', '', 'https://www.journeys.nzta.govt.nz/highway-conditions/west-coast']
+                    ]
+                },
+                en: {
+                    title: '⛰️ Mt Cook Hiking Day',
+                    timeline: [
+                        ['Morning', 'Hooker Valley Track', 'Walk', '', '', 'https://www.doc.govt.nz/parks-and-recreation/places-to-go/canterbury/places/aoraki-mount-cook-national-park/things-to-do/tracks/hooker-valley-track/'],
+                        ['Afternoon', 'Return to Twizel', '1 hr drive', '', '', 'https://www.journeys.nzta.govt.nz/highway-conditions/west-coast']
+                    ]
+                }
             }
         ];
 
@@ -905,6 +926,9 @@ test.describe('Itinerary editor real-flow E2E', () => {
         await expect(flightPanel).toContainText('基督城 → 奧克蘭');
         await expect(flightPanel).toContainText('奧克蘭 → 台北');
         await expect(flightPanel).not.toContainText('基督城市區移動');
+        await expect(flightPanel).not.toContainText('庫克山健行日');
+        await expect(flightPanel).not.toContainText('Hooker Valley Track');
+        await expect(flightPanel).not.toContainText('住家啟程');
 
         expect(dialogs.length).toBe(1);
         expect(dialogs[0]).toContain('導入成功');
