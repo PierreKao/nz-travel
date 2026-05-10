@@ -4301,6 +4301,28 @@
             return `https://www.google.com/maps/search/?api=1&query=${safeQuery}`;
         }
 
+        function getDayStayMapLocation(day, langCode = currentLang) {
+            const fallbackLang = langCode === 'zh' ? 'en' : 'zh';
+            const stay = sanitizeTextInput(day?.stay?.[langCode] || day?.stay?.[fallbackLang] || '', { maxLength: 80 });
+            const city = sanitizeTextInput(day?.city?.[langCode] || day?.city?.[fallbackLang] || '', { maxLength: 60 });
+            if (!stay || /(過夜航班|overnight flight|返程日|return day|no stay|不住宿)/i.test(stay)) return '';
+
+            const normalizedStay = stay.toLowerCase().replace(/\bstay\b/gi, '').replace(/住宿/gi, '').trim();
+            const normalizedCity = city.toLowerCase().trim();
+            if (!normalizedStay || normalizedStay === normalizedCity) return '';
+
+            return stay;
+        }
+
+        function getDefaultDayMapQuery(day, langCode = currentLang) {
+            return getDayStayMapLocation(day, langCode)
+                || day?.mapQuery
+                || day?.mapUrl
+                || day?.city?.[langCode]
+                || day?.city?.[langCode === 'zh' ? 'en' : 'zh']
+                || '';
+        }
+
         function getAuroraLevel(score) {
             if (score >= 75) return 'excellent';
             if (score >= 50) return 'high';
@@ -8111,7 +8133,7 @@
                                     <p contenteditable="${isEditMode}" data-edit-day="${activeDayIndex}" data-edit-field="stay" data-edit-subfield="${currentLang}" class="font-bold text-sm text-indigo-800 outline-none focus:bg-white/60 rounded px-1">${hotel}</p>
                                 </div>
                             </div>
-                            <a href="${buildGoogleMapsSearchUrl(day.mapQuery || day.mapUrl)}" target="_blank" class="bg-slate-900 text-white p-5 rounded-3xl flex items-center justify-center gap-2 font-bold text-sm"><i class="fas fa-location-arrow text-blue-400"></i> MAP</a>
+                            <a href="${buildGoogleMapsSearchUrl(getDefaultDayMapQuery(day, currentLang))}" target="_blank" class="bg-slate-900 text-white p-5 rounded-3xl flex items-center justify-center gap-2 font-bold text-sm"><i class="fas fa-location-arrow text-blue-400"></i> MAP</a>
                         </div>
 
                         ${renderDayExpensesSection(ui, activeDayIndex)}
@@ -8124,7 +8146,7 @@
                                 <span class="text-xs font-bold text-slate-400 uppercase tracking-widest animate-pulse">Loading Map...</span>
                             </div>
                             <!-- Map iframe -->
-                            <iframe id="day-map-iframe" frameborder="0" class="relative w-full h-full rounded-[2rem] z-10 transition-opacity duration-1000" src="${buildGoogleMapsEmbedUrl(day.mapQuery || day.mapUrl, 13)}"></iframe>
+                            <iframe id="day-map-iframe" frameborder="0" class="relative w-full h-full rounded-[2rem] z-10 transition-opacity duration-1000" src="${buildGoogleMapsEmbedUrl(getDefaultDayMapQuery(day, currentLang), 13)}"></iframe>
                         </div>
                     </div>
                 </div>
@@ -8136,7 +8158,7 @@
             });
 
             // Auto-trigger map/spot visual for the day's main destination
-            setTimeout(() => updateMapQuery(day.mapQuery || day.mapUrl, day.customImg), 50);
+            setTimeout(() => updateMapQuery(getDefaultDayMapQuery(day, currentLang), day.customImg), 50);
         }
 
         function parseActionIndex(value) {

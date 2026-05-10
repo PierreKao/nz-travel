@@ -142,6 +142,52 @@ test.describe('Itinerary editor real-flow E2E', () => {
         await expect(page.locator('#content-display')).toContainText('javascript:alert(1)');
     });
 
+    test('住宿填入具體地址後，MAP 會優先使用住宿位置', async ({ page }) => {
+        const dialogs = [];
+        page.on('dialog', async (dialog) => {
+            dialogs.push(dialog.message());
+            await dialog.accept();
+        });
+
+        await openApp(page);
+        await page.locator('#edit-mode-btn').click();
+        await page.evaluate(() => openIOModal());
+
+        const payload = [
+            {
+                date: 'Day 01',
+                actualDate: '2026-07-01',
+                city: { zh: '奧瑪魯', en: 'Oamaru' },
+                mapUrl: 'Oamaru+New+Zealand',
+                stay: { zh: '11A Ure Street Flat A', en: '11A Ure Street Flat A' },
+                zh: {
+                    title: '🐧 奧瑪魯住宿測試',
+                    timeline: [['下午', '入住與休息', '步行', '', '', '']]
+                },
+                en: {
+                    title: '🐧 Oamaru stay test',
+                    timeline: [['Afternoon', 'Check in and rest', 'Walk', '', '', '']]
+                }
+            }
+        ];
+
+        await page.locator('#io-textarea').fill(JSON.stringify(payload, null, 2));
+        await page.locator('[data-ui-action="import-itinerary"]').click();
+        await expect(page.locator('#io-modal')).toHaveClass(/hidden/);
+
+        await page.locator('#nav-container .day-btn').last().click();
+
+        const mapLink = page.locator('#content-display a[href*="google.com/maps/search"]');
+        const mapFrame = page.locator('#day-map-iframe');
+
+        await expect(mapLink).toHaveAttribute('href', /11A%20Ure%20Street%20Flat%20A/);
+        await expect(mapLink).not.toHaveAttribute('href', /Oamaru\+New\+Zealand|Oamaru%20New%20Zealand/);
+        await expect(mapFrame).toHaveAttribute('src', /11A%20Ure%20Street%20Flat%20A/);
+
+        expect(dialogs.length).toBe(1);
+        expect(dialogs[0]).toContain('導入成功');
+    });
+
     test('import 支援 markdown code block JSON（含 customCoords）', async ({ page }) => {
         const dialogs = [];
         page.on('dialog', async (dialog) => {
