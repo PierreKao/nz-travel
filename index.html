@@ -514,7 +514,7 @@
     <header class="bg-white/70 backdrop-blur-md border-b sticky top-0 z-50 px-3 py-2 sm:px-6 sm:py-3 flex justify-between items-center shadow-sm">
         <div data-ui-action="go-overview" class="cursor-pointer shrink-0">
                 <span id="ui-header-title">紐西蘭南島 · 冬季自駕</span>
-            <p id="app-version-badge-header" class="text-[10px] text-blue-600 font-bold uppercase tracking-widest">Winter Adventure · v1.5.6</p>
+            <p id="app-version-badge-header" class="text-[10px] text-blue-600 font-bold uppercase tracking-widest">Winter Adventure · v1.5.7</p>
         </div>
         
         <div class="flex items-center gap-1 sm:gap-3">
@@ -601,7 +601,7 @@
                 </div>
 
                 <div class="mt-12 pt-8 border-t border-slate-100">
-                    <p id="app-version-badge-drawer" class="text-[10px] text-slate-400 font-bold uppercase tracking-wider text-center">New Zealand Travel · v1.5.6</p>
+                    <p id="app-version-badge-drawer" class="text-[10px] text-slate-400 font-bold uppercase tracking-wider text-center">New Zealand Travel · v1.5.7</p>
                 </div>
             </div>
         </div>
@@ -911,7 +911,7 @@
         `;
         document.body.insertAdjacentHTML('beforeend', milkyWayWindowModalHTML);
 
-        const APP_VERSION = "1.5.6";
+        const APP_VERSION = "1.5.7";
         const AIR_NZ_BOOKING_URL = "https://www.airnewzealand.co.nz/book";
         const PAGE_INDEX = Object.freeze({
             COSTS: -4,
@@ -1539,12 +1539,15 @@
                 importError: "導入失敗，請檢查 JSON 格式是否正確。",
                 ioCopyBtn: "複製內容",
                 ioFileBtn: "選擇 JSON 檔",
-                ioDownloadBtn: "下載 JSON",
+                ioDownloadBtn: "匯出 JSON",
                 ioDownloadExcelBtn: "匯出 Excel",
                 ioImportBtn: "確認導入",
                 ioFileIdle: "尚未選擇檔案",
                 ioFileLoaded: "已載入檔案：{name}",
                 ioFileReadError: "讀取檔案失敗，請確認這是有效的 JSON 檔。",
+                ioSaveSuccess: "已儲存至：{name}",
+                ioSaveCancelled: "已取消匯出。",
+                ioSaveFallback: "目前環境不支援選擇路徑，已改用下載方式匯出。",
                 resetConfirmBtn: "確認重置",
                 resetCancelBtn: "取消",
                 moveUp: "上移",
@@ -1770,12 +1773,15 @@
                 importError: "Import failed, please check JSON format.",
                 ioCopyBtn: "Copy",
                 ioFileBtn: "Choose JSON File",
-                ioDownloadBtn: "Download JSON",
+                ioDownloadBtn: "Export JSON",
                 ioDownloadExcelBtn: "Export Excel",
                 ioImportBtn: "Import",
                 ioFileIdle: "No file selected",
                 ioFileLoaded: "Loaded file: {name}",
                 ioFileReadError: "Failed to read the file. Please make sure it is a valid JSON file.",
+                ioSaveSuccess: "Saved to: {name}",
+                ioSaveCancelled: "Export cancelled.",
+                ioSaveFallback: "Save picker is not available here, so the file was downloaded instead.",
                 resetConfirmBtn: "Confirm Reset",
                 resetCancelBtn: "Cancel",
                 moveUp: "Move Up",
@@ -2768,6 +2774,12 @@
             return normalizeCoordinatePair({ lat: match[1], lon: match[2] });
         }
 
+        function looksLikeCoordinateQuery(text) {
+            if (typeof text !== 'string' || !text.trim()) return false;
+            if (parseCoordinatesFromText(text)) return true;
+            return /\d{1,2}°\d{1,2}'\d{1,2}(?:\.\d+)?\"?\s*[NS]\s+\d{1,3}°\d{1,2}'\d{1,2}(?:\.\d+)?\"?\s*[EW]/i.test(text.trim());
+        }
+
         function stripCoordinatesFromCityLabel(text) {
             if (typeof text !== 'string') return '';
             return text
@@ -2902,11 +2914,11 @@
 
             let safeStayZh = sanitizeTextInput(
                 day?.stay?.zh ?? fallbackDay?.stay?.zh ?? inferAccommodationFromSource(day || fallbackDay, 'zh'),
-                { maxLength: 60 }
+                { maxLength: 160 }
             );
             let safeStayEn = sanitizeTextInput(
                 day?.stay?.en ?? fallbackDay?.stay?.en ?? inferAccommodationFromSource(day || fallbackDay, 'en'),
-                { maxLength: 60 }
+                { maxLength: 160 }
             );
             if (!safeStayZh && safeStayEn) safeStayZh = safeStayEn;
             if (!safeStayEn && safeStayZh) safeStayEn = safeStayZh;
@@ -3177,7 +3189,7 @@
             if (field === 'drive') {
                 safeValue = sanitizeTextInput(value, { maxLength: 40 });
             } else if (field === 'stay') {
-                safeValue = sanitizeTextInput(value, { maxLength: 60 });
+                safeValue = sanitizeTextInput(value, { maxLength: 160 });
             } else if (subfield === 'title') {
                 safeValue = sanitizeTextInput(value, { maxLength: 100 });
             } else if (field === 'city') {
@@ -4303,15 +4315,11 @@
 
         function getDayStayMapLocation(day, langCode = currentLang) {
             const fallbackLang = langCode === 'zh' ? 'en' : 'zh';
-            const stay = sanitizeTextInput(day?.stay?.[langCode] || day?.stay?.[fallbackLang] || '', { maxLength: 80 });
-            const city = sanitizeTextInput(day?.city?.[langCode] || day?.city?.[fallbackLang] || '', { maxLength: 60 });
+            const stay = sanitizeTextInput(day?.stay?.[langCode] || day?.stay?.[fallbackLang] || '', { maxLength: 160 });
             if (!stay || /(過夜航班|overnight flight|返程日|return day|no stay|不住宿)/i.test(stay)) return '';
 
             const normalizedStay = stay.toLowerCase().replace(/\bstay\b/gi, '').replace(/住宿/gi, '').trim();
-            const normalizedCity = city.toLowerCase().trim();
-            if (!normalizedStay || normalizedStay === normalizedCity) return '';
-
-            return stay;
+            return normalizedStay ? stay : '';
         }
 
         function getDefaultDayMapQuery(day, langCode = currentLang) {
@@ -6249,10 +6257,50 @@
             setTimeout(() => URL.revokeObjectURL(blobUrl), 0);
         }
 
-        function downloadIOJson() {
+        function supportsSaveFilePicker() {
+            return typeof window !== 'undefined' && typeof window.showSaveFilePicker === 'function';
+        }
+
+        async function saveJsonWithPicker(payloadText, suggestedName) {
+            const handle = await window.showSaveFilePicker({
+                suggestedName,
+                types: [
+                    {
+                        description: 'JSON Files',
+                        accept: {
+                            'application/json': ['.json']
+                        }
+                    }
+                ]
+            });
+            const writable = await handle.createWritable();
+            await writable.write(payloadText);
+            await writable.close();
+            return handle;
+        }
+
+        async function downloadIOJson() {
+            const ui = translations[currentLang];
             const payloadText = JSON.stringify(buildItineraryExportPayload(), null, 2);
+            const filename = getIOExportFilename();
+
+            if (supportsSaveFilePicker()) {
+                try {
+                    const handle = await saveJsonWithPicker(payloadText, filename);
+                    updateIOFileStatus((ui.ioSaveSuccess || ui.ioFileIdle).replace('{name}', handle?.name || filename));
+                    return;
+                } catch (error) {
+                    if (error?.name === 'AbortError') {
+                        updateIOFileStatus(ui.ioSaveCancelled || ui.ioFileIdle);
+                        return;
+                    }
+                    console.warn('Save picker failed, falling back to download.', error);
+                }
+            }
+
             const blob = new Blob([payloadText], { type: 'application/json' });
-            downloadBlob(blob, getIOExportFilename());
+            downloadBlob(blob, filename);
+            updateIOFileStatus(ui.ioSaveFallback || ui.ioFileIdle);
         }
 
         function escapeSpreadsheetXml(value) {
@@ -8125,15 +8173,15 @@
                             </div>
                         </div>
                         
-                        <div class="flex flex-col sm:flex-row gap-4">
-                            <div class="flex-1 glass-card p-5 rounded-3xl flex items-center gap-4">
-                                <div class="w-10 h-10 bg-indigo-600 text-white rounded-xl flex items-center justify-center"><i class="fas fa-bed"></i></div>
-                                <div>
+                        <div class="glass-card p-5 rounded-3xl flex items-center justify-between gap-4">
+                            <div class="flex items-center gap-4 min-w-0">
+                                <div class="w-10 h-10 bg-indigo-600 text-white rounded-xl flex items-center justify-center shrink-0"><i class="fas fa-bed"></i></div>
+                                <div class="min-w-0">
                                     <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">${ui.hotelLabel}</p>
-                                    <p contenteditable="${isEditMode}" data-edit-day="${activeDayIndex}" data-edit-field="stay" data-edit-subfield="${currentLang}" class="font-bold text-sm text-indigo-800 outline-none focus:bg-white/60 rounded px-1">${hotel}</p>
+                                    <p contenteditable="${isEditMode}" data-edit-day="${activeDayIndex}" data-edit-field="stay" data-edit-subfield="${currentLang}" class="font-bold text-sm text-indigo-800 outline-none focus:bg-white/60 rounded px-1 break-words">${hotel}</p>
                                 </div>
                             </div>
-                            <a href="${buildGoogleMapsSearchUrl(getDefaultDayMapQuery(day, currentLang))}" target="_blank" class="bg-slate-900 text-white p-5 rounded-3xl flex items-center justify-center gap-2 font-bold text-sm"><i class="fas fa-location-arrow text-blue-400"></i> MAP</a>
+                            <a href="${buildGoogleMapsSearchUrl(getDefaultDayMapQuery(day, currentLang))}" target="_blank" class="shrink-0 inline-flex items-center justify-center gap-2 bg-slate-900 text-white px-4 py-2.5 rounded-2xl font-bold text-sm shadow-lg hover:bg-slate-800 transition-colors"><i class="fas fa-location-arrow text-blue-400"></i> MAP</a>
                         </div>
 
                         ${renderDayExpensesSection(ui, activeDayIndex)}

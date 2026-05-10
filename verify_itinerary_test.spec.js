@@ -159,7 +159,7 @@ test.describe('Itinerary editor real-flow E2E', () => {
                 actualDate: '2026-07-01',
                 city: { zh: '奧瑪魯', en: 'Oamaru' },
                 mapUrl: 'Oamaru+New+Zealand',
-                stay: { zh: '11A Ure Street Flat A', en: '11A Ure Street Flat A' },
+                stay: { zh: '17 Magnolia Place, Queenstown', en: '17 Magnolia Place, Queenstown' },
                 zh: {
                     title: '🐧 奧瑪魯住宿測試',
                     timeline: [['下午', '入住與休息', '步行', '', '', '']]
@@ -180,10 +180,58 @@ test.describe('Itinerary editor real-flow E2E', () => {
         const mapLink = page.locator('#content-display a[href*="google.com/maps/search"]');
         const mapFrame = page.locator('#day-map-iframe');
 
-        await expect(mapLink).toHaveAttribute('href', /11A%20Ure%20Street%20Flat%20A/);
-        await expect(mapLink).not.toHaveAttribute('href', /Oamaru\+New\+Zealand|Oamaru%20New%20Zealand/);
-        await expect(mapFrame).toHaveAttribute('src', /11A%20Ure%20Street%20Flat%20A/);
+        await expect(page.locator('[data-edit-field="stay"]')).toContainText('17 Magnolia Place, Queenstown');
+        await expect(mapLink).toHaveAttribute('href', /17%20Magnolia%20Place%2C%20Queenstown/);
+        await expect(mapLink).not.toHaveAttribute('href', /New%20Zealand/);
+        await expect(mapFrame).toHaveAttribute('src', /17%20Magnolia%20Place%2C%20Queenstown/);
+        await expect(mapFrame).not.toHaveAttribute('src', /New%20Zealand/);
 
+        expect(dialogs.length).toBe(1);
+        expect(dialogs[0]).toContain('導入成功');
+    });
+
+    test('住宿如果是座標，MAP 不會再自動補城市或國家', async ({ page }) => {
+        const dialogs = [];
+        page.on('dialog', async (dialog) => {
+            dialogs.push(dialog.message());
+            await dialog.accept();
+        });
+
+        await openApp(page);
+        await page.locator('#edit-mode-btn').click();
+        await page.evaluate(() => openIOModal());
+
+        const coordStay = `44°16'01.2"S 170°03'58.0"E`;
+        const payload = [
+            {
+                date: 'Day 01',
+                actualDate: '2026-07-01',
+                city: { zh: '皇后鎮', en: 'Queenstown' },
+                mapUrl: 'Queenstown+New+Zealand',
+                stay: { zh: coordStay, en: coordStay },
+                zh: {
+                    title: '📍 座標住宿測試',
+                    timeline: [['下午', '前往住宿', '步行', '', '', '']]
+                },
+                en: {
+                    title: '📍 Coordinate stay test',
+                    timeline: [['Afternoon', 'Go to stay', 'Walk', '', '', '']]
+                }
+            }
+        ];
+
+        await page.locator('#io-textarea').fill(JSON.stringify(payload, null, 2));
+        await page.locator('[data-ui-action="import-itinerary"]').click();
+        await expect(page.locator('#io-modal')).toHaveClass(/hidden/);
+
+        await page.locator('#nav-container .day-btn').last().click();
+
+        const mapLink = page.locator('#content-display a[href*="google.com/maps/search"]');
+        const href = await mapLink.getAttribute('href');
+
+        expect(href).toContain(encodeURIComponent(coordStay));
+        expect(href).not.toContain('Queenstown');
+        expect(href).not.toContain('New%20Zealand');
         expect(dialogs.length).toBe(1);
         expect(dialogs[0]).toContain('導入成功');
     });
@@ -250,6 +298,18 @@ test.describe('Itinerary editor real-flow E2E', () => {
             await dialog.accept();
         });
 
+        await page.addInitScript(() => {
+            try {
+                Object.defineProperty(window, 'showSaveFilePicker', {
+                    value: undefined,
+                    configurable: true,
+                    writable: true
+                });
+            } catch (error) {
+                window.showSaveFilePicker = undefined;
+            }
+        });
+
         await openApp(page);
         await page.locator('#edit-mode-btn').click();
         await page.evaluate(() => openIOModal());
@@ -297,6 +357,47 @@ test.describe('Itinerary editor real-flow E2E', () => {
 
         expect(dialogs.length).toBe(1);
         expect(dialogs[0]).toContain('導入成功');
+    });
+
+    test('匯出 JSON 在支援環境下可使用存檔選擇器', async ({ page }) => {
+        await openApp(page);
+        await page.locator('#edit-mode-btn').click();
+        await page.evaluate(() => {
+            window.__savePickerCalls = [];
+            window.showSaveFilePicker = async (options) => {
+                window.__savePickerCalls.push(options);
+                return {
+                    name: 'chosen-itinerary.json',
+                    async createWritable() {
+                        return {
+                            async write(content) {
+                                window.__savedJsonText = typeof content === 'string' ? content : await content.text();
+                            },
+                            async close() {
+                                window.__saveClosed = true;
+                            }
+                        };
+                    }
+                };
+            };
+            openIOModal();
+        });
+
+        await page.locator('[data-ui-action="download-io-json"]').click();
+
+        await expect.poll(async () => {
+            return page.evaluate(() => window.__savePickerCalls?.length || 0);
+        }).toBe(1);
+
+        await expect.poll(async () => {
+            return page.evaluate(() => Boolean(window.__saveClosed));
+        }).toBe(true);
+
+        await expect(page.locator('#io-file-status')).toContainText('chosen-itinerary.json');
+
+        const savedJson = await page.evaluate(() => window.__savedJsonText || '');
+        expect(savedJson).toContain('"itinerary"');
+        expect(savedJson).toContain('"budgetSettings"');
     });
 
     test('費用總覽支援匯入、摘要與匯出', async ({ page }) => {
