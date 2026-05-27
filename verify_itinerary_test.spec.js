@@ -40,6 +40,18 @@ test.describe('Itinerary editor real-flow E2E', () => {
             if (backdrop) backdrop.click();
         });
         await expect(page.locator('#date-modal')).toHaveClass(/hidden/);
+
+        await page.locator('[data-ui-action="open-drawer"]').click();
+        await page.locator('[data-ui-action="drawer-print-itinerary"]').click();
+
+        await expect(page.locator('#print-choice-modal')).toHaveClass(/flex/);
+        await expect(page.locator('#drawer-container')).toHaveClass(/hidden/);
+
+        await page.evaluate(() => {
+            const backdrop = document.getElementById('print-modal-backdrop');
+            if (backdrop) backdrop.click();
+        });
+        await expect(page.locator('#print-choice-modal')).toHaveClass(/hidden/);
     });
 
     test('桌面版語言切換按鈕文字會跟著更新', async ({ page }) => {
@@ -54,6 +66,27 @@ test.describe('Itinerary editor real-flow E2E', () => {
 
         await desktopLangBtn.click();
         await expect(desktopLangBtn).toHaveText('English');
+    });
+
+    test('列印版型會輸出較易讀的總覽與移動欄位', async ({ page }) => {
+        await openApp(page);
+
+        const result = await page.evaluate(() => {
+            const html = buildPrintHtml(false);
+            return {
+                hasSummary: html.includes('print-summary-grid'),
+                hasTransferHeader: html.includes('移動 / 交通'),
+                hasNotesHeader: html.includes('備註'),
+                hasTimelineTable: html.includes('timeline-table'),
+                hasClickableHint: html.includes('網址會保留為可點擊連結')
+            };
+        });
+
+        expect(result.hasSummary).toBe(true);
+        expect(result.hasTransferHeader).toBe(true);
+        expect(result.hasNotesHeader).toBe(true);
+        expect(result.hasTimelineTable).toBe(true);
+        expect(result.hasClickableHint).toBe(true);
     });
 
     test('checklist 勾選與全選切換', async ({ page }) => {
@@ -621,10 +654,15 @@ test.describe('Itinerary editor real-flow E2E', () => {
         expect(excelBinary.signature).toEqual([80, 75, 3, 4]);
         expect(excelBinary.decoded).toContain('xl/workbook.xml');
         expect(excelBinary.decoded).toContain('Summary');
+        expect(excelBinary.decoded).toContain('Itinerary');
         expect(excelBinary.decoded).toContain('Bookings');
         expect(excelBinary.decoded).toContain('Expenses');
         expect(excelBinary.decoded).toContain('flight_001');
         expect(excelBinary.decoded).toContain('NZD');
+        expect(excelBinary.decoded).toContain('皇后鎮');
+        expect(excelBinary.decoded).toContain('檢查費用頁');
+        expect(excelBinary.decoded).toContain('<autoFilter ref=');
+        expect(excelBinary.decoded).toContain('state="frozen"');
 
         expect(dialogs.length).toBe(1);
         expect(dialogs[0]).toContain('導入成功');

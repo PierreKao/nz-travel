@@ -480,18 +480,45 @@
                 width: 100%; 
                 background: white;
                 color: #1e293b;
+                padding: 16mm 12mm;
+                box-sizing: border-box;
+                font-size: 11pt;
             }
-            .day-block { margin-bottom: 40px; page-break-inside: avoid; border: 1px solid #e2e8f0; border-radius: 20px; padding: 25px; background: #fff; }
-            .day-header { font-size: 1.25rem; font-weight: 800; margin-bottom: 20px; color: #1e40af; border-bottom: 2px solid #eff6ff; padding-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
-            .city-badge { font-size: 0.85rem; background: #eff6ff; color: #2563eb; padding: 4px 12px; border-radius: 20px; font-weight: 700; }
-            .timeline-item { display: flex; margin-bottom: 12px; font-size: 1rem; }
-            .timeline-time { width: 100px; font-weight: 800; color: #64748b; font-size: 0.9rem; }
-            .timeline-desc { flex: 1; color: #0f172a; font-weight: 600; }
-            .hotel-info { margin-top: 20px; background: #f8fafc; padding: 15px 20px; border-radius: 12px; font-size: 0.9rem; font-weight: 800; border-left: 6px solid #3b82f6; color: #334155; }
-            .photo-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-top: 20px; border-top: 1px dashed #e2e8f0; padding-top: 20px; }
+            .print-report { width: 100%; }
+            .print-cover { margin-bottom: 28px; page-break-inside: avoid; }
+            .print-title { font-size: 2rem; font-weight: 900; color: #1e3a8a; margin: 0 0 10px; }
+            .print-subtitle { font-size: 0.95rem; color: #475569; margin: 0 0 18px; }
+            .print-summary-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+            .print-summary-card { border: 1px solid #dbeafe; border-radius: 14px; padding: 12px 14px; background: #f8fbff; }
+            .print-summary-label { display: block; font-size: 0.72rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: #64748b; margin-bottom: 6px; }
+            .print-summary-value { font-size: 1.05rem; font-weight: 800; color: #0f172a; }
+            .day-block { margin-bottom: 24px; page-break-inside: avoid; border: 1px solid #e2e8f0; border-radius: 18px; padding: 20px; background: #fff; }
+            .day-header { margin-bottom: 16px; color: #1e40af; border-bottom: 2px solid #eff6ff; padding-bottom: 12px; display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
+            .day-header-main { flex: 1; min-width: 0; }
+            .day-kicker { font-size: 0.72rem; font-weight: 900; letter-spacing: 0.12em; text-transform: uppercase; color: #2563eb; margin-bottom: 6px; }
+            .day-title { font-size: 1.15rem; font-weight: 900; color: #0f172a; margin: 0 0 6px; }
+            .day-date { font-size: 0.85rem; color: #64748b; font-weight: 700; }
+            .city-badge { font-size: 0.8rem; background: #eff6ff; color: #2563eb; padding: 5px 12px; border-radius: 999px; font-weight: 800; white-space: nowrap; }
+            .print-meta-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-bottom: 16px; }
+            .print-meta-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px 14px; }
+            .print-meta-label { display: block; font-size: 0.72rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: #64748b; margin-bottom: 6px; }
+            .print-meta-value { color: #0f172a; font-weight: 700; line-height: 1.5; word-break: break-word; }
+            .timeline-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+            .timeline-table th,
+            .timeline-table td { border-bottom: 1px solid #e2e8f0; padding: 10px 8px; vertical-align: top; text-align: left; }
+            .timeline-table th { font-size: 0.72rem; font-weight: 900; letter-spacing: 0.08em; text-transform: uppercase; color: #64748b; background: #f8fafc; }
+            .timeline-table td { color: #0f172a; line-height: 1.5; }
+            .timeline-col-time { width: 15%; font-weight: 800; color: #475569; }
+            .timeline-col-activity { width: 36%; font-weight: 700; }
+            .timeline-col-transfer { width: 20%; color: #334155; }
+            .timeline-col-notes { width: 29%; color: #475569; }
+            .timeline-empty { color: #cbd5e1; }
+            .timeline-table a { color: #1d4ed8 !important; text-decoration: underline; }
+            .photo-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-top: 18px; border-top: 1px dashed #e2e8f0; padding-top: 18px; }
             .photo-item { border: 1px solid #f1f5f9; border-radius: 12px; padding: 8px; background: #fafafa; }
             .photo-img { width: 100%; height: 200px; object-fit: cover; border-radius: 8px; }
             .photo-note { font-size: 0.75rem; color: #64748b; margin-top: 8px; font-style: italic; text-align: center; }
+            .print-footer-note { margin-top: 20px; font-size: 0.78rem; color: #64748b; }
         }
         #print-area { display: none; }
     </style>
@@ -5595,34 +5622,104 @@
             return inferAccommodationFromSource(day, langCode);
         }
 
-        async function executePrint(includePhotos) {
-            const ui = translations[currentLang];
-            const printArea = document.getElementById('print-area');
-            
-            // Close modal first
-            closePrintModal();
+        function buildPrintableTimelineRows(langTimeline) {
+            const rows = Array.isArray(langTimeline) ? langTimeline : [];
+            return rows.map((t) => {
+                const timeLabel = escapeHtmlText(t?.[0] || '');
+                const activity = renderTextWithLinks(t?.[1] || '');
+                const transfer = renderTextWithLinks(t?.[2] || '');
+                const notes = renderTextWithLinks(t?.[5] || '');
 
-            let printHtml = `<h1 style="font-size: 2.5rem; font-weight: 900; color: #1e3a8a; margin-bottom: 40px; border-bottom: 4px solid #3b82f6; padding-bottom: 20px;">${ui.header}</h1>`;
-            
+                return `
+                    <tr>
+                        <td class="timeline-col-time">${timeLabel || '<span class="timeline-empty">-</span>'}</td>
+                        <td class="timeline-col-activity">${activity || '<span class="timeline-empty">-</span>'}</td>
+                        <td class="timeline-col-transfer">${transfer || '<span class="timeline-empty">-</span>'}</td>
+                        <td class="timeline-col-notes">${notes || '<span class="timeline-empty">-</span>'}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function buildPrintHtml(includePhotos = false) {
+            const ui = translations[currentLang];
+            const totalDays = itinerary.length;
+            const totalBookings = bookings.length;
+            const totalExpenses = expenses.length;
+            const tripWindow = itinerary
+                .map(day => day?.actualDate)
+                .filter(dateKey => /^\d{4}-\d{2}-\d{2}$/.test(dateKey));
+            const tripDateRange = tripWindow.length
+                ? `${formatDateKeyForDisplay(tripWindow[0], { year: 'numeric', month: 'long', day: 'numeric' })} - ${formatDateKeyForDisplay(tripWindow[tripWindow.length - 1], { year: 'numeric', month: 'long', day: 'numeric' })}`
+                : '';
+
+            let printHtml = `
+                <div class="print-report">
+                    <section class="print-cover">
+                        <h1 class="print-title">${escapeHtmlText(ui.header)}</h1>
+                        <p class="print-subtitle">${escapeHtmlText(tripDateRange || ui.importExportTitle)}</p>
+                        <div class="print-summary-grid">
+                            <div class="print-summary-card">
+                                <span class="print-summary-label">${currentLang === 'zh' ? '總天數' : 'Trip Days'}</span>
+                                <span class="print-summary-value">${totalDays}</span>
+                            </div>
+                            <div class="print-summary-card">
+                                <span class="print-summary-label">${currentLang === 'zh' ? '住宿 / 預訂' : 'Bookings'}</span>
+                                <span class="print-summary-value">${totalBookings}</span>
+                            </div>
+                            <div class="print-summary-card">
+                                <span class="print-summary-label">${currentLang === 'zh' ? '支出紀錄' : 'Expenses'}</span>
+                                <span class="print-summary-value">${totalExpenses}</span>
+                            </div>
+                            <div class="print-summary-card">
+                                <span class="print-summary-label">${currentLang === 'zh' ? '列印模式' : 'Print Mode'}</span>
+                                <span class="print-summary-value">${includePhotos ? ui.printWithPhotos : ui.printOnlyItinerary}</span>
+                            </div>
+                        </div>
+                    </section>
+            `;
+
             itinerary.forEach((day, dayIndex) => {
                 const lang = day[currentLang];
                 const hotel = getAccommodationForDay(dayIndex, currentLang);
-                
+                const cityLabel = day?.city?.[currentLang] || day?.city?.zh || day?.city?.en || '';
+                const displayDate = day?.actualDate && /^\d{4}-\d{2}-\d{2}$/.test(day.actualDate)
+                    ? formatDateKeyForDisplay(day.actualDate, { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' })
+                    : '';
+
                 printHtml += `
-                    <div class="day-block">
+                    <section class="day-block">
                         <div class="day-header">
-                            <span>Day ${dayIndex + 1} | ${lang.title}</span>
-                            <span class="city-badge">${day.city[currentLang]}</span>
+                            <div class="day-header-main">
+                                <div class="day-kicker">Day ${dayIndex + 1}</div>
+                                <h2 class="day-title">${escapeHtmlText(lang.title || '')}</h2>
+                                ${displayDate ? `<div class="day-date">${escapeHtmlText(displayDate)}</div>` : ''}
+                            </div>
+                            ${cityLabel ? `<span class="city-badge">${escapeHtmlText(cityLabel)}</span>` : ''}
                         </div>
-                        <div class="timeline">
-                            ${lang.timeline.map(t => `
-                                <div class="timeline-item">
-                                    <div class="timeline-time">${escapeHtmlText(t[0])}</div>
-                                    <div class="timeline-desc">${renderTextWithLinks(t[1])}</div>
-                                </div>
-                            `).join('')}
+                        <div class="print-meta-grid">
+                            <div class="print-meta-card">
+                                <span class="print-meta-label">${currentLang === 'zh' ? '城市' : 'City'}</span>
+                                <div class="print-meta-value">${escapeHtmlText(cityLabel || '-')}</div>
+                            </div>
+                            <div class="print-meta-card">
+                                <span class="print-meta-label">${escapeHtmlText(ui.hotelLabel)}</span>
+                                <div class="print-meta-value">${renderTextWithLinks(hotel || '-')}</div>
+                            </div>
                         </div>
-                        <div class="hotel-info">🛏️ ${escapeHtmlText(ui.hotelLabel)}: ${escapeHtmlText(hotel)}</div>
+                        <table class="timeline-table">
+                            <thead>
+                                <tr>
+                                    <th>${currentLang === 'zh' ? '時間' : 'Time'}</th>
+                                    <th>${currentLang === 'zh' ? '活動' : 'Activity'}</th>
+                                    <th>${currentLang === 'zh' ? '移動 / 交通' : 'Transfer'}</th>
+                                    <th>${currentLang === 'zh' ? '備註' : 'Notes'}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${buildPrintableTimelineRows(lang.timeline)}
+                            </tbody>
+                        </table>
                 `;
 
                 if (includePhotos) {
@@ -5641,10 +5738,19 @@
                     }
                 }
 
-                printHtml += `</div>`;
+                printHtml += `</section>`;
             });
+
+            printHtml += `<p class="print-footer-note">${currentLang === 'zh' ? '提示：網址會保留為可點擊連結，適合另存 PDF 或共享給同行旅伴。' : 'Tip: URLs stay clickable in the printed document, which works well for Save as PDF or sharing with travel companions.'}</p></div>`;
+            return printHtml;
+        }
+
+        async function executePrint(includePhotos) {
+            const printArea = document.getElementById('print-area');
             
-            printArea.innerHTML = printHtml;
+            // Close modal first
+            closePrintModal();
+            printArea.innerHTML = buildPrintHtml(includePhotos);
 
             // CRITICAL for iOS: Wait for images to load and DOM to settle
             // Even simple text rendering needs a small beat on mobile Safari
@@ -6071,6 +6177,16 @@
                     <i class="fas fa-chevron-right text-amber-200 group-hover:translate-x-1 transition-transform"></i>
                 </button>
 
+                <button type="button" data-ui-action="drawer-print-itinerary" class="w-full flex items-center justify-between p-4 bg-violet-50 rounded-2xl hover:bg-violet-100 transition-all group">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-white shadow-sm rounded-xl flex items-center justify-center text-violet-600">
+                            <i class="fas fa-print"></i>
+                        </div>
+                        <span class="font-bold text-violet-900">${translations[currentLang].printBtn}</span>
+                    </div>
+                    <i class="fas fa-chevron-right text-violet-200 group-hover:translate-x-1 transition-transform"></i>
+                </button>
+
                 <button type="button" data-ui-action="drawer-open-converter" class="w-full flex items-center justify-between p-4 bg-emerald-50 rounded-2xl hover:bg-emerald-100 transition-all group">
                     <div class="flex items-center gap-3">
                         <div class="w-10 h-10 bg-white shadow-sm rounded-xl flex items-center justify-center text-emerald-600">
@@ -6423,6 +6539,51 @@
                 ]);
             });
 
+            const itineraryRows = [
+                ['Day', 'Actual Date', 'City', 'Day Title', 'Time', 'Activity', 'Transfer', 'Map Query', 'Stay', 'Notes']
+            ];
+            itinerary.forEach((day, index) => {
+                const langDay = day?.[currentLang] || day?.zh || day?.en || {};
+                const timeline = Array.isArray(langDay.timeline) ? langDay.timeline.map((item) => normalizeTimelineItem(item)) : [];
+                const cityValue = day?.city?.[currentLang] || day?.city?.zh || day?.city?.en || '';
+                const stayValue = day?.stay?.[currentLang] || day?.stay?.zh || day?.stay?.en || '';
+                const dayLabel = day?.date || `Day ${String(index + 1).padStart(2, '0')}`;
+                const dayTitle = langDay.title || '';
+                const actualDate = day?.actualDate || '';
+                const fallbackMapQuery = getDefaultDayMapQuery(day, currentLang);
+
+                if (!timeline.length) {
+                    itineraryRows.push([
+                        dayLabel,
+                        actualDate,
+                        cityValue,
+                        dayTitle,
+                        '',
+                        '',
+                        '',
+                        fallbackMapQuery,
+                        stayValue,
+                        ''
+                    ]);
+                    return;
+                }
+
+                timeline.forEach((item) => {
+                    itineraryRows.push([
+                        dayLabel,
+                        actualDate,
+                        cityValue,
+                        dayTitle,
+                        item[0] || '',
+                        item[1] || '',
+                        item[2] || '',
+                        item[3] || fallbackMapQuery,
+                        stayValue,
+                        item[5] || ''
+                    ]);
+                });
+            });
+
             const byDayRows = [
                 ['Day', 'Actual Date', 'City', 'Booking Count', 'Expense Count', `Bookings Allocated (${displayCurrency})`, `Expenses (${displayCurrency})`, `Grand Total (${displayCurrency})`]
             ];
@@ -6486,11 +6647,51 @@
                 });
 
             return [
-                { name: 'Summary', rows: summaryRows },
-                { name: 'Bookings', rows: bookingRows },
-                { name: 'Expenses', rows: expenseRows },
-                { name: 'By Day', rows: byDayRows },
-                { name: 'By Category', rows: byCategoryRows }
+                {
+                    name: 'Summary',
+                    rows: summaryRows,
+                    freezeHeader: true,
+                    autoFilter: true,
+                    columnWidths: [26, 28]
+                },
+                {
+                    name: 'Itinerary',
+                    rows: itineraryRows,
+                    freezeHeader: true,
+                    autoFilter: true,
+                    wrapColumns: [3, 5, 6, 7, 8, 9],
+                    columnWidths: [10, 13, 18, 28, 14, 34, 20, 24, 34, 44]
+                },
+                {
+                    name: 'Bookings',
+                    rows: bookingRows,
+                    freezeHeader: true,
+                    autoFilter: true,
+                    wrapColumns: [2, 3, 15],
+                    columnWidths: [18, 16, 28, 20, 14, 14, 12, 18, 12, 18, 20, 10, 10, 13, 13, 36]
+                },
+                {
+                    name: 'Expenses',
+                    rows: expenseRows,
+                    freezeHeader: true,
+                    autoFilter: true,
+                    wrapColumns: [2, 6, 13],
+                    columnWidths: [18, 14, 26, 10, 12, 13, 18, 14, 12, 18, 12, 18, 20, 34]
+                },
+                {
+                    name: 'By Day',
+                    rows: byDayRows,
+                    freezeHeader: true,
+                    autoFilter: true,
+                    columnWidths: [12, 13, 18, 14, 14, 20, 18, 18]
+                },
+                {
+                    name: 'By Category',
+                    rows: byCategoryRows,
+                    freezeHeader: true,
+                    autoFilter: true,
+                    columnWidths: [14, 18, 10, 22, 20]
+                }
             ];
         }
 
@@ -6505,24 +6706,46 @@
             return name;
         }
 
-        function buildBudgetSheetCell(value, rowIndex, colIndex) {
+        function buildBudgetSheetCell(value, rowIndex, colIndex, sheet = {}) {
             const ref = `${getExcelColumnName(colIndex)}${rowIndex + 1}`;
-            const headerStyle = rowIndex === 0 ? ' s="1"' : '';
+            const wrapColumns = Array.isArray(sheet.wrapColumns) ? sheet.wrapColumns : [];
+            const styleId = rowIndex === 0 ? 1 : (wrapColumns.includes(colIndex) ? 2 : 0);
+            const styleAttr = styleId ? ` s="${styleId}"` : '';
             if (typeof value === 'number' && Number.isFinite(value)) {
-                return `<c r="${ref}"${headerStyle}><v>${value}</v></c>`;
+                return `<c r="${ref}"${styleAttr}><v>${value}</v></c>`;
             }
-            return `<c r="${ref}" t="inlineStr"${headerStyle}><is><t xml:space="preserve">${escapeSpreadsheetXml(value)}</t></is></c>`;
+            return `<c r="${ref}" t="inlineStr"${styleAttr}><is><t xml:space="preserve">${escapeSpreadsheetXml(value)}</t></is></c>`;
         }
 
-        function buildBudgetWorksheetXml(rows) {
+        function buildBudgetWorksheetXml(sheet) {
+            const rows = Array.isArray(sheet?.rows) ? sheet.rows : [];
             const sheetRows = rows.map((row, rowIndex) => `
                 <row r="${rowIndex + 1}">
-                    ${row.map((cell, colIndex) => buildBudgetSheetCell(cell, rowIndex, colIndex)).join('')}
+                    ${row.map((cell, colIndex) => buildBudgetSheetCell(cell, rowIndex, colIndex, sheet)).join('')}
                 </row>
             `).join('');
+            const columnWidths = Array.isArray(sheet?.columnWidths) ? sheet.columnWidths : [];
+            const colsXml = columnWidths.length ? `
+    <cols>${columnWidths.map((width, index) => `
+        <col min="${index + 1}" max="${index + 1}" width="${width}" customWidth="1"/>`).join('')}
+    </cols>` : '';
+            const lastColumnName = rows[0]?.length ? getExcelColumnName(rows[0].length - 1) : 'A';
+            const autoFilterXml = sheet?.autoFilter && rows.length
+                ? `\n    <autoFilter ref="A1:${lastColumnName}${Math.max(1, rows.length)}"/>`
+                : '';
+            const sheetViewsXml = sheet?.freezeHeader
+                ? `
+    <sheetViews>
+        <sheetView workbookViewId="0">
+            <pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/>
+            <selection pane="bottomLeft" activeCell="A2" sqref="A2"/>
+        </sheetView>
+    </sheetViews>`
+                : '';
             return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
-    <sheetData>${sheetRows}</sheetData>
+    ${sheetViewsXml}${colsXml}
+    <sheetData>${sheetRows}</sheetData>${autoFilterXml}
 </worksheet>`;
         }
 
@@ -6571,9 +6794,10 @@
     <cellStyleXfs count="1">
         <xf numFmtId="0" fontId="0" fillId="0" borderId="0"/>
     </cellStyleXfs>
-    <cellXfs count="2">
+    <cellXfs count="3">
         <xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>
         <xf numFmtId="0" fontId="1" fillId="1" borderId="0" xfId="0" applyFont="1" applyFill="1"/>
+        <xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0" applyAlignment="1"><alignment wrapText="1" vertical="top"/></xf>
     </cellXfs>
 </styleSheet>`;
         }
@@ -6692,7 +6916,7 @@
                 { name: 'xl/styles.xml', data: buildBudgetStylesXml() },
                 ...sheets.map((sheet, index) => ({
                     name: `xl/worksheets/sheet${index + 1}.xml`,
-                    data: buildBudgetWorksheetXml(sheet.rows)
+                    data: buildBudgetWorksheetXml(sheet)
                 }))
             ];
             return buildStoredZipBlob(files, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
@@ -8612,6 +8836,10 @@
             },
             'drawer-open-converter': () => {
                 openConverter();
+                toggleDrawer(false);
+            },
+            'drawer-print-itinerary': () => {
+                printItinerary();
                 toggleDrawer(false);
             },
             'drawer-open-io-modal': () => {
