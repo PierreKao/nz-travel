@@ -108,6 +108,28 @@ test.describe('Itinerary editor real-flow E2E', () => {
         expect(result.hasTimelineTable).toBe(true);
     });
 
+    test('PDF 匯出會產生有效的 PDF 檔頭與頁面物件', async ({ page }) => {
+        await openApp(page);
+
+        const result = await page.evaluate(() => {
+            const bytes = generateItineraryPdfBytes();
+            const header = Array.from(bytes.slice(0, 8)).map((code) => String.fromCharCode(code)).join('');
+            const text = new TextDecoder().decode(bytes);
+            const pageMatches = text.match(/\/Type \/Page\b/g) || [];
+            return {
+                header,
+                size: bytes.length,
+                pageCount: pageMatches.length,
+                hasCatalog: text.includes('/Type /Catalog')
+            };
+        });
+
+        expect(result.header.startsWith('%PDF-1.4')).toBe(true);
+        expect(result.size).toBeGreaterThan(2000);
+        expect(result.pageCount).toBeGreaterThan(0);
+        expect(result.hasCatalog).toBe(true);
+    });
+
     test('checklist 勾選與全選切換', async ({ page }) => {
         await openApp(page);
 

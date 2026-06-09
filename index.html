@@ -572,7 +572,7 @@
     <header class="bg-white/70 backdrop-blur-md border-b sticky top-0 z-50 px-3 py-2 sm:px-6 sm:py-3 flex justify-between items-center shadow-sm">
         <div data-ui-action="go-overview" class="cursor-pointer shrink-0">
                 <span id="ui-header-title">紐西蘭南島 · 冬季自駕</span>
-            <p id="app-version-badge-header" class="text-[10px] text-blue-600 font-bold uppercase tracking-widest">Winter Adventure · v1.5.8</p>
+            <p id="app-version-badge-header" class="text-[10px] text-blue-600 font-bold uppercase tracking-widest">Winter Adventure · v1.5.9</p>
         </div>
         
         <div class="flex items-center gap-1 sm:gap-3">
@@ -659,7 +659,7 @@
                 </div>
 
                 <div class="mt-12 pt-8 border-t border-slate-100">
-                    <p id="app-version-badge-drawer" class="text-[10px] text-slate-400 font-bold uppercase tracking-wider text-center">New Zealand Travel · v1.5.8</p>
+                    <p id="app-version-badge-drawer" class="text-[10px] text-slate-400 font-bold uppercase tracking-wider text-center">New Zealand Travel · v1.5.9</p>
                 </div>
             </div>
         </div>
@@ -732,6 +732,9 @@
                     </button>
                     <button type="button" data-ui-action="execute-print-two-days" class="w-full bg-violet-100 hover:bg-violet-200 text-violet-800 font-bold py-3 px-4 rounded-xl transition-all transform active:scale-95 flex items-center justify-center gap-2">
                         <i class="fas fa-copy"></i> <span id="print-btn-two-days">兩天一頁（直式）</span>
+                    </button>
+                    <button type="button" data-ui-action="download-itinerary-pdf" class="w-full bg-rose-100 hover:bg-rose-200 text-rose-800 font-bold py-3 px-4 rounded-xl transition-all transform active:scale-95 flex items-center justify-center gap-2">
+                        <i class="fas fa-file-pdf"></i> <span id="print-btn-pdf">匯出 PDF（兩天一頁）</span>
                     </button>
                     <button type="button" data-ui-action="close-print-modal" class="w-full text-slate-400 font-bold py-2 px-4 text-sm hover:text-slate-600 transition-colors">
                         取消
@@ -972,7 +975,7 @@
         `;
         document.body.insertAdjacentHTML('beforeend', milkyWayWindowModalHTML);
 
-        const APP_VERSION = "1.5.8";
+        const APP_VERSION = "1.5.9";
         const AIR_NZ_BOOKING_URL = "https://www.airnewzealand.co.nz/book";
         const PAGE_INDEX = Object.freeze({
             COSTS: -4,
@@ -1589,6 +1592,7 @@
                 printOnlyItinerary: "僅列印行程",
                 printWithPhotos: "包含回憶照片",
                 printTwoDaysPortrait: "兩天一頁（直式）",
+                printExportPdf: "匯出 PDF（兩天一頁）",
                 printCancel: "取消",
                 resetDataBtn: "重置所有資料",
                 resetConfirmMsg: "確定要重置所有資料嗎？這將會永久刪除所有出發日期、清單進度以及儲存的照片與筆記。",
@@ -1829,6 +1833,7 @@
                 printOnlyItinerary: "Itinerary Only",
                 printWithPhotos: "Include Photos",
                 printTwoDaysPortrait: "2 Days per Page (Portrait)",
+                printExportPdf: "Export PDF (2 Days/Page)",
                 printCancel: "Cancel",
                 resetDataBtn: "Reset All Data",
                 resetConfirmMsg: "Are you sure you want to reset all data? This will permanently delete your start date, checklist progress, and all saved photos/notes.",
@@ -5682,6 +5687,293 @@
             }).join('');
         }
 
+        function stripLinksToPlainText(value) {
+            return String(value ?? '').replace(/\s+/g, ' ').trim();
+        }
+
+        function escapePdfText(value) {
+            return String(value ?? '')
+                .replace(/\\/g, '\\\\')
+                .replace(/\(/g, '\\(')
+                .replace(/\)/g, '\\)');
+        }
+
+        function measurePdfTextWidth(text, fontSize = 11, weight = 'regular') {
+            const raw = String(text ?? '');
+            const baseFactor = weight === 'bold' ? 0.57 : 0.53;
+            return raw.length * fontSize * baseFactor;
+        }
+
+        function wrapPdfText(text, maxWidth, fontSize = 11, weight = 'regular') {
+            const normalized = String(text ?? '').replace(/\s+/g, ' ').trim();
+            if (!normalized) return [''];
+            const words = normalized.split(' ');
+            const lines = [];
+            let current = '';
+
+            words.forEach((word) => {
+                const candidate = current ? `${current} ${word}` : word;
+                if (!current || measurePdfTextWidth(candidate, fontSize, weight) <= maxWidth) {
+                    current = candidate;
+                    return;
+                }
+
+                lines.push(current);
+                if (measurePdfTextWidth(word, fontSize, weight) <= maxWidth) {
+                    current = word;
+                    return;
+                }
+
+                let fragment = '';
+                for (const char of word) {
+                    const next = `${fragment}${char}`;
+                    if (fragment && measurePdfTextWidth(next, fontSize, weight) > maxWidth) {
+                        lines.push(fragment);
+                        fragment = char;
+                    } else {
+                        fragment = next;
+                    }
+                }
+                current = fragment;
+            });
+
+            if (current) lines.push(current);
+            return lines.length ? lines : [''];
+        }
+
+        function buildPdfPageLines() {
+            const ui = translations[currentLang];
+            const lines = [];
+            const tripWindow = itinerary
+                .map(day => day?.actualDate)
+                .filter(dateKey => /^\d{4}-\d{2}-\d{2}$/.test(dateKey));
+            const tripDateRange = tripWindow.length
+                ? `${formatDateKeyForDisplay(tripWindow[0], { year: 'numeric', month: 'long', day: 'numeric' })} - ${formatDateKeyForDisplay(tripWindow[tripWindow.length - 1], { year: 'numeric', month: 'long', day: 'numeric' })}`
+                : '';
+
+            lines.push({ text: ui.header, size: 18, weight: 'bold', spacingAfter: 8 });
+            if (tripDateRange) lines.push({ text: tripDateRange, size: 10, color: [90, 102, 122], spacingAfter: 14 });
+            lines.push({ text: `${currentLang === 'zh' ? '版型' : 'Layout'}: ${ui.printTwoDaysPortrait}`, size: 9, color: [90, 102, 122], spacingAfter: 14 });
+
+            itinerary.forEach((day, dayIndex) => {
+                const lang = day[currentLang];
+                const cityLabel = day?.city?.[currentLang] || day?.city?.zh || day?.city?.en || '-';
+                const stayLabel = getAccommodationForDay(dayIndex, currentLang);
+                const displayDate = day?.actualDate && /^\d{4}-\d{2}-\d{2}$/.test(day.actualDate)
+                    ? formatDateKeyForDisplay(day.actualDate, { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' })
+                    : '';
+                const timeline = Array.isArray(lang.timeline) ? lang.timeline : [];
+
+                lines.push({ type: 'day-start', dayIndex, text: `Day ${dayIndex + 1}`, size: 9, weight: 'bold', color: [37, 99, 235], spacingAfter: 4 });
+                lines.push({ text: stripLinksToPlainText(lang.title || ''), size: 14, weight: 'bold', spacingAfter: 4 });
+                if (displayDate) lines.push({ text: displayDate, size: 9, color: [100, 116, 139], spacingAfter: 3 });
+                lines.push({ text: `${currentLang === 'zh' ? '城市' : 'City'}: ${stripLinksToPlainText(cityLabel)}`, size: 9, color: [15, 23, 42], spacingAfter: 3 });
+                lines.push({ text: `${ui.hotelLabel}: ${stripLinksToPlainText(stayLabel)}`, size: 9, color: [15, 23, 42], spacingAfter: 8 });
+
+                lines.push({
+                    columns: [
+                        { text: currentLang === 'zh' ? '時間' : 'Time', width: 70, weight: 'bold', size: 8 },
+                        { text: currentLang === 'zh' ? '活動' : 'Activity', width: 180, weight: 'bold', size: 8 },
+                        { text: currentLang === 'zh' ? '交通' : 'Transfer', width: 120, weight: 'bold', size: 8 },
+                        { text: currentLang === 'zh' ? '備註' : 'Notes', width: 130, weight: 'bold', size: 8 }
+                    ],
+                    color: [100, 116, 139],
+                    spacingAfter: 4
+                });
+
+                timeline.forEach((item) => {
+                    lines.push({
+                        columns: [
+                            { text: stripLinksToPlainText(item?.[0] || '-'), width: 70, size: 8.5, weight: 'bold' },
+                            { text: stripLinksToPlainText(item?.[1] || '-'), width: 180, size: 8.5 },
+                            { text: stripLinksToPlainText(item?.[2] || '-'), width: 120, size: 8.5 },
+                            { text: stripLinksToPlainText(item?.[5] || '-'), width: 130, size: 8.5, color: [71, 85, 105] }
+                        ],
+                        spacingAfter: 3
+                    });
+                });
+
+                if (!timeline.length) {
+                    lines.push({ text: currentLang === 'zh' ? '這一天尚未安排內容。' : 'No schedule recorded for this day.', size: 8.5, color: [148, 163, 184], spacingAfter: 4 });
+                }
+
+                lines.push({ type: 'day-end', spacingAfter: 12 });
+            });
+
+            return lines;
+        }
+
+        function measurePdfLineHeight(line) {
+            if (line.type === 'day-end') return line.spacingAfter || 0;
+            if (line.columns) {
+                const height = Math.max(...line.columns.map((column) => {
+                    const wrapped = wrapPdfText(column.text, column.width, column.size || 9, column.weight || 'regular');
+                    return wrapped.length * ((column.size || 9) + 2);
+                }));
+                return height + (line.spacingAfter || 0);
+            }
+
+            const wrapped = wrapPdfText(line.text, 520, line.size || 10, line.weight || 'regular');
+            return wrapped.length * ((line.size || 10) + 3) + (line.spacingAfter || 0);
+        }
+
+        function paginatePdfDays(lines) {
+            const topY = 806;
+            const bottomY = 46;
+            const maxContentHeight = topY - bottomY;
+            const pages = [];
+            let currentPage = [];
+            let currentHeight = 0;
+            let currentDayBuffer = [];
+            let currentDayHeight = 0;
+            let daysOnPage = 0;
+
+            const flushDay = () => {
+                if (!currentDayBuffer.length) return;
+                const exceedsPage = currentHeight + currentDayHeight > maxContentHeight;
+                const exceedsDayLimit = daysOnPage >= 2;
+                if ((exceedsPage || exceedsDayLimit) && currentPage.length) {
+                    pages.push(currentPage);
+                    currentPage = [];
+                    currentHeight = 0;
+                    daysOnPage = 0;
+                }
+                currentPage.push(...currentDayBuffer);
+                currentHeight += currentDayHeight;
+                daysOnPage += 1;
+                currentDayBuffer = [];
+                currentDayHeight = 0;
+            };
+
+            lines.forEach((line) => {
+                if (line.type === 'day-start') {
+                    flushDay();
+                }
+                currentDayBuffer.push(line);
+                currentDayHeight += measurePdfLineHeight(line);
+            });
+            flushDay();
+            if (currentPage.length) pages.push(currentPage);
+            return pages;
+        }
+
+        function buildPdfStreamFromPage(lines) {
+            const startX = 40;
+            const topY = 806;
+            let y = topY;
+            const commands = [];
+
+            const drawText = (text, x, baselineY, size = 10, weight = 'regular', color = [15, 23, 42]) => {
+                const fontRef = weight === 'bold' ? '/F2' : '/F1';
+                commands.push(`BT ${color[0] / 255} ${color[1] / 255} ${color[2] / 255} rg ${fontRef} ${size} Tf 1 0 0 1 ${x.toFixed(2)} ${baselineY.toFixed(2)} Tm (${escapePdfText(text)}) Tj ET`);
+            };
+
+            lines.forEach((line) => {
+                if (line.type === 'day-end') {
+                    y -= line.spacingAfter || 0;
+                    return;
+                }
+
+                if (line.columns) {
+                    const columnStarts = [startX, startX + 72, startX + 258, startX + 382];
+                    let maxHeight = 0;
+                    line.columns.forEach((column, index) => {
+                        const wrapped = wrapPdfText(column.text, column.width, column.size || 9, column.weight || 'regular');
+                        const lineHeight = (column.size || 9) + 2;
+                        maxHeight = Math.max(maxHeight, wrapped.length * lineHeight);
+                        wrapped.forEach((rowText, rowIndex) => {
+                            drawText(rowText, columnStarts[index], y - (rowIndex * lineHeight), column.size || 9, column.weight || 'regular', column.color || line.color || [15, 23, 42]);
+                        });
+                    });
+                    y -= maxHeight + (line.spacingAfter || 0);
+                    return;
+                }
+
+                const wrapped = wrapPdfText(line.text, 520, line.size || 10, line.weight || 'regular');
+                const lineHeight = (line.size || 10) + 3;
+                wrapped.forEach((rowText, rowIndex) => {
+                    drawText(rowText, startX, y - (rowIndex * lineHeight), line.size || 10, line.weight || 'regular', line.color || [15, 23, 42]);
+                });
+                y -= wrapped.length * lineHeight + (line.spacingAfter || 0);
+            });
+
+            return commands.join('\n');
+        }
+
+        function buildSimplePdf(pageStreams) {
+            const objects = [null];
+            const alloc = () => {
+                objects.push('');
+                return objects.length - 1;
+            };
+            const setObject = (id, value) => { objects[id] = value; };
+
+            const catalogId = alloc();
+            const pagesId = alloc();
+            const regularFontId = alloc();
+            const boldFontId = alloc();
+
+            setObject(regularFontId, '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>');
+            setObject(boldFontId, '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>');
+
+            const pageIds = [];
+            pageStreams.forEach((streamText) => {
+                const contentId = alloc();
+                const pageId = alloc();
+                const streamBytes = new TextEncoder().encode(streamText);
+                setObject(contentId, `<< /Length ${streamBytes.length} >>\nstream\n${streamText}\nendstream`);
+                setObject(pageId, `<< /Type /Page /Parent ${pagesId} 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 ${regularFontId} 0 R /F2 ${boldFontId} 0 R >> >> /Contents ${contentId} 0 R >>`);
+                pageIds.push(pageId);
+            });
+
+            setObject(pagesId, `<< /Type /Pages /Count ${pageIds.length} /Kids [${pageIds.map(id => `${id} 0 R`).join(' ')}] >>`);
+            setObject(catalogId, `<< /Type /Catalog /Pages ${pagesId} 0 R >>`);
+
+            let output = '%PDF-1.4\n%\xE2\xE3\xCF\xD3\n';
+            const offsets = [0];
+
+            for (let id = 1; id < objects.length; id += 1) {
+                offsets[id] = output.length;
+                output += `${id} 0 obj\n${objects[id]}\nendobj\n`;
+            }
+
+            const xrefOffset = output.length;
+            output += `xref\n0 ${objects.length}\n`;
+            output += '0000000000 65535 f \n';
+            for (let id = 1; id < objects.length; id += 1) {
+                output += `${String(offsets[id]).padStart(10, '0')} 00000 n \n`;
+            }
+            output += `trailer\n<< /Size ${objects.length} /Root ${catalogId} 0 R >>\nstartxref\n${xrefOffset}\n%%EOF`;
+            return new TextEncoder().encode(output);
+        }
+
+        function generateItineraryPdfBytes() {
+            const pageLines = buildPdfPageLines();
+            const pagedDays = paginatePdfDays(pageLines);
+            const pageStreams = pagedDays.map(buildPdfStreamFromPage);
+            return buildSimplePdf(pageStreams);
+        }
+
+        async function downloadItineraryPdf() {
+            const pdfBytes = generateItineraryPdfBytes();
+            const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+            const filename = getPdfExportFilename();
+
+            if (supportsSaveFilePicker()) {
+                try {
+                    await saveBlobWithPicker(blob, filename, 'application/pdf', '.pdf');
+                    closePrintModal();
+                    return;
+                } catch (error) {
+                    if (error?.name === 'AbortError') return;
+                    console.warn('PDF save picker failed, falling back to download.', error);
+                }
+            }
+
+            closePrintModal();
+            downloadBlob(blob, filename);
+        }
+
         function buildPrintHtml(includePhotos = false, layout = 'full') {
             const ui = translations[currentLang];
             const totalDays = itinerary.length;
@@ -6436,22 +6728,35 @@
             return typeof window !== 'undefined' && typeof window.showSaveFilePicker === 'function';
         }
 
-        async function saveJsonWithPicker(payloadText, suggestedName) {
+        async function saveBlobWithPicker(blob, suggestedName, mimeType, extension) {
             const handle = await window.showSaveFilePicker({
                 suggestedName,
                 types: [
                     {
-                        description: 'JSON Files',
+                        description: extension === '.pdf' ? 'PDF Files' : 'Files',
                         accept: {
-                            'application/json': ['.json']
+                            [mimeType]: [extension]
                         }
                     }
                 ]
             });
             const writable = await handle.createWritable();
-            await writable.write(payloadText);
+            await writable.write(blob);
             await writable.close();
             return handle;
+        }
+
+        async function saveJsonWithPicker(payloadText, suggestedName) {
+            const blob = new Blob([payloadText], { type: 'application/json' });
+            return saveBlobWithPicker(blob, suggestedName, 'application/json', '.json');
+        }
+
+        function getPdfExportFilename() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            return `nz-travel-itinerary-${year}-${month}-${day}.pdf`;
         }
 
         async function downloadIOJson() {
@@ -7263,6 +7568,8 @@
             document.getElementById('print-btn-only').innerText = ui.printOnlyItinerary;
             const printTwoDaysBtn = document.getElementById('print-btn-two-days');
             if (printTwoDaysBtn) printTwoDaysBtn.innerText = ui.printTwoDaysPortrait;
+            const printPdfBtn = document.getElementById('print-btn-pdf');
+            if (printPdfBtn) printPdfBtn.innerText = ui.printExportPdf;
             const cancelBtn = document.querySelector('#print-choice-modal button:last-child');
             if (cancelBtn) cancelBtn.innerText = ui.printCancel;
         }
@@ -8860,6 +9167,7 @@
             'execute-print-with-photos': () => executePrint(true),
             'execute-print-only': () => executePrint(false),
             'execute-print-two-days': () => executePrint(false, 'two-days'),
+            'download-itinerary-pdf': () => downloadItineraryPdf(),
             'close-date-modal': () => closeDateModal(),
             'submit-start-date': () => submitStartDate(),
             'close-countdown-modal': () => closeCountdownModal(),
