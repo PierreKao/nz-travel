@@ -89,6 +89,25 @@ test.describe('Itinerary editor real-flow E2E', () => {
         expect(result.hasClickableHint).toBe(true);
     });
 
+    test('兩天一頁列印版型會輸出直式分頁結構', async ({ page }) => {
+        await openApp(page);
+
+        const result = await page.evaluate(() => {
+            const html = buildPrintHtml(false, 'two-days');
+            return {
+                hasTwoDayLabel: html.includes('兩天一頁（直式）'),
+                hasForcedBreak: html.includes('print-force-page-break'),
+                hasStayLabel: html.includes('住宿'),
+                hasTimelineTable: html.includes('timeline-table')
+            };
+        });
+
+        expect(result.hasTwoDayLabel).toBe(true);
+        expect(result.hasForcedBreak).toBe(true);
+        expect(result.hasStayLabel).toBe(true);
+        expect(result.hasTimelineTable).toBe(true);
+    });
+
     test('checklist 勾選與全選切換', async ({ page }) => {
         await openApp(page);
 
