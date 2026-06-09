@@ -5616,26 +5616,32 @@
         }
 
         async function printItinerary() {
-            const ui = translations[currentLang];
-            
             // Fetch all memories
             const allMemories = await fetchAllMemories();
-            
-            if (allMemories.length > 0) {
-                // Open choice modal if memories exist
-                openPrintChoices(allMemories);
-            } else {
-                // If no memories, just print directly (still need user tick for iOS, but here it's simple)
-                executePrint(false); 
-            }
+            openPrintChoices(allMemories);
         }
 
         let tempAllMemories = [];
         function openPrintChoices(memories) {
             tempAllMemories = memories;
+            const ui = translations[currentLang];
             const modal = document.getElementById('print-choice-modal');
             const backdrop = document.getElementById('print-modal-backdrop');
             const content = document.getElementById('print-modal-content');
+            const photoButton = document.querySelector('[data-ui-action="execute-print-with-photos"]');
+            const photoButtonLabel = document.getElementById('print-btn-photos');
+            const hasMemories = Array.isArray(memories) && memories.length > 0;
+
+            if (photoButton) {
+                photoButton.disabled = !hasMemories;
+                photoButton.classList.toggle('opacity-50', !hasMemories);
+                photoButton.classList.toggle('cursor-not-allowed', !hasMemories);
+            }
+            if (photoButtonLabel) {
+                photoButtonLabel.innerText = hasMemories
+                    ? ui.printWithPhotos
+                    : `${ui.printWithPhotos}${currentLang === 'zh' ? '（目前沒有照片）' : ' (No photos yet)'}`;
+            }
             
             modal.classList.remove('hidden');
             modal.classList.add('flex');

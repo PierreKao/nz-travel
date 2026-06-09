@@ -130,6 +130,17 @@ test.describe('Itinerary editor real-flow E2E', () => {
         expect(result.hasCatalog).toBe(true);
     });
 
+    test('沒有照片時仍會顯示列印選項與 PDF 入口', async ({ page }) => {
+        await openApp(page);
+
+        await page.locator('[data-ui-action="print-itinerary"]').click();
+
+        await expect(page.locator('#print-choice-modal')).toHaveClass(/flex/);
+        await expect(page.locator('#print-btn-pdf')).toBeVisible();
+        await expect(page.locator('[data-ui-action="execute-print-with-photos"]')).toBeDisabled();
+        await expect(page.locator('#print-btn-photos')).toContainText('沒有照片');
+    });
+
     test('checklist 勾選與全選切換', async ({ page }) => {
         await openApp(page);
 
