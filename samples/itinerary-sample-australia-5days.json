@@ -413,7 +413,15 @@
       "dayStart": 1,
       "dayEnd": 5,
       "sharedWith": 2,
-      "notes": "公開範例：整趟住宿"
+      "notes": "公開範例：整趟住宿",
+      "details": {
+        "address": "101 George Street, Sydney NSW 2000",
+        "hostName": "Sydney Central Apartments",
+        "hostPhone": "+61 2 9000 1234",
+        "dryer": "yes",
+        "amenities": "yes",
+        "parking": "no"
+      }
     },
     {
       "id": "sampleau_ticket",

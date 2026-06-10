@@ -1166,7 +1166,15 @@
       "dayStart": 3,
       "dayEnd": 4,
       "sharedWith": 2,
-      "notes": "公開範例：住宿"
+      "notes": "公開範例：住宿",
+      "details": {
+        "address": "8 Aoraki Crescent, Lake Tekapo",
+        "hostName": "South Island Lodge",
+        "hostPhone": "+64 3 555 1515",
+        "dryer": "yes",
+        "amenities": "yes",
+        "parking": "off_street"
+      }
     },
     {
       "id": "sample15_ticket_cruise",

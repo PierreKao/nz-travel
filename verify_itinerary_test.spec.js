@@ -536,6 +536,14 @@ test.describe('Itinerary editor real-flow E2E', () => {
                     dayStart: 1,
                     dayEnd: 3,
                     sharedWith: 2,
+                    details: {
+                        address: '17 Magnolia Place, Queenstown',
+                        hostName: 'Jamie Host',
+                        hostPhone: '+64 21 123 4567',
+                        dryer: 'yes',
+                        amenities: 'yes',
+                        parking: 'off_street'
+                    },
                     notes: '2 晚'
                 }
             ],
@@ -596,8 +604,56 @@ test.describe('Itinerary editor real-flow E2E', () => {
 
         await page.locator('[data-action="set-budget-filter"][data-budget-filter="accommodation"]').click();
         await expect(budgetPanel.locator('[data-budget-kind="booking"][data-budget-id="hotel_001"][data-budget-field="title"]')).toHaveValue('皇后鎮住宿');
+        await expect(budgetPanel.locator('[data-budget-kind="booking"][data-budget-id="hotel_001"][data-budget-field="details.address"]')).toHaveValue('17 Magnolia Place, Queenstown');
+        await expect(budgetPanel.locator('[data-budget-kind="booking"][data-budget-id="hotel_001"][data-budget-field="details.hostName"]')).toHaveValue('Jamie Host');
+        await expect(budgetPanel.locator('[data-budget-kind="booking"][data-budget-id="hotel_001"][data-budget-field="details.hostPhone"]')).toHaveValue('+64 21 123 4567');
+        await expect(budgetPanel.locator('[data-budget-kind="booking"][data-budget-id="hotel_001"][data-budget-field="details.dryer"]')).toHaveValue('yes');
+        await expect(budgetPanel.locator('[data-budget-kind="booking"][data-budget-id="hotel_001"][data-budget-field="details.parking"]')).toHaveValue('off_street');
         await expect(page.locator('[data-testid="budget-expenses-panel"] [data-budget-kind="expense"][data-budget-id="expense_002"][data-budget-field="title"]')).toHaveValue('住宿加購早餐');
         await expect(page.locator('[data-budget-summary="grand"]')).toContainText('約 TWD 9,237');
+        await budgetPanel.locator('[data-budget-kind="booking"][data-budget-id="hotel_001"][data-budget-field="details.hostName"]').fill('Alex Host');
+        await budgetPanel.locator('[data-budget-kind="booking"][data-budget-id="hotel_001"][data-budget-field="details.dryer"]').selectOption('no');
+        await expect.poll(async () => {
+            return page.evaluate(() => {
+                const saved = JSON.parse(localStorage.getItem('nz_travel_bookings') || '[]');
+                const hotel = saved.find(item => item.id === 'hotel_001');
+                return {
+                    hostName: hotel?.details?.hostName || '',
+                    dryer: hotel?.details?.dryer || ''
+                };
+            });
+        }).toEqual({ hostName: 'Alex Host', dryer: 'no' });
+
+        await page.evaluate(() => {
+            window.__copiedPhone = '';
+            window.alert = () => {};
+            const clipboard = {
+                writeText: async (value) => {
+                    window.__copiedPhone = value;
+                }
+            };
+            Object.defineProperty(navigator, 'clipboard', {
+                configurable: true,
+                value: clipboard
+            });
+        });
+
+        await page.evaluate(() => { activeDayIndex = 1; updateUI(); });
+        const dayAccommodationDetails = page.locator('[data-testid="day-accommodation-details"]');
+        await expect(dayAccommodationDetails.locator('[data-accommodation-field="hostName"]')).toContainText('Alex Host');
+        const phoneCopyBtn = dayAccommodationDetails.locator('[data-testid="day-accommodation-phone-copy"]');
+        await expect(phoneCopyBtn).toContainText('+64 21 123 4567');
+        await expect(phoneCopyBtn).toContainText('長按複製');
+        await phoneCopyBtn.dispatchEvent('pointerdown');
+        await page.waitForTimeout(700);
+        await phoneCopyBtn.dispatchEvent('pointerup');
+        await expect.poll(async () => {
+            return page.evaluate(() => window.__copiedPhone);
+        }).toBe('+64 21 123 4567');
+        await expect(dayAccommodationDetails.locator('[data-accommodation-field="amenities"]')).toContainText('備品');
+        await expect(dayAccommodationDetails.locator('[data-accommodation-field="address"]')).toHaveCount(0);
+        await expect(page.locator('[data-testid="day-stay-map-link"]')).toHaveAttribute('href', /17%20Magnolia%20Place%2C%20Queenstown/);
+        await page.locator('#nav-container .day-btn', { hasText: '費用總覽' }).click();
 
         await page.locator('[data-action="add-booking-entry"]').click();
         const latestAccommodationBookingType = page.locator('[data-testid="budget-bookings-panel"] [data-budget-kind="booking"][data-budget-field="type"]').last();
@@ -687,6 +743,8 @@ test.describe('Itinerary editor real-flow E2E', () => {
         expect(exported).toContain('"bookings"');
         expect(exported).toContain('"expenses"');
         expect(exported).toContain('"hotel_001"');
+        expect(exported).toContain('"hostName": "Alex Host"');
+        expect(exported).toContain('"parking": "off_street"');
         expect(exported).toContain('"total": 60');
 
         const excelExport = await page.evaluate(() => ({

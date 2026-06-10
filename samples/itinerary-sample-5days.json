@@ -407,7 +407,15 @@
       "dayStart": 2,
       "dayEnd": 2,
       "sharedWith": 2,
-      "notes": "含早餐"
+      "notes": "含早餐",
+      "details": {
+        "address": "12 Lakeside Drive, Lake Tekapo",
+        "hostName": "Tekapo Host",
+        "hostPhone": "+64 3 680 1234",
+        "dryer": "yes",
+        "amenities": "yes",
+        "parking": "off_street"
+      }
     },
     {
       "id": "sample5_queenstown_stay",
@@ -425,7 +433,15 @@
       "dayStart": 4,
       "dayEnd": 5,
       "sharedWith": 2,
-      "notes": "公開範例：住宿預訂"
+      "notes": "公開範例：住宿預訂",
+      "details": {
+        "address": "17 Magnolia Place, Queenstown",
+        "hostName": "Queenstown Stay Team",
+        "hostPhone": "+64 21 555 0101",
+        "dryer": "no",
+        "amenities": "yes",
+        "parking": "street"
+      }
     }
   ],
   "expenses": [

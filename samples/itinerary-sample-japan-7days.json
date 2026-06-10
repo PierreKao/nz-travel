@@ -555,7 +555,15 @@
       "dayStart": 1,
       "dayEnd": 2,
       "sharedWith": 2,
-      "notes": "公開範例：東京住宿"
+      "notes": "公開範例：東京住宿",
+      "details": {
+        "address": "1-2-3 Asakusa, Taito City, Tokyo",
+        "hostName": "Tokyo Front Desk",
+        "hostPhone": "+81 3-1234-5678",
+        "dryer": "yes",
+        "amenities": "yes",
+        "parking": "no"
+      }
     },
     {
       "id": "samplejp_kyoto_hotel",
@@ -573,7 +581,15 @@
       "dayStart": 4,
       "dayEnd": 5,
       "sharedWith": 2,
-      "notes": "公開範例：京都住宿"
+      "notes": "公開範例：京都住宿",
+      "details": {
+        "address": "45 Shijo Kawaramachi, Kyoto",
+        "hostName": "Kyoto Stay Office",
+        "hostPhone": "+81 75-234-5678",
+        "dryer": "no",
+        "amenities": "yes",
+        "parking": "no"
+      }
     },
     {
       "id": "samplejp_transport_pass",

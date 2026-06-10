@@ -572,7 +572,7 @@
     <header class="bg-white/70 backdrop-blur-md border-b sticky top-0 z-50 px-3 py-2 sm:px-6 sm:py-3 flex justify-between items-center shadow-sm">
         <div data-ui-action="go-overview" class="cursor-pointer shrink-0">
                 <span id="ui-header-title">紐西蘭南島 · 冬季自駕</span>
-            <p id="app-version-badge-header" class="text-[10px] text-blue-600 font-bold uppercase tracking-widest">Winter Adventure · v1.5.9</p>
+            <p id="app-version-badge-header" class="text-[10px] text-blue-600 font-bold uppercase tracking-widest">Winter Adventure · v1.6.0</p>
         </div>
         
         <div class="flex items-center gap-1 sm:gap-3">
@@ -659,7 +659,7 @@
                 </div>
 
                 <div class="mt-12 pt-8 border-t border-slate-100">
-                    <p id="app-version-badge-drawer" class="text-[10px] text-slate-400 font-bold uppercase tracking-wider text-center">New Zealand Travel · v1.5.9</p>
+                    <p id="app-version-badge-drawer" class="text-[10px] text-slate-400 font-bold uppercase tracking-wider text-center">New Zealand Travel · v1.6.0</p>
                 </div>
             </div>
         </div>
@@ -975,7 +975,7 @@
         `;
         document.body.insertAdjacentHTML('beforeend', milkyWayWindowModalHTML);
 
-        const APP_VERSION = "1.5.9";
+        const APP_VERSION = "1.6.0";
         const AIR_NZ_BOOKING_URL = "https://www.airnewzealand.co.nz/book";
         const PAGE_INDEX = Object.freeze({
             COSTS: -4,
@@ -1550,6 +1550,16 @@
                 budgetFieldDayRange: "Day 區間",
                 budgetFieldSharedWith: "分攤人數",
                 budgetFieldNotes: "備註",
+                budgetFieldAddress: "地址",
+                budgetFieldHostName: "房東名稱",
+                budgetFieldHostPhone: "房東電話",
+                budgetFieldDryer: "烘衣機",
+                budgetFieldAmenities: "備品",
+                accommodationDetailsLabel: "住宿資訊",
+                budgetFieldParking: "停車",
+                holdToCopyPhoneHint: "長按複製",
+                copyPhoneSuccess: "電話已複製到剪貼簿！",
+                copyPhoneFailed: "複製失敗，請手動複製電話。",
                 budgetDelete: "刪除",
                 budgetEdit: "編輯",
                 budgetDone: "完成",
@@ -1581,6 +1591,11 @@
                 budgetCategoryTransport: "交通",
                 budgetCategoryTicket: "票券",
                 budgetCategoryOther: "其他",
+                budgetOptionUnknown: "沒有",
+                budgetOptionYes: "有",
+                budgetOptionNo: "沒有",
+                budgetParkingOffStreet: "路外停車",
+                budgetParkingStreet: "路邊停車",
                 converterTitle: "匯率換算器",
                 nzdLabel: "NZD (紐幣)",
                 twdLabel: "TWD (台幣)",
@@ -1791,6 +1806,16 @@
                 budgetFieldDayRange: "Day Range",
                 budgetFieldSharedWith: "Split",
                 budgetFieldNotes: "Notes",
+                budgetFieldAddress: "Address",
+                budgetFieldHostName: "Host Name",
+                budgetFieldHostPhone: "Host Phone",
+                budgetFieldDryer: "Dryer",
+                budgetFieldAmenities: "Amenities",
+                accommodationDetailsLabel: "Accommodation Details",
+                budgetFieldParking: "Parking",
+                holdToCopyPhoneHint: "Hold to copy",
+                copyPhoneSuccess: "Phone number copied!",
+                copyPhoneFailed: "Copy failed. Please copy the phone number manually.",
                 budgetDelete: "Delete",
                 budgetEdit: "Edit",
                 budgetDone: "Done",
@@ -1822,6 +1847,11 @@
                 budgetCategoryTransport: "Transport",
                 budgetCategoryTicket: "Tickets",
                 budgetCategoryOther: "Other",
+                budgetOptionUnknown: "No",
+                budgetOptionYes: "Yes",
+                budgetOptionNo: "No",
+                budgetParkingOffStreet: "Off-street",
+                budgetParkingStreet: "Street",
                 converterTitle: "Currency Converter",
                 nzdLabel: "NZD (Dollar)",
                 twdLabel: "TWD (Taiwanese Dollar)",
@@ -3898,10 +3928,73 @@
             return Number.isInteger(num) && num > 0 ? num : fallback;
         }
 
+        function parseAccommodationDetailsFromNotes(note) {
+            const text = String(note ?? '');
+            if (!text) {
+                return {
+                    address: '',
+                    hostName: '',
+                    hostPhone: '',
+                    dryer: 'unknown',
+                    amenities: 'unknown',
+                    parking: 'unknown'
+                };
+            }
+
+            const extract = (pattern) => {
+                const match = text.match(pattern);
+                return match?.[1]?.trim() || '';
+            };
+            const normalizeBoolLike = (value) => {
+                const raw = String(value ?? '').trim().toLowerCase();
+                if (!raw) return 'unknown';
+                if (/(yes|true|有|可|available)/i.test(raw)) return 'yes';
+                if (/(no|false|無|沒有|none|not available)/i.test(raw)) return 'no';
+                return 'unknown';
+            };
+            const normalizeParking = (value) => {
+                const raw = String(value ?? '').trim().toLowerCase();
+                if (!raw) return 'unknown';
+                if (/(off[\s-]?street|路外)/i.test(raw)) return 'off_street';
+                if (/(street|curbside|路邊)/i.test(raw)) return 'street';
+                if (/(yes|true|有|available)/i.test(raw)) return 'yes';
+                if (/(no|false|無|none|not available)/i.test(raw)) return 'no';
+                return 'unknown';
+            };
+
+            return {
+                address: sanitizeTextInput(extract(/(?:^|[·\n])\s*(?:address|地址)\s*:\s*([^\n·]+)/i), { maxLength: 160 }),
+                hostName: sanitizeTextInput(extract(/(?:^|[·\n])\s*(?:host|host name|房東|房東名稱)\s*:\s*([^\n·]+)/i), { maxLength: 80 }),
+                hostPhone: sanitizeTextInput(extract(/(?:^|[·\n])\s*(?:phone|tel|telephone|電話|房東電話)\s*:\s*([^\n·]+)/i), { maxLength: 40 }),
+                dryer: normalizeBoolLike(extract(/(?:^|[·\n])\s*(?:dryer|烘衣機)\s*:\s*([^\n·]+)/i)),
+                amenities: normalizeBoolLike(extract(/(?:^|[·\n])\s*(?:amenities|設施|備品)\s*:\s*([^\n·]+)/i)),
+                parking: normalizeParking(extract(/(?:^|[·\n])\s*(?:parking|停車)\s*:\s*([^\n·]+)/i))
+            };
+        }
+
+        function normalizeAccommodationDetails(rawDetails = {}, noteFallback = '') {
+            const parsed = parseAccommodationDetailsFromNotes(noteFallback);
+            const safe = rawDetails && typeof rawDetails === 'object' ? rawDetails : {};
+            const normalizeChoice = (value, allowed) => {
+                const safeValue = sanitizeTextInput(value, { maxLength: 20 }).toLowerCase();
+                return allowed.includes(safeValue) ? safeValue : allowed[0];
+            };
+
+            return {
+                address: sanitizeTextInput(safe.address ?? parsed.address ?? '', { maxLength: 160 }),
+                hostName: sanitizeTextInput(safe.hostName ?? parsed.hostName ?? '', { maxLength: 80 }),
+                hostPhone: sanitizeTextInput(safe.hostPhone ?? parsed.hostPhone ?? '', { maxLength: 40 }),
+                dryer: normalizeChoice(safe.dryer ?? parsed.dryer ?? 'unknown', ['unknown', 'yes', 'no']),
+                amenities: normalizeChoice(safe.amenities ?? parsed.amenities ?? 'unknown', ['unknown', 'yes', 'no']),
+                parking: normalizeChoice(safe.parking ?? parsed.parking ?? 'unknown', ['unknown', 'yes', 'no', 'off_street', 'street'])
+            };
+        }
+
         function normalizeBookingItem(item, fallbackIndex = 0) {
             const safe = item && typeof item === 'object' ? item : {};
             const type = sanitizeTextInput(safe.type || 'other', { maxLength: 30 });
             const status = sanitizeTextInput(safe.status || 'planned', { maxLength: 30 });
+            const notes = sanitizeTextInput(safe.notes ?? safe.note ?? '', { maxLength: 160, allowLineBreaks: true });
             return {
                 id: sanitizeTextInput(safe.id || generateBudgetEntryId('booking'), { maxLength: 60 }) || `booking_${fallbackIndex + 1}`,
                 type: BOOKING_TYPES.includes(type) ? type : 'other',
@@ -3912,7 +4005,8 @@
                 dayStart: normalizeDayNumber(safe.dayStart ?? safe.startDay, 1),
                 dayEnd: normalizeDayNumber(safe.dayEnd ?? safe.endDay, normalizeDayNumber(safe.dayStart ?? safe.startDay, 1)),
                 sharedWith: Math.max(1, normalizeDayNumber(safe.sharedWith ?? safe.partySize, 1)),
-                notes: sanitizeTextInput(safe.notes ?? safe.note ?? '', { maxLength: 160, allowLineBreaks: true })
+                details: normalizeAccommodationDetails(safe.details ?? safe.accommodationDetails ?? {}, notes),
+                notes
             };
         }
 
@@ -4395,8 +4489,12 @@
             return normalizedStay ? stay : '';
         }
 
-        function getDefaultDayMapQuery(day, langCode = currentLang) {
-            return getDayStayMapLocation(day, langCode)
+        function getDefaultDayMapQuery(day, langCode = currentLang, dayIndex = itinerary.indexOf(day)) {
+            const bookingAddress = Number.isInteger(dayIndex) && dayIndex >= 0
+                ? getAccommodationAddressForDay(dayIndex)
+                : '';
+            return bookingAddress
+                || getDayStayMapLocation(day, langCode)
                 || day?.mapQuery
                 || day?.mapUrl
                 || day?.city?.[langCode]
@@ -5674,6 +5772,103 @@
             return inferAccommodationFromSource(day, langCode);
         }
 
+        function getAccommodationBookingForDay(dayIndex) {
+            const dayNumber = Number(dayIndex) + 1;
+            if (!Number.isInteger(dayNumber) || dayNumber < 1) return null;
+
+            const matches = bookings
+                .filter((item) => item?.type === 'accommodation' && dayNumber >= (item.dayStart || 1) && dayNumber <= (item.dayEnd || item.dayStart || 1))
+                .sort((a, b) => {
+                    const spanA = Math.max(1, (a.dayEnd || a.dayStart || dayNumber) - (a.dayStart || dayNumber) + 1);
+                    const spanB = Math.max(1, (b.dayEnd || b.dayStart || dayNumber) - (b.dayStart || dayNumber) + 1);
+                    const addressScoreA = a?.details?.address ? 1 : 0;
+                    const addressScoreB = b?.details?.address ? 1 : 0;
+                    return addressScoreB - addressScoreA || spanA - spanB;
+                });
+
+            return matches[0] || null;
+        }
+
+        function getAccommodationDetailsForDay(dayIndex) {
+            const booking = getAccommodationBookingForDay(dayIndex);
+            if (!booking) return null;
+
+            const details = normalizeAccommodationDetails(booking.details, booking.notes);
+            const hasMeaningfulValue = Boolean(
+                details.address
+                || details.hostName
+                || details.hostPhone
+                || details.dryer !== 'unknown'
+                || details.amenities !== 'unknown'
+                || details.parking !== 'unknown'
+            );
+
+            return hasMeaningfulValue ? details : null;
+        }
+
+        function getAccommodationAddressForDay(dayIndex) {
+            return getAccommodationDetailsForDay(dayIndex)?.address || '';
+        }
+
+        function formatAccommodationDetailValue(ui, field, value) {
+            if (!value) return '';
+            if (field === 'dryer' || field === 'amenities') {
+                if (value === 'yes') return ui.budgetOptionYes;
+                if (value === 'no' || value === 'unknown') return ui.budgetOptionNo;
+                return '';
+            }
+
+            if (field === 'parking') {
+                if (value === 'off_street') return ui.budgetParkingOffStreet;
+                if (value === 'street') return ui.budgetParkingStreet;
+                if (value === 'yes') return ui.budgetOptionYes;
+                if (value === 'no' || value === 'unknown') return ui.budgetOptionNo;
+                return '';
+            }
+
+            return String(value);
+        }
+
+        function getAccommodationDetailRows(ui, details) {
+            if (!details) return [];
+
+            const rows = [
+                ['hostName', ui.budgetFieldHostName, details.hostName],
+                ['hostPhone', ui.budgetFieldHostPhone, details.hostPhone],
+                ['dryer', ui.budgetFieldDryer, formatAccommodationDetailValue(ui, 'dryer', details.dryer)],
+                ['amenities', ui.budgetFieldAmenities, formatAccommodationDetailValue(ui, 'amenities', details.amenities)],
+                ['parking', ui.budgetFieldParking, formatAccommodationDetailValue(ui, 'parking', details.parking)]
+            ];
+
+            return rows.filter(([, , value]) => String(value || '').trim());
+        }
+
+        function normalizeTelephoneNumber(phoneNumber) {
+            const raw = String(phoneNumber ?? '').trim();
+            if (!raw) return '';
+            const normalized = raw.replace(/[^\d+]/g, '');
+            return /[0-9]/.test(normalized) ? normalized : '';
+        }
+
+        function renderAccommodationDetailsPreview(ui, details) {
+            const rows = getAccommodationDetailRows(ui, details);
+            if (!rows.length) return '';
+
+            return `
+                <div data-testid="day-accommodation-details" class="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                    ${rows.map(([field, label, value]) => `
+                        <div data-accommodation-field="${field}" class="rounded-2xl bg-white/65 border border-slate-200 px-3 py-2.5">
+                            <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">${escapeHtmlText(label)}</p>
+                            ${field === 'hostPhone' && normalizeTelephoneNumber(value)
+                                ? `<button type="button" data-copy-on-hold="phone" data-copy-text="${escapeHtmlAttribute(value)}" data-testid="day-accommodation-phone-copy" class="mt-1 inline-flex items-center gap-1.5 text-left text-sm font-semibold text-blue-700 break-all underline decoration-blue-300 underline-offset-2 hover:text-blue-800"><i class="fas fa-copy text-[11px]"></i>${escapeHtmlText(value)}<span class="text-[10px] font-bold text-slate-400 no-underline">· ${escapeHtmlText(ui.holdToCopyPhoneHint)}</span></button>`
+                                : `<p class="mt-1 text-sm font-semibold text-slate-700 break-words">${escapeHtmlText(value)}</p>`
+                            }
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
         function buildPrintableTimelineRows(langTimeline) {
             const rows = Array.isArray(langTimeline) ? langTimeline : [];
             return rows.map((t) => {
@@ -5765,6 +5960,7 @@
                 const lang = day[currentLang];
                 const cityLabel = day?.city?.[currentLang] || day?.city?.zh || day?.city?.en || '-';
                 const stayLabel = getAccommodationForDay(dayIndex, currentLang);
+                const stayAddress = getAccommodationAddressForDay(dayIndex);
                 const displayDate = day?.actualDate && /^\d{4}-\d{2}-\d{2}$/.test(day.actualDate)
                     ? formatDateKeyForDisplay(day.actualDate, { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' })
                     : '';
@@ -5775,6 +5971,9 @@
                 if (displayDate) lines.push({ text: displayDate, size: 9, color: [100, 116, 139], spacingAfter: 3 });
                 lines.push({ text: `${currentLang === 'zh' ? '城市' : 'City'}: ${stripLinksToPlainText(cityLabel)}`, size: 9, color: [15, 23, 42], spacingAfter: 3 });
                 lines.push({ text: `${ui.hotelLabel}: ${stripLinksToPlainText(stayLabel)}`, size: 9, color: [15, 23, 42], spacingAfter: 8 });
+                if (stayAddress) {
+                    lines.push({ text: `${ui.budgetFieldAddress}: ${stripLinksToPlainText(stayAddress)}`, size: 8, color: [71, 85, 105], spacingAfter: 8 });
+                }
 
                 lines.push({
                     columns: [
@@ -6688,6 +6887,32 @@
                 alert(currentLang === 'zh' ? '已複製到剪貼簿！' : 'Copied to clipboard!');
             } catch (error) {
                 alert(currentLang === 'zh' ? '複製失敗，請手動複製。' : 'Copy failed. Please copy manually.');
+            }
+        }
+
+        async function copyPlainText(text, messages = {}) {
+            const safeText = String(text ?? '').trim();
+            if (!safeText) return false;
+
+            try {
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    await navigator.clipboard.writeText(safeText);
+                } else {
+                    const textarea = document.createElement('textarea');
+                    textarea.value = safeText;
+                    textarea.setAttribute('readonly', '');
+                    textarea.style.position = 'absolute';
+                    textarea.style.left = '-9999px';
+                    document.body.appendChild(textarea);
+                    textarea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textarea);
+                }
+                alert(messages.success || (currentLang === 'zh' ? '已複製到剪貼簿！' : 'Copied to clipboard!'));
+                return true;
+            } catch (error) {
+                alert(messages.failure || (currentLang === 'zh' ? '複製失敗，請手動複製。' : 'Copy failed. Please copy manually.'));
+                return false;
             }
         }
 
@@ -8206,6 +8431,30 @@
             `).join('');
         }
 
+        function renderAccommodationChoiceOptions(ui, value) {
+            const normalizedValue = value === 'yes' ? 'yes' : 'no';
+            const options = [
+                { value: 'yes', label: ui.budgetOptionYes },
+                { value: 'no', label: ui.budgetOptionNo }
+            ];
+            return options.map((option) => `
+                <option value="${option.value}" ${option.value === normalizedValue ? 'selected' : ''}>${option.label}</option>
+            `).join('');
+        }
+
+        function renderAccommodationParkingOptions(ui, value) {
+            const normalizedValue = ['yes', 'off_street', 'street'].includes(value) ? value : 'no';
+            const options = [
+                { value: 'yes', label: ui.budgetOptionYes },
+                { value: 'no', label: ui.budgetOptionNo },
+                { value: 'off_street', label: ui.budgetParkingOffStreet },
+                { value: 'street', label: ui.budgetParkingStreet }
+            ];
+            return options.map((option) => `
+                <option value="${option.value}" ${option.value === normalizedValue ? 'selected' : ''}>${option.label}</option>
+            `).join('');
+        }
+
         function renderRateModeOptions(ui, value) {
             const modes = [
                 { value: 'live', label: ui.budgetRateModeLive },
@@ -8235,6 +8484,7 @@
                 const mobileLockAttr = isMobileLocked ? 'disabled' : '';
                 const mobileLockClasses = 'disabled:opacity-100 disabled:bg-white disabled:text-slate-700 disabled:border-slate-200 disabled:cursor-not-allowed';
                 const showDeleteBtn = isMobileReadOnlyViewport() ? !isMobileLocked : isEditMode;
+                const accommodationDetails = normalizeAccommodationDetails(item.details, item.notes);
                 return `
                     <div class="bg-white/80 rounded-[1.75rem] border border-slate-100 shadow-sm p-5 space-y-4">
                         <div class="flex items-start justify-between gap-3">
@@ -8300,6 +8550,40 @@
                                 </div>
                             </div>
                         </div>
+                        ${item.type === 'accommodation' ? `
+                            <div class="bg-slate-50/80 rounded-[1.5rem] border border-slate-200 p-4 space-y-4">
+                                <div class="flex items-center gap-2">
+                                    <i class="fas fa-house text-blue-500"></i>
+                                    <p class="text-sm font-black text-slate-700">${ui.accommodationDetailsLabel}</p>
+                                </div>
+                                <div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
+                                    <label class="block lg:col-span-2">
+                                        <span class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">${ui.budgetFieldAddress}</span>
+                                        <input type="text" value="${escapeHtmlAttribute(accommodationDetails.address)}" data-budget-kind="booking" data-budget-id="${safeId}" data-budget-field="details.address" ${mobileLockAttr} class="w-full bg-white border border-slate-200 px-3 py-2 rounded-xl text-sm text-slate-700 ${mobileLockClasses}">
+                                    </label>
+                                    <label class="block">
+                                        <span class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">${ui.budgetFieldHostName}</span>
+                                        <input type="text" value="${escapeHtmlAttribute(accommodationDetails.hostName)}" data-budget-kind="booking" data-budget-id="${safeId}" data-budget-field="details.hostName" ${mobileLockAttr} class="w-full bg-white border border-slate-200 px-3 py-2 rounded-xl text-sm text-slate-700 ${mobileLockClasses}">
+                                    </label>
+                                    <label class="block">
+                                        <span class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">${ui.budgetFieldHostPhone}</span>
+                                        <input type="text" value="${escapeHtmlAttribute(accommodationDetails.hostPhone)}" data-budget-kind="booking" data-budget-id="${safeId}" data-budget-field="details.hostPhone" ${mobileLockAttr} class="w-full bg-white border border-slate-200 px-3 py-2 rounded-xl text-sm text-slate-700 ${mobileLockClasses}">
+                                    </label>
+                                    <label class="block">
+                                        <span class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">${ui.budgetFieldDryer}</span>
+                                        <select data-budget-kind="booking" data-budget-id="${safeId}" data-budget-field="details.dryer" ${mobileLockAttr} class="w-full bg-white border border-slate-200 px-3 py-2 rounded-xl text-sm text-slate-700 ${mobileLockClasses}">${renderAccommodationChoiceOptions(ui, accommodationDetails.dryer)}</select>
+                                    </label>
+                                    <label class="block">
+                                        <span class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">${ui.budgetFieldAmenities}</span>
+                                        <select data-budget-kind="booking" data-budget-id="${safeId}" data-budget-field="details.amenities" ${mobileLockAttr} class="w-full bg-white border border-slate-200 px-3 py-2 rounded-xl text-sm text-slate-700 ${mobileLockClasses}">${renderAccommodationChoiceOptions(ui, accommodationDetails.amenities)}</select>
+                                    </label>
+                                    <label class="block">
+                                        <span class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">${ui.budgetFieldParking}</span>
+                                        <select data-budget-kind="booking" data-budget-id="${safeId}" data-budget-field="details.parking" ${mobileLockAttr} class="w-full bg-white border border-slate-200 px-3 py-2 rounded-xl text-sm text-slate-700 ${mobileLockClasses}">${renderAccommodationParkingOptions(ui, accommodationDetails.parking)}</select>
+                                    </label>
+                                </div>
+                            </div>
+                        ` : ''}
                     </div>
                 `;
             }).join('');
@@ -8645,6 +8929,7 @@
             const day = itinerary[activeDayIndex];
             const lang = day[currentLang];
             const hotel = getAccommodationForDay(activeDayIndex, currentLang);
+            const accommodationDetails = getAccommodationDetailsForDay(activeDayIndex);
 
             // Check if it's a domestic flight day
             let flightRoute = null;
@@ -8772,14 +9057,15 @@
                         </div>
                         
                         <div class="glass-card p-5 rounded-3xl flex items-center justify-between gap-4">
-                            <div class="flex items-center gap-4 min-w-0">
+                            <div class="flex items-center gap-4 min-w-0 flex-1">
                                 <div class="w-10 h-10 bg-indigo-600 text-white rounded-xl flex items-center justify-center shrink-0"><i class="fas fa-bed"></i></div>
-                                <div class="min-w-0">
+                                <div class="min-w-0 flex-1">
                                     <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">${ui.hotelLabel}</p>
                                     <p contenteditable="${isEditMode}" data-edit-day="${activeDayIndex}" data-edit-field="stay" data-edit-subfield="${currentLang}" class="font-bold text-sm text-indigo-800 outline-none focus:bg-white/60 rounded px-1 break-words">${hotel}</p>
+                                    ${renderAccommodationDetailsPreview(ui, accommodationDetails)}
                                 </div>
                             </div>
-                            <a href="${buildGoogleMapsSearchUrl(getDefaultDayMapQuery(day, currentLang))}" target="_blank" class="shrink-0 inline-flex items-center justify-center gap-2 bg-slate-900 text-white px-4 py-2.5 rounded-2xl font-bold text-sm shadow-lg hover:bg-slate-800 transition-colors"><i class="fas fa-location-arrow text-blue-400"></i> MAP</a>
+                            <a data-testid="day-stay-map-link" href="${buildGoogleMapsSearchUrl(getDefaultDayMapQuery(day, currentLang, activeDayIndex))}" target="_blank" class="shrink-0 inline-flex items-center justify-center gap-2 bg-slate-900 text-white px-4 py-2.5 rounded-2xl font-bold text-sm shadow-lg hover:bg-slate-800 transition-colors"><i class="fas fa-location-arrow text-blue-400"></i> MAP</a>
                         </div>
 
                         ${renderDayExpensesSection(ui, activeDayIndex)}
@@ -8792,7 +9078,7 @@
                                 <span class="text-xs font-bold text-slate-400 uppercase tracking-widest animate-pulse">Loading Map...</span>
                             </div>
                             <!-- Map iframe -->
-                            <iframe id="day-map-iframe" frameborder="0" class="relative w-full h-full rounded-[2rem] z-10 transition-opacity duration-1000" src="${buildGoogleMapsEmbedUrl(getDefaultDayMapQuery(day, currentLang), 13)}"></iframe>
+                            <iframe id="day-map-iframe" frameborder="0" class="relative w-full h-full rounded-[2rem] z-10 transition-opacity duration-1000" src="${buildGoogleMapsEmbedUrl(getDefaultDayMapQuery(day, currentLang, activeDayIndex), 13)}"></iframe>
                         </div>
                     </div>
                 </div>
@@ -8804,7 +9090,7 @@
             });
 
             // Auto-trigger map/spot visual for the day's main destination
-            setTimeout(() => updateMapQuery(getDefaultDayMapQuery(day, currentLang), day.customImg), 50);
+            setTimeout(() => updateMapQuery(getDefaultDayMapQuery(day, currentLang, activeDayIndex), day.customImg), 50);
         }
 
         function parseActionIndex(value) {
@@ -8852,6 +9138,22 @@
                 setLocalizedBudgetText(target.title, currentLang, rawValue);
             } else if (field === 'vendor') {
                 target.vendor = sanitizeTextInput(rawValue, { maxLength: 60 });
+            } else if (field.startsWith('details.') && kind === 'booking') {
+                target.details = normalizeAccommodationDetails(target.details, target.notes);
+                const detailField = field.slice('details.'.length);
+                if (detailField === 'address') {
+                    target.details.address = sanitizeTextInput(rawValue, { maxLength: 160 });
+                } else if (detailField === 'hostName') {
+                    target.details.hostName = sanitizeTextInput(rawValue, { maxLength: 80 });
+                } else if (detailField === 'hostPhone') {
+                    target.details.hostPhone = sanitizeTextInput(rawValue, { maxLength: 40 });
+                } else if (detailField === 'dryer') {
+                    target.details.dryer = normalizeAccommodationDetails({ dryer: rawValue }).dryer;
+                } else if (detailField === 'amenities') {
+                    target.details.amenities = normalizeAccommodationDetails({ amenities: rawValue }).amenities;
+                } else if (detailField === 'parking') {
+                    target.details.parking = normalizeAccommodationDetails({ parking: rawValue }).parking;
+                }
             } else if (field === 'notes') {
                 target.notes = sanitizeTextInput(rawValue, { maxLength: 160, allowLineBreaks: true });
             } else if (field === 'type') {
@@ -9109,12 +9411,57 @@
             event.stopPropagation();
         }
 
+        let holdCopyTimer = null;
+        let holdCopyTarget = null;
+
+        function clearHoldCopyTimer() {
+            if (holdCopyTimer) {
+                clearTimeout(holdCopyTimer);
+                holdCopyTimer = null;
+            }
+            holdCopyTarget = null;
+        }
+
+        function handleHoldCopyStart(event) {
+            const contentDisplay = document.getElementById('content-display');
+            if (!contentDisplay) return;
+            const trigger = event.target.closest('[data-copy-on-hold]');
+            if (!trigger || !contentDisplay.contains(trigger)) return;
+
+            clearHoldCopyTimer();
+            holdCopyTarget = trigger;
+            holdCopyTimer = setTimeout(async () => {
+                const text = trigger.dataset.copyText || '';
+                const ui = translations[currentLang];
+                await copyPlainText(text, {
+                    success: ui.copyPhoneSuccess,
+                    failure: ui.copyPhoneFailed
+                });
+                if ("vibrate" in navigator) navigator.vibrate(10);
+                clearHoldCopyTimer();
+            }, 550);
+        }
+
+        function handleHoldCopyEnd(event) {
+            const contentDisplay = document.getElementById('content-display');
+            if (!contentDisplay) return;
+            const trigger = event.target.closest('[data-copy-on-hold]');
+            if (!trigger || !contentDisplay.contains(trigger)) return;
+            if (holdCopyTarget === trigger) {
+                clearHoldCopyTimer();
+            }
+        }
+
         const contentDisplayRoot = document.getElementById('content-display');
         if (contentDisplayRoot) {
             contentDisplayRoot.addEventListener('click', stopEditableClickPropagation, true);
             contentDisplayRoot.addEventListener('input', handleContentDisplayInput);
             contentDisplayRoot.addEventListener('change', handleContentDisplayChange);
             contentDisplayRoot.addEventListener('click', handleContentDisplayClick);
+            contentDisplayRoot.addEventListener('pointerdown', handleHoldCopyStart);
+            contentDisplayRoot.addEventListener('pointerup', handleHoldCopyEnd);
+            contentDisplayRoot.addEventListener('pointerleave', handleHoldCopyEnd);
+            contentDisplayRoot.addEventListener('pointercancel', handleHoldCopyEnd);
         }
 
         function handleGlobalUIInput(event) {
