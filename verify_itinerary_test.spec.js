@@ -227,6 +227,56 @@ test.describe('Itinerary editor real-flow E2E', () => {
         await expect(page.locator('#content-display')).toContainText('javascript:alert(1)');
     });
 
+    test('提醒與旅費閱讀區的網址也會變成可點擊短連結', async ({ page }) => {
+        await openApp(page);
+
+        await page.evaluate(() => {
+            translations.zh.notices[0].desc = '請先看 https://example.com/notice/guide?ref=nz-trip';
+            bookings = [
+                normalizeBookingItem({
+                    id: 'booking_url_test',
+                    type: 'accommodation',
+                    title: { zh: '住宿說明 https://example.com/stay/info', en: 'Stay info https://example.com/stay/info' },
+                    vendor: 'www.booking.example/hotel',
+                    amount: { currency: 'TWD', total: 1000 },
+                    status: 'planned',
+                    dayStart: 1,
+                    dayEnd: 1,
+                    sharedWith: 1,
+                    notes: '入住連結 https://example.com/checkin'
+                })
+            ];
+            expenses = [
+                normalizeExpenseItem({
+                    id: 'expense_url_test',
+                    category: 'other',
+                    title: { zh: '票券說明 https://example.com/ticket', en: 'Ticket info https://example.com/ticket' },
+                    amount: { currency: 'NZD', total: 20 },
+                    day: 1,
+                    sharedWith: 1,
+                    notes: '收據 https://example.com/receipt/123'
+                })
+            ];
+            activeDayIndex = PAGE_INDEX.COSTS;
+            updateUI();
+        });
+
+        await page.evaluate(() => showNoticeModal(0));
+        await expect(page.locator('#notice-detail-content a[href="https://example.com/notice/guide?ref=nz-trip"]')).toHaveText('example.com/notice/guide?ref=nz-trip');
+        await page.evaluate(() => closeNoticeModal());
+
+        await page.evaluate(() => {
+            activeDayIndex = PAGE_INDEX.COSTS;
+            updateUI();
+        });
+
+        await expect(page.locator('[data-testid="budget-bookings-panel"] a[href="https://example.com/stay/info"]')).toHaveText('example.com/stay/info');
+        await expect(page.locator('[data-testid="budget-bookings-panel"] a[href="https://www.booking.example/hotel"]')).toHaveText('booking.example/hotel');
+        await expect(page.locator('[data-testid="budget-bookings-panel"] a[href="https://example.com/checkin"]')).toHaveText('example.com/checkin');
+        await expect(page.locator('[data-testid="budget-expenses-panel"] a[href="https://example.com/ticket"]')).toHaveText('example.com/ticket');
+        await expect(page.locator('[data-testid="budget-expenses-panel"] a[href="https://example.com/receipt/123"]')).toHaveText('example.com/receipt/123');
+    });
+
     test('住宿填入具體地址後，MAP 會優先使用住宿位置', async ({ page }) => {
         const dialogs = [];
         page.on('dialog', async (dialog) => {
